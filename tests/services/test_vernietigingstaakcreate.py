@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from src.services.vernietigingstaakcreate import VernietigingstaakService
 from src.services.vernietigingstaakcreate_exceptions import (
     InvalidDatumException,
-    StatusInvalidException,
+    InvalidStatusException,
     MissingAantekeningenException,
 )
 
@@ -37,7 +37,7 @@ def test_create_vernietigingstaak_invalid_status():
     aantekeningen = "Onbekende status test."
     datum = datetime.today().date()
     status = "ONGELDIG"
-    with pytest.raises(StatusInvalidException):
+    with pytest.raises(InvalidStatusException):
         service.create(aantekeningen=aantekeningen, datum=datum, status=status)
 
 def test_create_vernietigingstaak_blank_aantekeningen():

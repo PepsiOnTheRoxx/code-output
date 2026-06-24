@@ -14,6 +14,10 @@ class InvalidStatusException(VernietigingstaakCreateException):
     """Raised when status is invalid."""
     pass
 
+class MissingAantekeningenException(VernietigingstaakCreateException):
+    """Raised when aantekeningen are missing."""
+    pass
+
 class VernietigingstaakCreationFailedException(VernietigingstaakCreateException):
     """Raised when task creation fails."""
     pass
