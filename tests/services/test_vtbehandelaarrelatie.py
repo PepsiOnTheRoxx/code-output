@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.services.vtbehandelaarrelatie import VTBehandelaarRelatieService
 from src.services.vtbehandelaarrelatie_exceptions import (
     VTBehandelaarRelatieBestaatAlException,
@@ -59,7 +59,7 @@ def test_verwijder_relatie_succesvol():
     taak_id = 40
 
     with patch.object(service, 'bestaat_relatie', return_value=True) as mock_bestaat, \
-         patch.object(service, 'verwijder_relatie', return_value=None) as mock_verwijder:
+         patch.object(service, '_verwijder_relatie', return_value=None) as mock_verwijder:
         service.verwijder_relatie(gebruiker_id, taak_id)
         mock_bestaat.assert_called_once_with(gebruiker_id, taak_id)
         mock_verwijder.assert_called_once_with(gebruiker_id, taak_id)
@@ -81,7 +81,8 @@ def test_haal_relaties_op_succesvol():
         {'gebruiker_id': gebruiker_id, 'taak_id': 61},
     ]
 
-    with patch.object(service, 'haal_relaties_op_voor_gebruiker', return_value=mock_result) as mock_haal:
+    with patch.object(service, 'haal_relaties_op_voor_gebruiker', return_value=mock_result) as mock_haal, \
+         patch.object(service, 'controleer_of_gebruiker_bestaat', return_value=True):
         relaties = service.haal_relaties_op(gebruiker_id)
         mock_haal.assert_called_once_with(gebruiker_id)
         assert relaties == mock_result

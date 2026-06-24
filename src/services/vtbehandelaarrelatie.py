@@ -18,7 +18,7 @@ class VTBehandelaarRelatieService:
     def verwijder_relatie(self, gebruiker_id, taak_id):
         if not self.bestaat_relatie(gebruiker_id, taak_id):
             raise VTBehandelaarRelatieNietGevondenException()
-        self.verwijder_relatie(gebruiker_id, taak_id)
+        self._verwijder_relatie(gebruiker_id, taak_id)
 
     def haal_relaties_op(self, gebruiker_id):
         if not self.controleer_of_gebruiker_bestaat(gebruiker_id):
@@ -38,7 +38,7 @@ class VTBehandelaarRelatieService:
     def opslaan_relatie(self, gebruiker_id, taak_id):
         raise NotImplementedError()
 
-    def verwijder_relatie(self, gebruiker_id, taak_id):
+    def _verwijder_relatie(self, gebruiker_id, taak_id):
         raise NotImplementedError()
 
     def haal_relaties_op_voor_gebruiker(self, gebruiker_id):

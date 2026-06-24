@@ -1,23 +1,20 @@
 class VTBehandelaarRelatieException(Exception):
-    """Base exception for VTBehandelaarRelatieService errors."""
+    '''Base exception for VTBehandelaarRelatieService errors.'''
     pass
 
-class VTBehandelaarRelatieNotFoundException(VTBehandelaarRelatieException):
-    """Raised when the requested BehandelaarRelatie is not found."""
+# Custom exceptions (Dutch names as required)
+class VTBehandelaarRelatieBestaatAlException(VTBehandelaarRelatieException):
+    '''Raised when attempting to create a duplicate BehandelaarRelatie.'''
     pass
 
-class VTBehandelaarRelatieAlreadyExistsException(VTBehandelaarRelatieException):
-    """Raised when attempting to create a duplicate BehandelaarRelatie."""
+class VTBehandelaarRelatieNietGevondenException(VTBehandelaarRelatieException):
+    '''Raised when the requested BehandelaarRelatie is not found.'''
     pass
 
-class VTBehandelaarRelatieInvalidDataException(VTBehandelaarRelatieException):
-    """Raised when provided data for BehandelaarRelatie is invalid."""
+class OngeldigeGebruikerException(VTBehandelaarRelatieException):
+    '''Raised when the given gebruiker is invalid/nonexistent.'''
     pass
 
-class VTBehandelaarRelatiePermissionException(VTBehandelaarRelatieException):
-    """Raised when an operation is not permitted for the current user."""
-    pass
-
-class VTBehandelaarRelatieFactTypeException(VTBehandelaarRelatieException):
-    """Raised on errors related to FactType (ElementID: 4) interactions."""
+class OngeldigeVernietigingstaakException(VTBehandelaarRelatieException):
+    '''Raised when the given vernietigingstaak is invalid/nonexistent.'''
     pass
