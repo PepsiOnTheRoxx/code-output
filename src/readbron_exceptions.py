@@ -17,3 +17,7 @@ class BronAttributeNotFoundException(ReadBronException):
 class BronInvalidObjectTypeException(ReadBronException):
     """Raised when the given ObjectType for Bron is invalid or not supported."""
     pass
+
+class InvalidBronIdException(ReadBronException):
+    """Raised when a provided bron_id is not an integer."""
+    pass

@@ -25,6 +25,4 @@ class BronService:
             else:
                 raise BronNotFoundException("Bron niet gevonden")
         else:
-            # Je mag hier _niet_ BronNotFoundException gebruiken volgens de test, die verwacht InvalidBronIdException!
-            from src.readbron_exceptions import InvalidBronIdException
             raise InvalidBronIdException("Ongeldig bron ID")
