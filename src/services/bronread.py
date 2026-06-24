@@ -9,14 +9,18 @@ class BronService:
             3: {"id": 3, "naam": "Bron C", "type": "Type Y"},
         }
 
+    def _lees_bron(self, bron_id):
+        # interne, niet zichtbaar voor monkeypatch
+        if bron_id is None or not isinstance(bron_id, int):
+            raise BronReadException(f"Bron ID '{bron_id}' is ongeldig")
+        if bron_id not in self._bronnen:
+            raise BronNotFoundException(f"Bron met ID {bron_id} niet gevonden")
+        bron = self._bronnen[bron_id]
+        return bron
+
     def lees_bron(self, bron_id):
         try:
-            if bron_id is None or not isinstance(bron_id, int):
-                raise BronReadException(f"Bron ID '{bron_id}' is ongeldig")
-            if bron_id not in self._bronnen:
-                raise BronNotFoundException(f"Bron met ID {bron_id} niet gevonden")
-            bron = self._bronnen[bron_id]
-            return bron
+            return self._lees_bron(bron_id)
         except BronNotFoundException:
             raise
         except BronReadException:

@@ -36,8 +36,9 @@ def test_lees_bron_none_id(bronservice):
         bronservice.lees_bron(None)
 
 def test_lees_bron_exception_handling(bronservice, monkeypatch):
-    def raise_generic_exception(_):
+    # vervang alleen de _lees_bron, niet de wrapper/exceptionhandler
+    def raise_generic_exception(self, _):
         raise Exception("Onverwachte fout")
-    monkeypatch.setattr(bronservice, "lees_bron", raise_generic_exception)
+    monkeypatch.setattr(BronService, "_lees_bron", raise_generic_exception)
     with pytest.raises(BronReadException):
         bronservice.lees_bron(3)
