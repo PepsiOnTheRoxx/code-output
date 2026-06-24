@@ -3,7 +3,6 @@ from unittest.mock import patch, MagicMock
 from src.services import updategebruiker
 from src.services.updategebruiker_exceptions import GebruikerNietGevondenException, OnjuisteGebruikerDataException
 
-
 @patch('src.services.updategebruiker.GebruikerRepository')
 def test_update_gebruiker_success(mock_repository_class):
     mock_repository = MagicMock()
@@ -11,10 +10,10 @@ def test_update_gebruiker_success(mock_repository_class):
 
     gebruiker_id = 1
     nieuwe_data = {'naam': 'Jan', 'email': 'jan@domein.nl'}
-    bestaande_gebruiker = MagicMock()
+    bestaande_gebruiker = {'id': 1, 'naam': 'Oud', 'email': 'oud@domein.nl'}
     mock_repository.get_by_id.return_value = bestaande_gebruiker
 
-    update_result = MagicMock()
+    update_result = {'id': 1, 'naam': 'Jan', 'email': 'jan@domein.nl'}
     mock_repository.update.return_value = update_result
 
     result = updategebruiker.update_gebruiker(gebruiker_id, nieuwe_data)
@@ -22,7 +21,6 @@ def test_update_gebruiker_success(mock_repository_class):
     mock_repository.get_by_id.assert_called_once_with(gebruiker_id)
     mock_repository.update.assert_called_once_with(bestaande_gebruiker, nieuwe_data)
     assert result == update_result
-
 
 @patch('src.services.updategebruiker.GebruikerRepository')
 def test_update_gebruiker_gebruiker_niet_gevonden(mock_repository_class):
@@ -39,14 +37,13 @@ def test_update_gebruiker_gebruiker_niet_gevonden(mock_repository_class):
     mock_repository.get_by_id.assert_called_once_with(gebruiker_id)
     mock_repository.update.assert_not_called()
 
-
 @patch('src.services.updategebruiker.GebruikerRepository')
 def test_update_gebruiker_ongeldige_data(mock_repository_class):
     mock_repository = MagicMock()
     mock_repository_class.return_value = mock_repository
 
     gebruiker_id = 2
-    bestaande_gebruiker = MagicMock()
+    bestaande_gebruiker = {'id': 2, 'naam': 'Test', 'email': 'test@domein.nl'}
     mock_repository.get_by_id.return_value = bestaande_gebruiker
 
     ongeldige_data = {'email': 'geen_email_formaat'}
@@ -58,7 +55,6 @@ def test_update_gebruiker_ongeldige_data(mock_repository_class):
     mock_repository.get_by_id.assert_called_once_with(gebruiker_id)
     mock_repository.update.assert_called_once_with(bestaande_gebruiker, ongeldige_data)
 
-
 @patch('src.services.updategebruiker.GebruikerRepository')
 def test_update_gebruiker_update_returnt_none(mock_repository_class):
     mock_repository = MagicMock()
@@ -66,7 +62,7 @@ def test_update_gebruiker_update_returnt_none(mock_repository_class):
 
     gebruiker_id = 3
     nieuwe_data = {'naam': 'Tom'}
-    bestaande_gebruiker = MagicMock()
+    bestaande_gebruiker = {'id': 3, 'naam': 'Tom', 'email': 'tom@domein.nl'}
     mock_repository.get_by_id.return_value = bestaande_gebruiker
 
     mock_repository.update.return_value = None
