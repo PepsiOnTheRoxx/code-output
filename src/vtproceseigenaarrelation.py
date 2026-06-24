@@ -1,53 +1,65 @@
+class ProceseigenaarAlreadyExists(Exception):
+    pass
+
+class ProceseigenaarNotFound(Exception):
+    pass
+
+class InvalidGebruikerOrVernietigingstaak(Exception):
+    pass
+
 class Gebruiker:
-    def __init__(self, gebruiker_id, naam):
-        self.gebruiker_id = gebruiker_id
+    def __init__(self, id, naam):
+        self.id = id
         self.naam = naam
 
+    def __eq__(self, other):
+        if not isinstance(other, Gebruiker):
+            return False
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
+
 class Vernietigingstaak:
-    def __init__(self, taak_id, omschrijving):
-        self.taak_id = taak_id
+    def __init__(self, id, omschrijving):
+        self.id = id
         self.omschrijving = omschrijving
-        self.proceseigenaar = None
 
-class ProceseigenaarAlreadyAssignedException(Exception):
-    pass
+    def __eq__(self, other):
+        if not isinstance(other, Vernietigingstaak):
+            return False
+        return self.id == other.id
 
-class ProceseigenaarNotAssignedException(Exception):
-    pass
-
-class VTProceseigenaarRelation:
-    def __init__(self):
-        # Key: vernietigingstaak_id, Value: gebruiker instance
-        self.taak_proceseigenaar = {}
-
-    def koppel_proceseigenaar(self, gebruiker, vernietigingstaak):
-        if vernietigingstaak.taak_id in self.taak_proceseigenaar:
-            raise ProceseigenaarAlreadyAssignedException(
-                f"Taak {vernietigingstaak.taak_id} heeft al een proceseigenaar."
-            )
-        self.taak_proceseigenaar[vernietigingstaak.taak_id] = gebruiker
-        vernietigingstaak.proceseigenaar = gebruiker
-
-    def ontkoppel_proceseigenaar(self, vernietigingstaak):
-        if vernietigingstaak.taak_id not in self.taak_proceseigenaar:
-            raise ProceseigenaarNotAssignedException(
-                f"Er is geen proceseigenaar gekoppeld aan taak {vernietigingstaak.taak_id}."
-            )
-        del self.taak_proceseigenaar[vernietigingstaak.taak_id]
-        vernietigingstaak.proceseigenaar = None
-
-    def get_proceseigenaar(self, vernietigingstaak):
-        return self.taak_proceseigenaar.get(vernietigingstaak.taak_id, None)
+    def __hash__(self):
+        return hash(self.id)
 
 class DestructionTaskService:
     def __init__(self):
-        self.vt_relation = VTProceseigenaarRelation()
+        # Key: vernietigingstaak id, value: gebruiker instance
+        self._relaties = {}
 
-    def wijs_proceseigenaar_toe(self, gebruiker, vernietigingstaak):
-        self.vt_relation.koppel_proceseigenaar(gebruiker, vernietigingstaak)
+    def add_proceseigenaar(self, gebruiker, vernietigingstaak):
+        if not isinstance(gebruiker, Gebruiker) or not isinstance(vernietigingstaak, Vernietigingstaak):
+            raise InvalidGebruikerOrVernietigingstaak()
+        taakid = vernietigingstaak.id
+        if taakid in self._relaties:
+            raise ProceseigenaarAlreadyExists()
+        self._relaties[taakid] = gebruiker
 
-    def verwijder_proceseigenaar(self, vernietigingstaak):
-        self.vt_relation.ontkoppel_proceseigenaar(vernietigingstaak)
+    def remove_proceseigenaar(self, gebruiker, vernietigingstaak):
+        if not isinstance(gebruiker, Gebruiker) or not isinstance(vernietigingstaak, Vernietigingstaak):
+            raise InvalidGebruikerOrVernietigingstaak()
+        taakid = vernietigingstaak.id
+        if taakid not in self._relaties:
+            raise ProceseigenaarNotFound()
+        # Alleen de juiste gebruiker mag verwijderd worden
+        if self._relaties[taakid] == gebruiker:
+            del self._relaties[taakid]
+        else:
+            raise ProceseigenaarNotFound()
 
-    def proceseigenaar_ophalen(self, vernietigingstaak):
-        return self.vt_relation.get_proceseigenaar(vernietigingstaak)
+    def is_proceseigenaar(self, gebruiker, vernietigingstaak):
+        if not isinstance(gebruiker, Gebruiker) or not isinstance(vernietigingstaak, Vernietigingstaak):
+            return False
+        taakid = vernietigingstaak.id
+        return self._relaties.get(taakid) == gebruiker
