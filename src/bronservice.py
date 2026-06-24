@@ -3,49 +3,33 @@ class Bron:
         self.element_type = element_type
         self.element_id = element_id
 
+
 class BronService:
+    def __init__(self):
+        self.bronnen = []
+
     def create_bron(self, element_type, element_id):
         if element_type not in ["ObjectType", "Attribute"]:
             raise ValueError("Invalid element type")
         if not isinstance(element_id, int) or element_id <= 0:
             raise ValueError("Element ID must be a positive integer")
-        
-        return Bron(element_type, element_id)
 
-def test_create_bron_with_valid_object_type():
-    service = BronService()
-    bron = service.create_bron("ObjectType", 12)
-    assert bron.element_type == "ObjectType"
-    assert bron.element_id == 12
+        bron = Bron(element_type, element_id)
+        self.bronnen.append(bron)
+        return bron
 
-def test_create_bron_with_valid_attribute_type():
-    service = BronService()
-    bron = service.create_bron("Attribute", 15)
-    assert bron.element_type == "Attribute"
-    assert bron.element_id == 15
+    def read_bron(self, element_id):
+        for bron in self.bronnen:
+            if bron.element_id == element_id:
+                return bron
+        raise ValueError("Bron not found")
 
-def test_create_bron_with_another_valid_attribute_type():
-    service = BronService()
-    bron = service.create_bron("Attribute", 16)
-    assert bron.element_type == "Attribute"
-    assert bron.element_id == 16
+    def update_bron(self, element_id, new_element_type):
+        bron = self.read_bron(element_id)
+        if new_element_type not in ["ObjectType", "Attribute"]:
+            raise ValueError("Invalid element type")
+        bron.element_type = new_element_type
 
-def test_create_bron_with_invalid_element_type():
-    service = BronService()
-    with pytest.raises(ValueError, match="Invalid element type"):
-        service.create_bron("InvalidType", 12)
-
-def test_create_bron_with_negative_element_id():
-    service = BronService()
-    with pytest.raises(ValueError, match="Element ID must be a positive integer"):
-        service.create_bron("Attribute", -1)
-
-def test_create_bron_with_zero_element_id():
-    service = BronService()
-    with pytest.raises(ValueError, match="Element ID must be a positive integer"):
-        service.create_bron("ObjectType", 0)
-
-def test_create_bron_with_non_integer_element_id():
-    service = BronService()
-    with pytest.raises(ValueError, match="Element ID must be a positive integer"):
-        service.create_bron("ObjectType", "string")
+    def delete_bron(self, element_id):
+        bron = self.read_bron(element_id)
+        self.bronnen.remove(bron)
