@@ -6,6 +6,9 @@ from src.api.vtbronnenrelatieapi_exceptions import (
 )
 
 class VTBronnenRelatieAPI:
+    _relaties = []
+    _next_id = 1
+
     def register_routes(self, app):
         @app.route('/vtbronnenrelatie', methods=['GET'])
         def get_all_relaties_route():
@@ -56,21 +59,38 @@ class VTBronnenRelatieAPI:
                 return jsonify({'error': str(ex)}), 500
 
     def get_all_relaties(self):
-        # Implementatie hier (mock/voorbeeld)
-        return []
+        return list(self.__class__._relaties)
 
     def get_relatie_by_id(self, relatie_id):
-        # Implementatie hier (mock/voorbeeld)
-        raise VTBronnenRelatieNotFoundException("Not implemented")
+        for relatie in self.__class__._relaties:
+            if relatie['id'] == relatie_id:
+                return dict(relatie)
+        raise VTBronnenRelatieNotFoundException("Not found")
 
     def create_relatie(self, data):
-        # Implementatie hier (mock/voorbeeld)
-        raise VTBronnenRelatieValidationException("Not implemented")
+        naam = data.get('naam')
+        if not naam or not isinstance(naam, str) or not naam.strip():
+            raise VTBronnenRelatieValidationException('Validatiefout')
+        relatie = {'id': self.__class__._next_id, 'naam': naam}
+        self.__class__._relaties.append(relatie)
+        self.__class__._next_id += 1
+        return dict(relatie)
 
     def update_relatie(self, relatie_id, data):
-        # Implementatie hier (mock/voorbeeld)
-        raise VTBronnenRelatieNotFoundException("Not implemented")
+        for idx, relatie in enumerate(self.__class__._relaties):
+            if relatie['id'] == relatie_id:
+                naam = data.get('naam')
+                if not naam or not isinstance(naam, str) or not naam.strip():
+                    raise VTBronnenRelatieValidationException('Validatiefout')
+                updated = dict(relatie)
+                updated['naam'] = naam
+                self.__class__._relaties[idx] = updated
+                return dict(updated)
+        raise VTBronnenRelatieNotFoundException('Niet gevonden')
 
     def delete_relatie(self, relatie_id):
-        # Implementatie hier (mock/voorbeeld)
-        raise VTBronnenRelatieNotFoundException("Not implemented")
+        for idx, relatie in enumerate(self.__class__._relaties):
+            if relatie['id'] == relatie_id:
+                del self.__class__._relaties[idx]
+                return True
+        raise VTBronnenRelatieNotFoundException('Verwijderen mislukt')

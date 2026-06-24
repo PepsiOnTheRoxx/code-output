@@ -9,6 +9,12 @@ from src.api.vtbronnenrelatieapi_exceptions import (
     VTBronnenRelatieValidationException,
 )
 
+@pytest.fixture(autouse=True)
+def reset_relatie_state():
+    # Reset the mock data before each test so tests are independent
+    VTBronnenRelatieAPI._relaties = []
+    VTBronnenRelatieAPI._next_id = 1
+
 @pytest.fixture
 def app():
     app = Flask(__name__)
