@@ -2,11 +2,11 @@ class VernietigingstaakUpdateException(Exception):
     """Base exception for VernietigingstaakUpdate feature."""
     pass
 
-class VernietigingstaakNietGevondenException(VernietigingstaakUpdateException):
+class VernietigingstaakNotFoundException(VernietigingstaakUpdateException):
     """Exception thrown when the Vernietigingstaak is not found."""
     pass
 
-class OngeldigeVernietigingstaakDataException(VernietigingstaakUpdateException):
+class InvalidVernietigingstaakUpdateException(VernietigingstaakUpdateException):
     """Exception thrown when invalid data is provided for updating the Vernietigingstaak."""
     pass
 

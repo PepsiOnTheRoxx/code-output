@@ -1,5 +1,5 @@
 import pytest
-from src.services.vernietigingstaakupdate import VernietigingstaakService
+from src.services.vernietigingstaakupdate import VernietigingstaakService, VernietigingstaakRepository
 from src.services.vernietigingstaakupdate_exceptions import VernietigingstaakNotFoundException, InvalidVernietigingstaakUpdateException
 
 @pytest.fixture
@@ -12,11 +12,18 @@ def bestaande_taak():
     }
 
 @pytest.fixture
-def service(mocker, bestaande_taak):
-    mock = mocker.patch("src.services.vernietigingstaakupdate.VernietigingstaakRepository")
-    repo_instance = mock.return_value
-    repo_instance.get_by_id.return_value = bestaande_taak.copy()
-    return VernietigingstaakService(repo_instance)
+def service(monkeypatch, bestaande_taak):
+    class FakeRepo:
+        def __init__(self):
+            self._taak = bestaande_taak.copy()
+        def get_by_id(self, id):
+            if id == bestaande_taak["id"]:
+                return self._taak.copy()
+            return None
+        def update(self, id, newvalues):
+            self._taak = newvalues.copy()
+    fake_repo = FakeRepo()
+    return VernietigingstaakService(fake_repo)
 
 def test_update_bestaande_taak_succesvol(service, bestaande_taak):
     update_data = {
@@ -37,11 +44,14 @@ def test_update_naar_bestaande_status(service, bestaande_taak):
     result = service.update_vernietigingstaak(update_data)
     assert result["status"] == "Voltooid"
 
-def test_update_vernietigingstaak_bestaat_niet(mocker):
-    mock = mocker.patch("src.services.vernietigingstaakupdate.VernietigingstaakRepository")
-    repo_instance = mock.return_value
-    repo_instance.get_by_id.return_value = None
-    service = VernietigingstaakService(repo_instance)
+def test_update_vernietigingstaak_bestaat_niet(monkeypatch):
+    class FakeRepo:
+        def get_by_id(self, id):
+            return None
+        def update(self, id, newvalues):
+            pass
+    repo = FakeRepo()
+    service = VernietigingstaakService(repo)
     update_data = {
         "id": 999,
         "naam": "Onbekende taak"
