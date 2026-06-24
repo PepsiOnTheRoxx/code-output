@@ -21,3 +21,10 @@ class VTBehandelaarRelatiePermissionDeniedException(VTBehandelaarRelatieAPIExcep
 class VTBehandelaarRelatieServiceException(VTBehandelaarRelatieAPIException):
     """Exception for internal service errors in VTBehandelaar-relatie operations."""
     pass
+
+# Aliases for test compatibility
+ValidationException = VTBehandelaarRelatieValidationException
+NotFoundException = VTBehandelaarRelatieNotFoundException
+AlreadyExistsException = VTBehandelaarRelatieAlreadyExistsException
+PermissionDeniedException = VTBehandelaarRelatiePermissionDeniedException
+ServiceException = VTBehandelaarRelatieServiceException
