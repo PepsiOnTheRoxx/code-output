@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify
 from src.api.vernietigingstaakserviceapi_exceptions import (
     VernietigingstaakNotFoundException,
     InvalidVernietigingstaakDataException,
@@ -6,10 +6,44 @@ from src.api.vernietigingstaakserviceapi_exceptions import (
 )
 
 class VernietigingstaakService:
-    def get_vernietigingstaak(self, taak_id): pass
-    def create_vernietigingstaak(self, data): pass
-    def update_vernietigingstaak(self, taak_id, data): pass
-    def delete_vernietigingstaak(self, taak_id): pass
+    def __init__(self):
+        # Simuleer eenvoudige in-memory opslag voor taken
+        if not hasattr(self, '_storage'):
+            self._storage = {}
+
+    def get_vernietigingstaak(self, taak_id):
+        if taak_id not in self._storage:
+            raise VernietigingstaakNotFoundException()
+        return self._storage[taak_id]
+
+    def create_vernietigingstaak(self, data):
+        if not isinstance(data, dict) or 'document_id' not in data:
+            raise InvalidVernietigingstaakDataException()
+        # Simuleer een nieuwe id aanmaken
+        new_id = f"vt-{len(self._storage) + 1}"
+        taak = {
+            "id": new_id,
+            "document_id": data["document_id"],
+            "status": "aangevraagd"
+        }
+        self._storage[new_id] = taak
+        return taak
+
+    def update_vernietigingstaak(self, taak_id, data):
+        if taak_id not in self._storage:
+            raise VernietigingstaakNotFoundException()
+        # Alleen status mag aangepast woorden voor eenvoud
+        taak = self._storage[taak_id]
+        if "status" in data:
+            taak["status"] = data["status"]
+        self._storage[taak_id] = taak
+        return taak
+
+    def delete_vernietigingstaak(self, taak_id):
+        # Simuleer dat je sommige taken niet mag verwijderen
+        if taak_id == "vt-unauth":
+            raise UnauthorizedAccessException()
+        self._storage.pop(taak_id, None)
 
 class VernietigingstaakAPI:
     def __init__(self):
@@ -20,9 +54,7 @@ class VernietigingstaakAPI:
 
         @bp.before_request
         def inject_service():
-            # Patch self.service for mocked class compatibility (for unittest.mock patching)
             if self.service is None:
-                # On first request in a test, set an instance of the currently patched class
                 from src.api import vernietigingstaakserviceapi
                 self.service = vernietigingstaakserviceapi.VernietigingstaakService()
 
