@@ -17,12 +17,7 @@ class GebruikerService:
         if not email:
             raise ValueError("Email mag niet leeg zijn")
         if not self._is_geldig_email(email):
-            # Exception class has different names in exceptions vs tests
-            try:
-                exception_class = OngeldigEmailadresException
-            except NameError:
-                exception_class = GebruikerEmailOngeldigException
-            raise exception_class("Ongeldig emailadres")
+            raise OngeldigEmailadresException("Ongeldig emailadres")
         for gebruiker in self._gebruikers:
             if gebruiker.naam == naam and gebruiker.email == email:
                 raise GebruikerBestaatAlException("Gebruiker bestaat al")

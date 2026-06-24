@@ -14,6 +14,9 @@ class GebruikerEmailOngeldigException(CreateGebruikerException):
     """Exception raised when the email is not a valid email address."""
     pass
 
+# ALIAS for compatibility with tests
+OngeldigEmailadresException = GebruikerEmailOngeldigException
+
 class GebruikerBestaatAlException(CreateGebruikerException):
     """Exception raised when a gebruiker with same naam and/or email already exists."""
     pass
