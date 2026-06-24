@@ -17,3 +17,10 @@ class ReadBronInvalidElementIDException(ReadBronException):
 class ReadBronDataAccessException(ReadBronException):
     """Raised when there is an issue accessing Bron data."""
     pass
+
+# Export exceptions to be used directly from this file.
+class BronNotFoundException(ReadBronDataNotFoundException):
+    pass
+
+class InvalidBronIDException(ReadBronInvalidElementIDException):
+    pass

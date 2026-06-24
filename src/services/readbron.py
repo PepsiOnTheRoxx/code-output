@@ -1,13 +1,4 @@
-from src.services.readbron_exceptions import (
-    ReadBronDataNotFoundException,
-    ReadBronInvalidElementIDException
-)
-
-class BronNotFoundException(ReadBronDataNotFoundException):
-    pass
-
-class InvalidBronIDException(ReadBronInvalidElementIDException):
-    pass
+from src.services.readbron_exceptions import BronNotFoundException, InvalidBronIDException
 
 class BronService:
     _bron_data = {
