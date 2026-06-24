@@ -20,17 +20,17 @@ class VernietigingstaakService:
         try:
             result["aantekeningen"] = taak["aantekeningen"]
         except Exception:
-            raise VernietigingstaakAantekeningenReadException
+            raise VernietigingstaakAantekeningenReadException()
         try:
             result["datum"] = taak["datum"]
         except Exception:
-            raise VernietigingstaakDatumReadException
+            raise VernietigingstaakDatumReadException()
         try:
             result["status"] = taak["status"]
         except Exception:
-            raise VernietigingstaakStatusReadException
+            raise VernietigingstaakStatusReadException()
 
         if result["status"] not in ["INGEPLAND", "UITGEVOERD", "GEANNULEERD"]:
-            raise VernietigingstaakStatusReadException
+            raise VernietigingstaakStatusReadException()
 
         return result

@@ -16,9 +16,9 @@ def mock_task():
     }
 
 @pytest.fixture
-def service_with_task(mock_task, mocker):
+def service_with_task(mock_task, monkeypatch):
     service = VernietigingstaakService()
-    mocker.patch.object(service, "get_vernietigingstaak_by_id", return_value=mock_task)
+    monkeypatch.setattr(service, "get_vernietigingstaak_by_id", lambda taak_id: mock_task)
     return service
 
 def test_read_vernietigingstaak_returns_correct_data(service_with_task, mock_task):
@@ -28,15 +28,19 @@ def test_read_vernietigingstaak_returns_correct_data(service_with_task, mock_tas
     assert result["datum"] == mock_task["datum"]
     assert result["status"] == mock_task["status"]
 
-def test_read_vernietigingstaak_handles_nonexistent_id(mocker):
+def test_read_vernietigingstaak_handles_nonexistent_id(monkeypatch):
     service = VernietigingstaakService()
-    mocker.patch.object(service, "get_vernietigingstaak_by_id", side_effect=VernietigingstaakNotFoundException)
+    def raise_not_found(_):
+        raise VernietigingstaakNotFoundException()
+    monkeypatch.setattr(service, "get_vernietigingstaak_by_id", raise_not_found)
     with pytest.raises(VernietigingstaakNotFoundException):
         service.read_vernietigingstaak(999)
 
-def test_read_vernietigingstaak_unauthorized_access(mocker):
+def test_read_vernietigingstaak_unauthorized_access(monkeypatch):
     service = VernietigingstaakService()
-    mocker.patch.object(service, "get_vernietigingstaak_by_id", side_effect=UnauthorizedAccessException)
+    def raise_unauthorized(_):
+        raise UnauthorizedAccessException()
+    monkeypatch.setattr(service, "get_vernietigingstaak_by_id", raise_unauthorized)
     with pytest.raises(UnauthorizedAccessException):
         service.read_vernietigingstaak(2)
 

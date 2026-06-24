@@ -6,7 +6,7 @@ class VernietigingstaakNotFoundException(ReadVernietigingstaakException):
     """Raised when the Vernietigingstaak is not found."""
     pass
 
-class UnauthorizedVernietigingstaakAccessException(ReadVernietigingstaakException):
+class UnauthorizedAccessException(ReadVernietigingstaakException):
     """Raised when access to the Vernietigingstaak is unauthorized."""
     pass
 
