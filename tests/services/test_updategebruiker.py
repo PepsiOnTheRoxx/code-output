@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services import updategebruiker
-from src.services.updategebruiker_exceptions import GebruikerNietGevonden, OngeldigeGebruikerData
+from src.services.updategebruiker_exceptions import GebruikerNietGevondenException, OnjuisteGebruikerDataException
 
 
 @patch('src.services.updategebruiker.GebruikerRepository')
@@ -33,7 +33,7 @@ def test_update_gebruiker_gebruiker_niet_gevonden(mock_repository_class):
     nieuwe_data = {'naam': 'Piet'}
     mock_repository.get_by_id.return_value = None
 
-    with pytest.raises(GebruikerNietGevonden):
+    with pytest.raises(GebruikerNietGevondenException):
         updategebruiker.update_gebruiker(gebruiker_id, nieuwe_data)
 
     mock_repository.get_by_id.assert_called_once_with(gebruiker_id)
@@ -50,9 +50,9 @@ def test_update_gebruiker_ongeldige_data(mock_repository_class):
     mock_repository.get_by_id.return_value = bestaande_gebruiker
 
     ongeldige_data = {'email': 'geen_email_formaat'}
-    mock_repository.update.side_effect = OngeldigeGebruikerData("Ongeldig formaat")
+    mock_repository.update.side_effect = OnjuisteGebruikerDataException("Ongeldig formaat")
 
-    with pytest.raises(OngeldigeGebruikerData):
+    with pytest.raises(OnjuisteGebruikerDataException):
         updategebruiker.update_gebruiker(gebruiker_id, ongeldige_data)
 
     mock_repository.get_by_id.assert_called_once_with(gebruiker_id)
