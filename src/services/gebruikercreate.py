@@ -4,7 +4,6 @@ from src.services.gebruikercreate_exceptions import (
     StorageException,
 )
 
-
 class GebruikerService:
     def create(self, gebruiker_data):
         self._validate_gebruiker_data(gebruiker_data)

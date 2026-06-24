@@ -17,3 +17,7 @@ class MissingRequiredAttributeException(GebruikerCreateException):
 class GebruikerServiceInternalError(GebruikerCreateException):
     """Interne fout in GebruikerService tijdens creatie."""
     pass
+
+class StorageException(GebruikerCreateException):
+    """Exception voor opslagfouten."""
+    pass
