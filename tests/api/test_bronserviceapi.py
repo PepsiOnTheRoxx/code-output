@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.api import bronserviceapi
-from src.api.bronserviceapi_exceptions import BronNotFoundException, BronValidationException
+from src.api.bronserviceapi_exceptions import BronAPINotFoundException, BronAPIValidationException
 
 def test_get_bron_success():
     with patch('src.api.bronserviceapi.get_bron_by_id') as mock_get:
@@ -12,8 +12,8 @@ def test_get_bron_success():
 
 def test_get_bron_not_found():
     with patch('src.api.bronserviceapi.get_bron_by_id') as mock_get:
-        mock_get.side_effect = BronNotFoundException("Bron not found")
-        with pytest.raises(BronNotFoundException) as excinfo:
+        mock_get.side_effect = BronAPINotFoundException("Bron not found")
+        with pytest.raises(BronAPINotFoundException) as excinfo:
             bronserviceapi.get_bron_by_id(99)
         assert "Bron not found" in str(excinfo.value)
         mock_get.assert_called_once_with(99)
@@ -29,8 +29,8 @@ def test_create_bron_success():
 def test_create_bron_validation_error():
     with patch('src.api.bronserviceapi.create_bron') as mock_create:
         invalid_data = {"naam": ""}
-        mock_create.side_effect = BronValidationException("Naam mag niet leeg zijn")
-        with pytest.raises(BronValidationException) as excinfo:
+        mock_create.side_effect = BronAPIValidationException("Naam mag niet leeg zijn")
+        with pytest.raises(BronAPIValidationException) as excinfo:
             bronserviceapi.create_bron(invalid_data)
         assert "Naam mag niet leeg zijn" in str(excinfo.value)
         mock_create.assert_called_once_with(invalid_data)
@@ -48,8 +48,8 @@ def test_update_bron_not_found():
     with patch('src.api.bronserviceapi.update_bron') as mock_update:
         bron_id = 99
         update_data = {"naam": "BijgewerktBron"}
-        mock_update.side_effect = BronNotFoundException("Bron niet gevonden")
-        with pytest.raises(BronNotFoundException) as excinfo:
+        mock_update.side_effect = BronAPINotFoundException("Bron niet gevonden")
+        with pytest.raises(BronAPINotFoundException) as excinfo:
             bronserviceapi.update_bron(bron_id, update_data)
         assert "Bron niet gevonden" in str(excinfo.value)
         mock_update.assert_called_once_with(bron_id, update_data)
@@ -63,8 +63,8 @@ def test_delete_bron_success():
 
 def test_delete_bron_not_found():
     with patch('src.api.bronserviceapi.delete_bron') as mock_delete:
-        mock_delete.side_effect = BronNotFoundException("Bron niet gevonden")
-        with pytest.raises(BronNotFoundException):
+        mock_delete.side_effect = BronAPINotFoundException("Bron niet gevonden")
+        with pytest.raises(BronAPINotFoundException):
             bronserviceapi.delete_bron(99)
         mock_delete.assert_called_once_with(99)
 
