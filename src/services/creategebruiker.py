@@ -1,7 +1,7 @@
 import re
 from src.services.creategebruiker_exceptions import (
-    GebruikerBestaatAlException,
-    OngeldigEmailadresException
+    GebruikerAlreadyExistsException,
+    InvalidGebruikerDataException
 )
 
 class Gebruiker:
@@ -18,10 +18,10 @@ class GebruikerService:
         emailadres = gebruiker_data.get("emailadres")
 
         if not emailadres or not isinstance(emailadres, str) or not self._is_geldig_emailadres(emailadres):
-            raise OngeldigEmailadresException()
+            raise InvalidGebruikerDataException()
 
         if emailadres in self._gebruikers:
-            raise GebruikerBestaatAlException()
+            raise GebruikerAlreadyExistsException()
 
         gebruiker = Gebruiker(naam, emailadres)
         self._gebruikers[emailadres] = gebruiker

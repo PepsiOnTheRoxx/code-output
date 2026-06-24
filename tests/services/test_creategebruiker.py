@@ -1,6 +1,6 @@
 import pytest
 from src.services.creategebruiker import GebruikerService
-from src.services.creategebruiker_exceptions import GebruikerBestaatAlException, OngeldigEmailadresException
+from src.services.creategebruiker_exceptions import GebruikerAlreadyExistsException, InvalidGebruikerDataException
 
 def test_create_gebruiker_succesvol_aanmaken():
     service = GebruikerService()
@@ -20,7 +20,7 @@ def test_create_gebruiker_bestaat_al():
         "emailadres": "piet.pieters@example.com"
     }
     service.create_gebruiker(gebruiker_data)
-    with pytest.raises(GebruikerBestaatAlException):
+    with pytest.raises(GebruikerAlreadyExistsException):
         service.create_gebruiker(gebruiker_data)
 
 def test_create_gebruiker_ongeldig_emailadres():
@@ -29,7 +29,7 @@ def test_create_gebruiker_ongeldig_emailadres():
         "naam": "Klaas Klaassen",
         "emailadres": "klaas.klaassen"  # Ongeldig emailadres
     }
-    with pytest.raises(OngeldigEmailadresException):
+    with pytest.raises(InvalidGebruikerDataException):
         service.create_gebruiker(gebruiker_data)
 
 def test_create_gebruiker_missing_emailadres():
@@ -38,7 +38,7 @@ def test_create_gebruiker_missing_emailadres():
         "naam": "Sara Smit"
         # Geen emailadres
     }
-    with pytest.raises(OngeldigEmailadresException):
+    with pytest.raises(InvalidGebruikerDataException):
         service.create_gebruiker(gebruiker_data)
 
 def test_create_gebruiker_leeg_naamveld():
