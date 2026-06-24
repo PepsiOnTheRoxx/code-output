@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.services.creategebruiker import GebruikerService
-from src.services.creategebruiker_exceptions import InvalidEmailException, DuplicateGebruikerException
+from src.services.creategebruiker_exceptions import OngeldigEmailadresException, GebruikerBestaatAlException
 
 @pytest.fixture
 def gebruiker_repo_mock():
@@ -21,12 +21,12 @@ def test_create_gebruiker_succesvol(gebruiker_service, gebruiker_repo_mock):
     gebruiker_repo_mock.save.assert_called_once()
 
 def test_create_gebruiker_invalid_email(gebruiker_service):
-    with pytest.raises(InvalidEmailException):
+    with pytest.raises(OngeldigEmailadresException):
         gebruiker_service.create_gebruiker("Marieke de Groot", "foute-mail")
 
 def test_create_gebruiker_duplicate_email(gebruiker_service, gebruiker_repo_mock):
     gebruiker_repo_mock.exists_by_email.return_value = True
-    with pytest.raises(DuplicateGebruikerException):
+    with pytest.raises(GebruikerBestaatAlException):
         gebruiker_service.create_gebruiker("Piet Pieters", "piet@voorbeeld.nl")
 
 def test_create_gebruiker_leeg_naam(gebruiker_service):
@@ -34,5 +34,5 @@ def test_create_gebruiker_leeg_naam(gebruiker_service):
         gebruiker_service.create_gebruiker("", "klaas@voorbeeld.nl")
 
 def test_create_gebruiker_leeg_email(gebruiker_service):
-    with pytest.raises(InvalidEmailException):
+    with pytest.raises(OngeldigEmailadresException):
         gebruiker_service.create_gebruiker("Klaas van Dijk", "")

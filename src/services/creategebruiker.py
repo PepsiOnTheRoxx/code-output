@@ -1,5 +1,5 @@
 import re
-from src.services.creategebruiker_exceptions import InvalidEmailException, DuplicateGebruikerException
+from src.services.creategebruiker_exceptions import OngeldigEmailadresException, GebruikerBestaatAlException
 
 class Gebruiker:
     def __init__(self, id, naam, email):
@@ -22,9 +22,9 @@ class GebruikerService:
         if not naam or not naam.strip():
             raise ValueError("Naam mag niet leeg zijn")
         if not email or not self._is_valid_email(email):
-            raise InvalidEmailException("Ongeldig emailadres")
+            raise OngeldigEmailadresException("Ongeldig emailadres")
         if self.gebruiker_repository.exists_by_email(email):
-            raise DuplicateGebruikerException("Emailadres bestaat al")
+            raise GebruikerBestaatAlException("Emailadres bestaat al")
         gebruiker = Gebruiker(None, naam, email)
         saved_gebruiker = self.gebruiker_repository.save(gebruiker)
         return saved_gebruiker
