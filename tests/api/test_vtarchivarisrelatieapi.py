@@ -1,59 +1,103 @@
 import pytest
-from unittest.mock import patch, MagicMock
 from src.api import vtarchivarisrelatieapi
-from src.api import vtarchivarisrelatieapi_exceptions
+from src.api.vtarchivarisrelatieapi_exceptions import (
+    VTArchivarisRelatieAPINotFound,
+    VTArchivarisRelatieAPIInvalidInput
+)
+from flask import Flask
 
-def test_get_vtarchivarisrelatie_success():
-    with patch("src.api.vtarchivarisrelatieapi.get_vtarchivarisrelatie") as mock_get:
-        mock_get.return_value = {"id": 1, "naam": "Test Archivaris"}
-        response = vtarchivarisrelatieapi.get_vtarchivarisrelatie(1)
-        assert response["id"] == 1
-        assert response["naam"] == "Test Archivaris"
+@pytest.fixture
+def api_app():
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    app = vtarchivarisrelatieapi.create_app()
+    app.config['TESTING'] = True
+    return app
+
+@pytest.fixture
+def client(api_app):
+    return api_app.test_client()
+
+@pytest.fixture(autouse=True)
+def _cleanup():
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    yield
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+
+def test_create_and_get_vtarchivarisrelatie():
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    data = {"naam": "Test Archivaris"}
+    created = vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
+    relatie_id = created["id"]
+    fetched = vtarchivarisrelatieapi.get_vtarchivarisrelatie(relatie_id)
+    assert fetched["id"] == relatie_id
+    assert fetched["naam"] == "Test Archivaris"
 
 def test_get_vtarchivarisrelatie_not_found():
-    with patch("src.api.vtarchivarisrelatieapi.get_vtarchivarisrelatie") as mock_get:
-        mock_get.side_effect = vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound()
-        with pytest.raises(vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound):
-            vtarchivarisrelatieapi.get_vtarchivarisrelatie(99)
-
-def test_create_vtarchivarisrelatie_success():
-    data = {"naam": "Nieuwe Archivaris"}
-    with patch("src.api.vtarchivarisrelatieapi.create_vtarchivarisrelatie") as mock_create:
-        mock_create.return_value = {"id": 2, "naam": "Nieuwe Archivaris"}
-        response = vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
-        assert response["id"] == 2
-        assert response["naam"] == "Nieuwe Archivaris"
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    with pytest.raises(VTArchivarisRelatieAPINotFound):
+        vtarchivarisrelatieapi.get_vtarchivarisrelatie(9999)
 
 def test_create_vtarchivarisrelatie_invalid_input():
-    data = {"naam": ""}
-    with patch("src.api.vtarchivarisrelatieapi.create_vtarchivarisrelatie") as mock_create:
-        mock_create.side_effect = vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPIInvalidInput()
-        with pytest.raises(vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPIInvalidInput):
-            vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    with pytest.raises(VTArchivarisRelatieAPIInvalidInput):
+        vtarchivarisrelatieapi.create_vtarchivarisrelatie({"naam": ""})
+    with pytest.raises(VTArchivarisRelatieAPIInvalidInput):
+        vtarchivarisrelatieapi.create_vtarchivarisrelatie({})
 
 def test_update_vtarchivarisrelatie_success():
-    data = {"naam": "Aangepaste Archivaris"}
-    with patch("src.api.vtarchivarisrelatieapi.update_vtarchivarisrelatie") as mock_update:
-        mock_update.return_value = {"id": 1, "naam": "Aangepaste Archivaris"}
-        response = vtarchivarisrelatieapi.update_vtarchivarisrelatie(1, data)
-        assert response["id"] == 1
-        assert response["naam"] == "Aangepaste Archivaris"
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    data = {"naam": "Oude Naam"}
+    created = vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
+    relatie_id = created["id"]
+    updated = vtarchivarisrelatieapi.update_vtarchivarisrelatie(relatie_id, {"naam": "Nieuwe Naam"})
+    assert updated["id"] == relatie_id
+    assert updated["naam"] == "Nieuwe Naam"
 
-def test_update_vtarchivarisrelatie_not_found():
-    data = {"naam": "Onbekend"}
-    with patch("src.api.vtarchivarisrelatieapi.update_vtarchivarisrelatie") as mock_update:
-        mock_update.side_effect = vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound()
-        with pytest.raises(vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound):
-            vtarchivarisrelatieapi.update_vtarchivarisrelatie(99, data)
+def test_update_vtarchivarisrelatie_invalid():
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    data = {"naam": "Test"}
+    created = vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
+    relatie_id = created["id"]
+    with pytest.raises(VTArchivarisRelatieAPIInvalidInput):
+        vtarchivarisrelatieapi.update_vtarchivarisrelatie(relatie_id, {"naam": ""})
+    with pytest.raises(VTArchivarisRelatieAPIInvalidInput):
+        vtarchivarisrelatieapi.update_vtarchivarisrelatie(relatie_id, {})
+    with pytest.raises(VTArchivarisRelatieAPINotFound):
+        vtarchivarisrelatieapi.update_vtarchivarisrelatie(99999, {"naam": "X"})
 
 def test_delete_vtarchivarisrelatie_success():
-    with patch("src.api.vtarchivarisrelatieapi.delete_vtarchivarisrelatie") as mock_delete:
-        mock_delete.return_value = None
-        result = vtarchivarisrelatieapi.delete_vtarchivarisrelatie(1)
-        assert result is None
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    data = {"naam": "DelTest"}
+    created = vtarchivarisrelatieapi.create_vtarchivarisrelatie(data)
+    relatie_id = created["id"]
+    vtarchivarisrelatieapi.delete_vtarchivarisrelatie(relatie_id)
+    with pytest.raises(VTArchivarisRelatieAPINotFound):
+        vtarchivarisrelatieapi.get_vtarchivarisrelatie(relatie_id)
 
 def test_delete_vtarchivarisrelatie_not_found():
-    with patch("src.api.vtarchivarisrelatieapi.delete_vtarchivarisrelatie") as mock_delete:
-        mock_delete.side_effect = vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound()
-        with pytest.raises(vtarchivarisrelatieapi_exceptions.VTArchivarisRelatieAPINotFound):
-            vtarchivarisrelatieapi.delete_vtarchivarisrelatie(99)
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    with pytest.raises(VTArchivarisRelatieAPINotFound):
+        vtarchivarisrelatieapi.delete_vtarchivarisrelatie(9999)
+
+def test_rest_create_get_update_delete(client):
+    vtarchivarisrelatieapi.reset_vtarchivarisrelaties()
+    # Create
+    r = client.post("/vtarchivarisrelaties", json={"naam": "API Archivaris"})
+    assert r.status_code == 201
+    result = r.get_json()
+    rid = result["id"]
+    assert result["naam"] == "API Archivaris"
+    # Get
+    r2 = client.get(f"/vtarchivarisrelaties/{rid}")
+    assert r2.status_code == 200
+    assert r2.get_json()["naam"] == "API Archivaris"
+    # Update
+    r3 = client.put(f"/vtarchivarisrelaties/{rid}", json={"naam": "Gewijzigd"})
+    assert r3.status_code == 200
+    assert r3.get_json()["naam"] == "Gewijzigd"
+    # Delete
+    r4 = client.delete(f"/vtarchivarisrelaties/{rid}")
+    assert r4.status_code == 204
+    # Get after delete
+    r5 = client.get(f"/vtarchivarisrelaties/{rid}")
+    assert r5.status_code == 404
