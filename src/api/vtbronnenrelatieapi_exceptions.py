@@ -2,22 +2,18 @@ class VTBronnenRelatieAPIException(Exception):
     """Base exception for VTBronnenRelatieAPI errors."""
     pass
 
-class VTBronnenRelatieAPINotFoundException(VTBronnenRelatieAPIException):
+class VTBronnenRelatieNotFound(VTBronnenRelatieAPIException):
     """Raised when a VTBronnen-relatie is not found."""
     pass
 
-class VTBronnenRelatieAPIValidationException(VTBronnenRelatieAPIException):
+class VTBronnenRelatieInvalidData(VTBronnenRelatieAPIException):
     """Raised when validation fails in VTBronnenRelatieAPI."""
     pass
 
-class VTBronnenRelatieAPIPermissionException(VTBronnenRelatieAPIException):
-    """Raised when user lacks permission for VTBronnen-relatie operation."""
-    pass
-
-class VTBronnenRelatieAPIConflictException(VTBronnenRelatieAPIException):
+class VTBronnenRelatieAlreadyExists(VTBronnenRelatieAPIException):
     """Raised when a VTBronnen-relatie conflict occurs."""
     pass
 
-class VTBronnenRelatieAPIDatabaseException(VTBronnenRelatieAPIException):
+class VTBronnenRelatieDatabaseError(VTBronnenRelatieAPIException):
     """Raised on internal database errors for VTBronnen-relatie."""
     pass
