@@ -4,6 +4,8 @@ from src.services.gebruikercreate_exceptions import (
     StorageException,
 )
 
+ingebouwde_db = []
+
 class GebruikerService:
     def create(self, gebruiker_data):
         self._validate_gebruiker_data(gebruiker_data)
@@ -22,7 +24,25 @@ class GebruikerService:
             raise InvalidGebruikerDataException()
 
     def _bestaat_gebruiker(self, gebruiker_data):
-        raise NotImplementedError
+        try:
+            db = ingebouwde_db
+            if db is None:
+                raise StorageException()
+            for g in db:
+                if g["email"] == gebruiker_data["email"]:
+                    return True
+            return False
+        except Exception as e:
+            raise StorageException() from e
 
     def _opslaan_gebruiker(self, gebruiker_data):
-        raise NotImplementedError
+        try:
+            db = ingebouwde_db
+            if db is None:
+                raise StorageException()
+            nieuwe_id = len(db) + 1
+            gebruiker = {"id": nieuwe_id, **gebruiker_data}
+            db.append(gebruiker)
+            return gebruiker
+        except Exception as e:
+            raise StorageException() from e
