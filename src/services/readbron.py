@@ -1,9 +1,17 @@
 from src.services.readbron_exceptions import BronNotFoundException, BronReadException
 
 class BronRepository:
+    # Simulatie van een eenvoudige in-memory opslag voor demonstratiedoeleinden
+    _bronnen = [
+        {"id": 12, "naam": "TestBron"},
+        {"id": 25, "naam": "DemoBron"},
+    ]
+
     def get_bron_by_id(self, bron_id):
-        # Placeholder for the actual database/repository logic
-        raise NotImplementedError
+        for bron in self._bronnen:
+            if bron["id"] == bron_id:
+                return bron
+        return None
 
 class BronService:
     def __init__(self):
