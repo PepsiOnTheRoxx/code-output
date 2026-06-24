@@ -1,6 +1,6 @@
 import pytest
 from src.services.vtproceseigenaarrelatiemanagement import VTProceseigenaarRelatieService
-from src.services.vtproceseigenaarrelatiemanagement_exceptions import RelatieBestaatAlException, RelatieNietGevondenException
+from src.services.vtproceseigenaarrelatiemanagement_exceptions import VTProceseigenaarRelatieAlreadyExistsException, VTProceseigenaarRelatieNotFoundException
 
 @pytest.fixture
 def service():
@@ -17,7 +17,7 @@ def test_koppel_gebruiker_als_proceseigenaar_bestaat_al(service):
     vernietigingstaak_id = 2
     gebruiker_id = 20
     service.koppel_proceseigenaar(vernietigingstaak_id, gebruiker_id)
-    with pytest.raises(RelatieBestaatAlException):
+    with pytest.raises(VTProceseigenaarRelatieAlreadyExistsException):
         service.koppel_proceseigenaar(vernietigingstaak_id, gebruiker_id)
 
 def test_verwijder_proceseigenaar_relatie(service):
@@ -31,7 +31,7 @@ def test_verwijder_proceseigenaar_relatie(service):
 def test_verwijder_proceseigenaar_relatie_bestaat_niet(service):
     vernietigingstaak_id = 4
     gebruiker_id = 40
-    with pytest.raises(RelatieNietGevondenException):
+    with pytest.raises(VTProceseigenaarRelatieNotFoundException):
         service.verwijder_proceseigenaar_relatie(vernietigingstaak_id, gebruiker_id)
 
 def test_is_proceseigenaar_false(service):
