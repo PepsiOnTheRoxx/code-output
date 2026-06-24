@@ -1,38 +1,60 @@
 import pytest
-from src.vernietigingstaakservice import VernietigingstaakService
+from src.vernietigingstaakservice import VernietigingstaakService, Vernietigingstaak
 
 @pytest.fixture
 def service():
     return VernietigingstaakService()
 
-def test_read_vernietigingstaak_returns_expected_object(service):
-    taak_id = 1
-    result = service.read_vernietigingstaak(taak_id)
-    assert isinstance(result, dict)
-    assert "id" in result
-    assert result["id"] == taak_id
+@pytest.fixture
+def bestaande_taak():
+    return Vernietigingstaak(id=1, naam="Taak1", status="Aangemaakt", omschrijving="Omschrijving1")
 
-def test_read_vernietigingstaak_includes_all_attributes(service):
-    taak_id = 2
-    result = service.read_vernietigingstaak(taak_id)
-    assert "id" in result
-    assert "status" in result
-    assert "datum" in result
+def test_update_vernietigingstaak_succes(service, bestaande_taak):
+    service.taken = {1: bestaande_taak}
+    update_data = {
+        "naam": "Taak1 Gewijzigd",
+        "status": "In Uitvoering",
+        "omschrijving": "Gewijzigde omschrijving"
+    }
+    taak = service.update_vernietigingstaak(1, update_data)
+    assert taak.naam == "Taak1 Gewijzigd"
+    assert taak.status == "In Uitvoering"
+    assert taak.omschrijving == "Gewijzigde omschrijving"
 
-def test_read_vernietigingstaak_invalid_id_returns_none_or_raises(service):
-    invalid_id = 9999
-    with pytest.raises(Exception) or service.read_vernietigingstaak(invalid_id) is None:
-        service.read_vernietigingstaak(invalid_id)
+def test_update_vernietigingstaak_bestaat_niet(service):
+    update_data = {
+        "naam": "Taak2",
+        "status": "In Uitvoering",
+        "omschrijving": "Omschrijving2"
+    }
+    with pytest.raises(KeyError):
+        service.update_vernietigingstaak(999, update_data)
 
-def test_read_vernietigingstaak_multiple_calls_consistent(service):
-    taak_id = 3
-    result1 = service.read_vernietigingstaak(taak_id)
-    result2 = service.read_vernietigingstaak(taak_id)
-    assert result1 == result2
+def test_update_vernietigingstaak_partial_update(service, bestaande_taak):
+    service.taken = {1: bestaande_taak}
+    update_data = {
+        "status": "Voltooid"
+    }
+    taak = service.update_vernietigingstaak(1, update_data)
+    assert taak.status == "Voltooid"
+    assert taak.naam == "Taak1"
+    assert taak.omschrijving == "Omschrijving1"
 
-def test_read_vernietigingstaak_attributes_types(service):
-    taak_id = 4
-    result = service.read_vernietigingstaak(taak_id)
-    assert isinstance(result["id"], int)
-    assert isinstance(result["status"], str)
-    assert isinstance(result["datum"], str)
+def test_update_vernietigingstaak_invalid_attribute(service, bestaande_taak):
+    service.taken = {1: bestaande_taak}
+    update_data = {
+        "onbestaande_attribuut": "waarde"
+    }
+    taak = service.update_vernietigingstaak(1, update_data)
+    assert not hasattr(taak, "onbestaande_attribuut")
+    assert taak.naam == "Taak1"
+    assert taak.status == "Aangemaakt"
+    assert taak.omschrijving == "Omschrijving1"
+
+def test_update_vernietigingstaak_empty_update(service, bestaande_taak):
+    service.taken = {1: bestaande_taak}
+    update_data = {}
+    taak = service.update_vernietigingstaak(1, update_data)
+    assert taak.naam == "Taak1"
+    assert taak.status == "Aangemaakt"
+    assert taak.omschrijving == "Omschrijving1"
