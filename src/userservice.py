@@ -33,4 +33,4 @@ class UserService:
         return gebruiker
 
     def is_valid_email(self, email):
-        return "@" in parseaddr(email)[1] and '.' in parseaddr(email)[1]
+        return "@" in email and '.' in email.split('@')[-1]
