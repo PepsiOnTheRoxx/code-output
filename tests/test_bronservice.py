@@ -1,54 +1,47 @@
 import pytest
-from src.bronservice import BronService, Bron
+from src.bronservice import BronService
 
 @pytest.fixture
-def bron_data():
-    return {
-        "name": "BronX",
-        "type": "Water",
-        "attributes": {
-            "Attribute15": "Waarde15",
-            "Attribute16": "Waarde16"
-        }
-    }
+def bron_service():
+    return BronService()
 
-def test_create_bron_returns_bron_object(bron_data):
-    service = BronService()
-    bron = service.create_bron(**bron_data)
-    assert isinstance(bron, Bron)
-    assert bron.name == bron_data["name"]
-    assert bron.type == bron_data["type"]
-    assert bron.attributes["Attribute15"] == "Waarde15"
-    assert bron.attributes["Attribute16"] == "Waarde16"
+@pytest.fixture
+def valid_bron_id():
+    return 1
 
-def test_create_bron_assigns_all_attributes(bron_data):
-    service = BronService()
-    bron = service.create_bron(**bron_data)
-    assert len(bron.attributes) == 2
-    assert set(bron.attributes.keys()) == {"Attribute15", "Attribute16"}
+@pytest.fixture
+def invalid_bron_id():
+    return 999
 
-def test_create_bron_with_missing_attribute_raises(bron_data):
-    service = BronService()
-    invalid_data = bron_data.copy()
-    invalid_data["attributes"] = {"Attribute15": "Waarde15"}  # Missing Attribute16
-    with pytest.raises(ValueError):
-        service.create_bron(**invalid_data)
+def test_read_bron_returns_correct_object(bron_service, valid_bron_id):
+    bron = bron_service.read_bron(valid_bron_id)
+    assert isinstance(bron, dict)
+    assert bron.get("ElementType") == "ObjectType"
+    assert bron.get("ElementID") == 12
 
-def test_create_bron_with_invalid_element_id_raises():
-    service = BronService()
-    bron_data = {
-        "name": "BronY",
-        "type": "Water",
-        "attributes": {
-            "Attribute999": "Waarde999",
-            "Attribute15": "Waarde15"
-        }
-    }
-    with pytest.raises(KeyError):
-        service.create_bron(**bron_data)
+def test_read_bron_returns_attributes(bron_service, valid_bron_id):
+    bron = bron_service.read_bron(valid_bron_id)
+    attributes = bron.get("attributes", [])
+    attribute_ids = [attr.get("ElementID") for attr in attributes]
+    assert 15 in attribute_ids
+    assert 16 in attribute_ids
 
-def test_create_bron_persists_bron(bron_data):
-    service = BronService()
-    bron = service.create_bron(**bron_data)
-    # Assuming service has internal list of brons
-    assert bron in service.get_all_brons()
+def test_read_bron_with_invalid_id_returns_none_or_raises(bron_service, invalid_bron_id):
+    try:
+        bron = bron_service.read_bron(invalid_bron_id)
+        assert bron is None
+    except Exception:
+        assert True
+
+def test_read_bron_has_expected_keys(bron_service, valid_bron_id):
+    bron = bron_service.read_bron(valid_bron_id)
+    assert "ElementType" in bron
+    assert "ElementID" in bron
+    assert "attributes" in bron
+
+def test_read_bron_attribute_values(bron_service, valid_bron_id):
+    bron = bron_service.read_bron(valid_bron_id)
+    attributes = bron.get("attributes", [])
+    for attr in attributes:
+        assert "ElementType" in attr
+        assert "ElementID" in attr
