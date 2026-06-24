@@ -1,7 +1,7 @@
 from src.services.gebruikercreate_exceptions import (
-    EmailAdresBestaatAlException,
-    OngeldigEmailAdresException,
-    OngeldigeNaamException
+    GebruikerCreateDuplicateEmailadresException,
+    GebruikerCreateInvalidEmailadresException,
+    GebruikerCreateNaamMissingException
 )
 import re
 
@@ -16,11 +16,11 @@ class GebruikerService:
 
     def maak_gebruiker(self, naam, email):
         if not isinstance(naam, str) or not naam.strip():
-            raise OngeldigeNaamException("Naam is ongeldig of leeg.")
+            raise GebruikerCreateNaamMissingException("Naam is ongeldig of leeg.")
         if not isinstance(email, str) or not self._is_geldig_email(email):
-            raise OngeldigEmailAdresException("Emailadres is ongeldig.")
+            raise GebruikerCreateInvalidEmailadresException("Emailadres is ongeldig.")
         if email in self._gebruikers:
-            raise EmailAdresBestaatAlException("Emailadres bestaat al.")
+            raise GebruikerCreateDuplicateEmailadresException("Emailadres bestaat al.")
         gebruiker = Gebruiker(naam, email)
         self._gebruikers[email] = gebruiker
         return gebruiker
