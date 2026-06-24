@@ -1,6 +1,6 @@
 import pytest
 from src.services.broncreate import BronService
-from src.services.broncreate_exceptions import BronAlreadyExistsException, InvalidBronDataException
+from src.services.broncreate_exceptions import BronCreateDuplicateException, BronCreateInvalidNameException, BronCreateInvalidDescriptionException
 
 @pytest.fixture
 def bron_service():
@@ -16,29 +16,29 @@ def test_create_bron_success(bron_service):
 
 def test_create_bron_missing_naam(bron_service):
     beschrijving = "Beschrijving zonder naam"
-    with pytest.raises(InvalidBronDataException):
+    with pytest.raises(BronCreateInvalidNameException):
         bron_service.create_bron(naam=None, beschrijving=beschrijving)
 
 def test_create_bron_missing_beschrijving(bron_service):
     naam = "ZonderBeschrijving"
-    with pytest.raises(InvalidBronDataException):
+    with pytest.raises(BronCreateInvalidDescriptionException):
         bron_service.create_bron(naam=naam, beschrijving=None)
 
 def test_create_bron_empty_naam(bron_service):
     beschrijving = "Lege naam"
-    with pytest.raises(InvalidBronDataException):
+    with pytest.raises(BronCreateInvalidNameException):
         bron_service.create_bron(naam="", beschrijving=beschrijving)
 
 def test_create_bron_empty_beschrijving(bron_service):
     naam = "LegeBeschrijving"
-    with pytest.raises(InvalidBronDataException):
+    with pytest.raises(BronCreateInvalidDescriptionException):
         bron_service.create_bron(naam=naam, beschrijving="")
 
 def test_create_duplicate_bron(bron_service):
     naam = "UniekeBron"
     beschrijving = "Test duplicaat"
     bron_service.create_bron(naam=naam, beschrijving=beschrijving)
-    with pytest.raises(BronAlreadyExistsException):
+    with pytest.raises(BronCreateDuplicateException):
         bron_service.create_bron(naam=naam, beschrijving="Andere beschrijving")
 
 def test_create_bron_special_characters(bron_service):
