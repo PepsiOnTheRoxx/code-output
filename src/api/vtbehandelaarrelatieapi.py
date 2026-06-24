@@ -5,6 +5,9 @@ from src.api.vtbehandelaarrelatieapi_exceptions import (
 )
 
 class VTBehandelaarRelatieAPI:
+    _relaties = {}
+    _next_id = 1
+
     def register_routes(self, app):
         @app.route("/behandelaarrelatie/<int:id>", methods=["GET"])
         def get_behandelaarrelatie_route(id):
@@ -41,13 +44,27 @@ class VTBehandelaarRelatieAPI:
                 return '', 404
 
     def get_behandelaarrelatie(self, id):
-        raise NotImplementedError
+        if id in self._relaties:
+            return {"id": id, "naam": self._relaties[id]["naam"]}
+        raise VTBehandelaarRelatieNotFound(f"Behandelaar relatie {id} niet gevonden")
 
     def create_behandelaarrelatie(self, data):
-        raise NotImplementedError
+        if not data or not isinstance(data, dict) or not data.get('naam'):
+            raise VTBehandelaarRelatieInvalidData("Naam is verplicht")
+        new_id = self._next_id
+        self._relaties[new_id] = {"naam": data["naam"]}
+        self._next_id += 1
+        return {"id": new_id, "naam": data["naam"]}
 
     def update_behandelaarrelatie(self, id, data):
-        raise NotImplementedError
+        if id not in self._relaties:
+            raise VTBehandelaarRelatieNotFound(f"Behandelaar relatie {id} niet gevonden")
+        if not data or not isinstance(data, dict) or not data.get('naam'):
+            raise VTBehandelaarRelatieInvalidData("Naam is verplicht")
+        self._relaties[id]["naam"] = data["naam"]
+        return {"id": id, "naam": data["naam"]}
 
     def delete_behandelaarrelatie(self, id):
-        raise NotImplementedError
+        if id not in self._relaties:
+            raise VTBehandelaarRelatieNotFound(f"Behandelaar relatie {id} niet gevonden")
+        del self._relaties[id]
