@@ -1,58 +1,57 @@
 import pytest
 from src.linkvtbehandelaar import VernietigingstaakRelatiesService
 from src.linkvtbehandelaar_exceptions import (
-    GebruikerNietGevondenException,
-    VernietigingstaakNietGevondenException,
-    BehandelaarAlGekoppeldException,
+    LinkVTBehandelaarGebruikerNotFound,
+    LinkVTBehandelaarVernietigingstaakNotFound,
+    LinkVTBehandelaarAlreadyLinked,
 )
 
-
-def test_link_gebruiker_als_behandelaar_succesvol(mocker):
+def test_link_gebruiker_als_behandelaar_succesvol(monkeypatch):
     service = VernietigingstaakRelatiesService()
     gebruiker_id = 10
     vernietigingstaak_id = 20
 
-    mocker.patch.object(service, "gebruiker_bestaat", return_value=True)
-    mocker.patch.object(service, "vernietigingstaak_bestaat", return_value=True)
-    mocker.patch.object(service, "is_behandelaar", return_value=False)
-    mock_link = mocker.patch.object(service, "link_behandelaar_aan_taak")
+    monkeypatch.setattr(service, "gebruiker_bestaat", lambda x: True)
+    monkeypatch.setattr(service, "vernietigingstaak_bestaat", lambda x: True)
+    monkeypatch.setattr(service, "is_behandelaar", lambda x, y: False)
+    called = {}
+    def fake_link(gebruiker_id_, vernietigingstaak_id_):
+        called['called'] = (gebruiker_id_, vernietigingstaak_id_)
+    monkeypatch.setattr(service, "link_behandelaar_aan_taak", fake_link)
 
     service.link_gebruiker_als_behandelaar(gebruiker_id, vernietigingstaak_id)
 
-    mock_link.assert_called_once_with(gebruiker_id, vernietigingstaak_id)
+    assert called['called'] == (gebruiker_id, vernietigingstaak_id)
 
-
-def test_link_gebruiker_als_behandelaar_gebruiker_niet_gevonden(mocker):
+def test_link_gebruiker_als_behandelaar_gebruiker_niet_gevonden(monkeypatch):
     service = VernietigingstaakRelatiesService()
     gebruiker_id = 11
     vernietigingstaak_id = 21
 
-    mocker.patch.object(service, "gebruiker_bestaat", return_value=False)
+    monkeypatch.setattr(service, "gebruiker_bestaat", lambda x: False)
 
-    with pytest.raises(GebruikerNietGevondenException):
+    with pytest.raises(LinkVTBehandelaarGebruikerNotFound):
         service.link_gebruiker_als_behandelaar(gebruiker_id, vernietigingstaak_id)
 
-
-def test_link_gebruiker_als_behandelaar_taak_niet_gevonden(mocker):
+def test_link_gebruiker_als_behandelaar_taak_niet_gevonden(monkeypatch):
     service = VernietigingstaakRelatiesService()
     gebruiker_id = 12
     vernietigingstaak_id = 22
 
-    mocker.patch.object(service, "gebruiker_bestaat", return_value=True)
-    mocker.patch.object(service, "vernietigingstaak_bestaat", return_value=False)
+    monkeypatch.setattr(service, "gebruiker_bestaat", lambda x: True)
+    monkeypatch.setattr(service, "vernietigingstaak_bestaat", lambda x: False)
 
-    with pytest.raises(VernietigingstaakNietGevondenException):
+    with pytest.raises(LinkVTBehandelaarVernietigingstaakNotFound):
         service.link_gebruiker_als_behandelaar(gebruiker_id, vernietigingstaak_id)
 
-
-def test_link_gebruiker_als_behandelaar_al_gekoppeld(mocker):
+def test_link_gebruiker_als_behandelaar_al_gekoppeld(monkeypatch):
     service = VernietigingstaakRelatiesService()
     gebruiker_id = 13
     vernietigingstaak_id = 23
 
-    mocker.patch.object(service, "gebruiker_bestaat", return_value=True)
-    mocker.patch.object(service, "vernietigingstaak_bestaat", return_value=True)
-    mocker.patch.object(service, "is_behandelaar", return_value=True)
+    monkeypatch.setattr(service, "gebruiker_bestaat", lambda x: True)
+    monkeypatch.setattr(service, "vernietigingstaak_bestaat", lambda x: True)
+    monkeypatch.setattr(service, "is_behandelaar", lambda x, y: True)
 
-    with pytest.raises(BehandelaarAlGekoppeldException):
+    with pytest.raises(LinkVTBehandelaarAlreadyLinked):
         service.link_gebruiker_als_behandelaar(gebruiker_id, vernietigingstaak_id)
