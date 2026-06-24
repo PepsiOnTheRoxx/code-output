@@ -6,42 +6,53 @@ def bron_service():
     return BronService()
 
 @pytest.fixture
-def valid_bron_id():
-    return 1
+def bestaande_bron():
+    return {
+        "id": 1,
+        "naam": "Oude Bron",
+        "attribuut_15": "waarde_oude",
+        "attribuut_16": 123
+    }
 
-@pytest.fixture
-def invalid_bron_id():
-    return 999
+def test_update_bron_success(bron_service, bestaande_bron):
+    bron_service.add_bron(bestaande_bron)
+    nieuwe_gegevens = {
+        "naam": "Nieuwe Bron",
+        "attribuut_15": "waarde_nieuw",
+        "attribuut_16": 456
+    }
+    result = bron_service.update_bron(1, nieuwe_gegevens)
+    assert result is True
+    bron = bron_service.get_bron(1)
+    assert bron["naam"] == "Nieuwe Bron"
+    assert bron["attribuut_15"] == "waarde_nieuw"
+    assert bron["attribuut_16"] == 456
 
-def test_read_bron_returns_correct_object(bron_service, valid_bron_id):
-    bron = bron_service.read_bron(valid_bron_id)
-    assert isinstance(bron, dict)
-    assert bron.get("ElementType") == "ObjectType"
-    assert bron.get("ElementID") == 12
+def test_update_bron_nonexistent(bron_service):
+    nieuwe_gegevens = {
+        "naam": "Niet bestaande Bron",
+        "attribuut_15": "waarde",
+        "attribuut_16": 999
+    }
+    result = bron_service.update_bron(9999, nieuwe_gegevens)
+    assert result is False
 
-def test_read_bron_returns_attributes(bron_service, valid_bron_id):
-    bron = bron_service.read_bron(valid_bron_id)
-    attributes = bron.get("attributes", [])
-    attribute_ids = [attr.get("ElementID") for attr in attributes]
-    assert 15 in attribute_ids
-    assert 16 in attribute_ids
+def test_update_bron_partial_update(bron_service, bestaande_bron):
+    bron_service.add_bron(bestaande_bron)
+    nieuwe_gegevens = {
+        "naam": "Partiële Bron"
+    }
+    result = bron_service.update_bron(1, nieuwe_gegevens)
+    assert result is True
+    bron = bron_service.get_bron(1)
+    assert bron["naam"] == "Partiële Bron"
+    assert bron["attribuut_15"] == "waarde_oude"
+    assert bron["attribuut_16"] == 123
 
-def test_read_bron_with_invalid_id_returns_none_or_raises(bron_service, invalid_bron_id):
-    try:
-        bron = bron_service.read_bron(invalid_bron_id)
-        assert bron is None
-    except Exception:
-        assert True
-
-def test_read_bron_has_expected_keys(bron_service, valid_bron_id):
-    bron = bron_service.read_bron(valid_bron_id)
-    assert "ElementType" in bron
-    assert "ElementID" in bron
-    assert "attributes" in bron
-
-def test_read_bron_attribute_values(bron_service, valid_bron_id):
-    bron = bron_service.read_bron(valid_bron_id)
-    attributes = bron.get("attributes", [])
-    for attr in attributes:
-        assert "ElementType" in attr
-        assert "ElementID" in attr
+def test_update_bron_invalid_data(bron_service, bestaande_bron):
+    bron_service.add_bron(bestaande_bron)
+    nieuwe_gegevens = {
+        "attribuut_16": "ongeldige_waarde"
+    }
+    with pytest.raises(ValueError):
+        bron_service.update_bron(1, nieuwe_gegevens)
