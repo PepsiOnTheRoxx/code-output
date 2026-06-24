@@ -5,7 +5,11 @@ from src.services.brondelete_exceptions import BronNotFoundException, BronDelete
 
 @pytest.fixture
 def bron_service():
-    return BronService()
+    service = BronService()
+    # Vul een paar "bronnen" voor testdoeleinden
+    service._bronnen[12] = {"id": 12}
+    service._bronnen[13] = {"id": 13}
+    return service
 
 def test_verwijdert_bestaande_bron(bron_service):
     bron_id = 12
@@ -45,3 +49,16 @@ def test_delete_bron_multiple_calls(bron_service):
         assert mock_delete.call_count == 2
         mock_delete.assert_any_call(bron_id_1)
         mock_delete.assert_any_call(bron_id_2)
+
+# Extra integratietests op de real (niet gemockte) methods
+
+def test_integreer_verwijdert_bestaande_bron():
+    service = BronService()
+    service._bronnen[123] = {"id": 123}
+    service.delete_bron(123)
+    assert 123 not in service._bronnen
+
+def test_integreer_verwijder_nonexistent_bron():
+    service = BronService()
+    with pytest.raises(BronNotFoundException):
+        service.delete_bron(99999)
