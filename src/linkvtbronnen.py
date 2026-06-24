@@ -18,9 +18,6 @@ class VernietigingstaakRelatiesService:
         if vernietigingstaak_id not in self._vernietigingstaken:
             raise VernietigingstaakNotFoundException()
         if (bron_id, vernietigingstaak_id) in self._relaties:
-            # Let op: BronAlGekoppeldException uit unit test, niet uit exceptions-list.
-            # Importeer dus BronAlGekoppeldException ook (is geimporteerd in de test).
-            # Dus exception-naam is BronAlGekoppeldException.
             raise BronAlGekoppeldException()
         self._relaties.add((bron_id, vernietigingstaak_id))
 

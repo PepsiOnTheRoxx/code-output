@@ -10,6 +10,10 @@ class VernietigingstaakNotFoundException(LinkVTBronnenException):
     """Raised when the specified Vernietigingstaak cannot be found."""
     pass
 
+class BronAlGekoppeldException(LinkVTBronnenException):
+    """Raised when trying to link a Bron that is already related."""
+    pass
+
 class BronAlreadyLinkedException(LinkVTBronnenException):
     """Raised when trying to link a Bron that is already related."""
     pass
