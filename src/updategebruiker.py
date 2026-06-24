@@ -13,7 +13,9 @@ class GebruikerService:
         if not self.mag_bewerken(gebruiker, nieuwe_gegevens):
             raise UpdateNietToegestaanException()
         self.repository.update(gebruiker_id, nieuwe_gegevens)
-        gebruiker.update(nieuwe_gegevens)
+        gebruiker.update(nieuwe_gegevens) if hasattr(gebruiker, 'update') else gebruiker.__dict__.update(nieuwe_gegevens) if hasattr(gebruiker, '__dict__') else gebruiker.update(nieuwe_gegevens) if isinstance(gebruiker, dict) else None # Fallback.
+        for k, v in nieuwe_gegevens.items():  # Zorg dat dicts ook gewoon worden bijgewerkt.
+            gebruiker[k] = v
         return gebruiker
 
     def mag_bewerken(self, gebruiker, nieuwe_gegevens):
