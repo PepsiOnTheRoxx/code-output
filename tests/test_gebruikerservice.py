@@ -1,33 +1,40 @@
 import pytest
-from src.gebruikerservice import GebruikerService, GebruikerNotFoundException
+from src.gebruikerservice import GebruikerService, Gebruiker
 
 @pytest.fixture
 def gebruiker_service():
     return GebruikerService()
 
-def test_read_gebruiker_returns_details(gebruiker_service):
-    gebruiker_id = 1
-    gebruiker_service.add_gebruiker(gebruiker_id, "Jan Jansen", "jan.jansen@email.com")
-    result = gebruiker_service.read_gebruiker(gebruiker_id)
-    assert result["Naam"] == "Jan Jansen"
-    assert result["Emailadres"] == "jan.jansen@email.com"
+@pytest.fixture
+def bestaande_gebruiker():
+    return Gebruiker(id=1, naam="Jan", email="jan@example.com")
 
-def test_read_gebruiker_not_found(gebruiker_service):
-    gebruiker_id = 999
-    with pytest.raises(GebruikerNotFoundException):
-        gebruiker_service.read_gebruiker(gebruiker_id)
+def test_update_gebruiker_succes(gebruiker_service, bestaande_gebruiker):
+    gebruiker_service.add_gebruiker(bestaande_gebruiker)
+    updated_data = {"naam": "Jan Bijgewerkt", "email": "jan.bijgewerkt@example.com"}
+    updated_gebruiker = gebruiker_service.update_gebruiker(1, updated_data)
+    assert updated_gebruiker.naam == "Jan Bijgewerkt"
+    assert updated_gebruiker.email == "jan.bijgewerkt@example.com"
 
-def test_read_gebruiker_multiple_gebruikers(gebruiker_service):
-    gebruiker_service.add_gebruiker(1, "Jan Jansen", "jan.jansen@email.com")
-    gebruiker_service.add_gebruiker(2, "Piet Pietersen", "piet.pietersen@email.com")
-    result1 = gebruiker_service.read_gebruiker(1)
-    result2 = gebruiker_service.read_gebruiker(2)
-    assert result1["Naam"] == "Jan Jansen"
-    assert result1["Emailadres"] == "jan.jansen@email.com"
-    assert result2["Naam"] == "Piet Pietersen"
-    assert result2["Emailadres"] == "piet.pietersen@email.com"
+def test_update_gebruiker_partial_update(gebruiker_service, bestaande_gebruiker):
+    gebruiker_service.add_gebruiker(bestaande_gebruiker)
+    updated_data = {"naam": "Jan Nieuw"}
+    updated_gebruiker = gebruiker_service.update_gebruiker(1, updated_data)
+    assert updated_gebruiker.naam == "Jan Nieuw"
+    assert updated_gebruiker.email == "jan@example.com"
 
-def test_read_gebruiker_email_is_correct(gebruiker_service):
-    gebruiker_service.add_gebruiker(3, "Anna de Boer", "anna.deboer@email.com")
-    result = gebruiker_service.read_gebruiker(3)
-    assert result["Emailadres"].endswith("@email.com")
+def test_update_gebruiker_nonexistent(gebruiker_service):
+    with pytest.raises(KeyError):
+        gebruiker_service.update_gebruiker(42, {"naam": "Onbekend"})
+
+def test_update_gebruiker_invalid_attribute(gebruiker_service, bestaande_gebruiker):
+    gebruiker_service.add_gebruiker(bestaande_gebruiker)
+    updated_data = {"adres": "Straat 1"}
+    with pytest.raises(AttributeError):
+        gebruiker_service.update_gebruiker(1, updated_data)
+
+def test_update_gebruiker_empty_update(gebruiker_service, bestaande_gebruiker):
+    gebruiker_service.add_gebruiker(bestaande_gebruiker)
+    updated_gebruiker = gebruiker_service.update_gebruiker(1, {})
+    assert updated_gebruiker.naam == "Jan"
+    assert updated_gebruiker.email == "jan@example.com"
