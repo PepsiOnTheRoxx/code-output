@@ -1,5 +1,5 @@
 from src.services.createbron import BronService
-from src.services.createbron_exceptions import BronAlreadyExistsException, InvalidBronDataException
+from src.services.createbron_exceptions import BronAlreadyExistsException, BronInvalidDataException
 import pytest
 from unittest.mock import patch, MagicMock
 
@@ -32,10 +32,10 @@ def test_create_bron_invalid_data():
     service = BronService()
     with patch.object(service, 'bron_repository') as mock_repo:
         # Lege naam
-        with pytest.raises(InvalidBronDataException):
+        with pytest.raises(BronInvalidDataException):
             service.create_bron("", "Beschrijving")
         # Geen beschrijving
-        with pytest.raises(InvalidBronDataException):
+        with pytest.raises(BronInvalidDataException):
             service.create_bron("BronZonderBeschrijving", "")
         mock_repo.create.assert_not_called()
         mock_repo.exists.assert_not_called()
