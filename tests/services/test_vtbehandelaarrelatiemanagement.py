@@ -1,10 +1,10 @@
 import pytest
 from src.services.vtbehandelaarrelatiemanagement import VTBehandelaarRelatieService
 from src.services.vtbehandelaarrelatiemanagement_exceptions import (
-    VernietigingstaakNotFoundException,
-    GebruikerNotFoundException,
-    RelatieAlreadyExistsException,
-    RelatieNotFoundException
+    OngeldigeVernietigingstaakException as VernietigingstaakNotFoundException,
+    OngeldigeBehandelaarException as GebruikerNotFoundException,
+    BehandelaarKoppelingBestaatAlException as RelatieAlreadyExistsException,
+    BehandelaarKoppelingNietGevondenException as RelatieNotFoundException,
 )
 
 @pytest.fixture
