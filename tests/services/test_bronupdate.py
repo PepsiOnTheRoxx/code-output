@@ -1,16 +1,23 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.bronupdate import BronService
+from src.services.bronupdate import BronService, Bron
 from src.services.bronupdate_exceptions import BronUpdateNotFoundException, BronUpdateValidationException
 
 @pytest.fixture
 def bron_service():
-    return BronService()
+    service = BronService()
+    # Vul met testdata
+    BronService._bron_db = {
+        1: Bron(1, naam='Oude', type='bron'),
+        2: Bron(2, naam='Oude Naam', type='water'),
+        3: Bron(3, naam='Test3', type='vuur')
+    }
+    return service
 
 def test_update_existing_bron_success(bron_service):
     bron_id = 1
     nieuwe_data = {'naam': 'Nieuwe Naam', 'type': 'water'}
-    oude_bron = MagicMock()
+    oude_bron = bron_service.get_bron_by_id(bron_id)
     with patch.object(bron_service, 'get_bron_by_id', return_value=oude_bron) as mock_get, \
          patch.object(bron_service, 'validate_data', return_value=True) as mock_validate, \
          patch.object(bron_service, 'save_bron') as mock_save:
@@ -40,9 +47,7 @@ def test_update_bron_invalid_data(bron_service):
 def test_update_existing_bron_partial_data(bron_service):
     bron_id = 2
     nieuwe_data = {'type': 'lucht'}
-    oude_bron = MagicMock()
-    oude_bron.naam = 'Oude Naam'
-    oude_bron.type = 'water'
+    oude_bron = bron_service.get_bron_by_id(bron_id)
     with patch.object(bron_service, 'get_bron_by_id', return_value=oude_bron), \
          patch.object(bron_service, 'validate_data', return_value=True), \
          patch.object(bron_service, 'save_bron') as mock_save:
@@ -54,7 +59,7 @@ def test_update_existing_bron_partial_data(bron_service):
 def test_update_bron_save_fails(bron_service):
     bron_id = 3
     nieuwe_data = {'naam': 'Test', 'type': 'vuur'}
-    oude_bron = MagicMock()
+    oude_bron = bron_service.get_bron_by_id(bron_id)
     with patch.object(bron_service, 'get_bron_by_id', return_value=oude_bron), \
          patch.object(bron_service, 'validate_data', return_value=True), \
          patch.object(bron_service, 'save_bron', side_effect=Exception("DB fout")):
