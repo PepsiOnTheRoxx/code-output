@@ -23,12 +23,25 @@ class BronRepository:
         return False
 
 class BronService:
-    def __init__(self, bron_repository):
-        self.bron_repository = bron_repository
+    def __init__(self):
+        self.bron_repository = BronRepository()
+        self._bron_id_seq = 1
+
+    def create_bron(self, name):
+        bron = Bron(self._bron_id_seq, name)
+        self.bron_repository.add(bron)
+        self._bron_id_seq += 1
+        return bron.bron_id
+
+    def get_bron(self, bron_id):
+        bron = self.bron_repository.get(bron_id)
+        if bron is None:
+            raise BronNotFoundException(f"Bron met id {bron_id} niet gevonden.")
+        return bron
 
     def delete_bron(self, bron_id):
         bron = self.bron_repository.get(bron_id)
         if bron is None:
             raise BronNotFoundException(f"Bron met id {bron_id} niet gevonden.")
         self.bron_repository.delete(bron_id)
-        return True
+        return None
