@@ -3,12 +3,12 @@ from src.deletegebruiker_exceptions import *
 class GebruikerService:
     def verwijder_gebruiker(self, gebruiker_id):
         if not self.bestaat_gebruiker(gebruiker_id):
-            raise GebruikerNotFound()
+            raise GebruikerNietGevondenException()
         if not self.mag_verwijderen(gebruiker_id):
-            raise UnauthorizedOperation()
+            raise GebruikerVerwijderenNietToegestaanException()
         try:
             self.verwijder_gebruiker_uit_db(gebruiker_id)
-        except GebruikerDeleteError:
+        except GebruikerDeleteDatabaseFoutException:
             raise
     def bestaat_gebruiker(self, gebruiker_id):
         raise NotImplementedError()
