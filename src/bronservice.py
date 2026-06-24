@@ -1,21 +1,25 @@
 class BronService:
     def __init__(self):
-        self.bron_data = {
-            1: {
-                "ElementType": "ObjectType",
-                "ElementID": 12,
-                "attributes": [
-                    {
-                        "ElementType": "Attribute",
-                        "ElementID": 15
-                    },
-                    {
-                        "ElementType": "Attribute",
-                        "ElementID": 16
-                    }
-                ]
-            }
-        }
+        self._bronnen = {}
 
-    def read_bron(self, bron_id):
-        return self.bron_data.get(bron_id, None)
+    def add_bron(self, bron):
+        self._bronnen[bron["id"]] = bron.copy()
+
+    def get_bron(self, bron_id):
+        bron = self._bronnen.get(bron_id)
+        if bron:
+            return bron.copy()
+        else:
+            return None
+
+    def update_bron(self, bron_id, nieuwe_gegevens):
+        bron = self._bronnen.get(bron_id)
+        if not bron:
+            return False
+        for key, value in nieuwe_gegevens.items():
+            if key == "attribuut_16":
+                if not isinstance(value, int):
+                    raise ValueError("attribuut_16 moet een int zijn")
+            bron[key] = value
+        self._bronnen[bron_id] = bron
+        return True
