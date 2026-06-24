@@ -1,24 +1,22 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.deletevernietigingstaak import VernietigingstaakService
+from src.services.deletevernietigingstaak import VernietigingstaakService, seed_vernietigingstaken, Vernietigingstaak
 from src.services.deletevernietigingstaak_exceptions import (
     VernietigingstaakNotFoundException,
     VernietigingstaakDeleteException,
 )
 
 def test_delete_vernietigingstaak_succeeds():
+    seed_vernietigingstaken([42])
     service = VernietigingstaakService()
-    with patch.object(service, 'get_vernietigingstaak_by_id', return_value=MagicMock()) as mock_get, \
-         patch.object(service, 'delete_vernietigingstaak_from_db', return_value=None) as mock_delete:
-        service.delete_vernietigingstaak(42)
-        mock_get.assert_called_once_with(42)
-        mock_delete.assert_called_once()
+    service.delete_vernietigingstaak(42)
+    assert service.get_vernietigingstaak_by_id(42) is None
 
 def test_delete_vernietigingstaak_not_found():
+    seed_vernietigingstaken([])
     service = VernietigingstaakService()
-    with patch.object(service, 'get_vernietigingstaak_by_id', return_value=None):
-        with pytest.raises(VernietigingstaakNotFoundException):
-            service.delete_vernietigingstaak(99)
+    with pytest.raises(VernietigingstaakNotFoundException):
+        service.delete_vernietigingstaak(99)
 
 def test_delete_vernietigingstaak_delete_exception():
     service = VernietigingstaakService()
