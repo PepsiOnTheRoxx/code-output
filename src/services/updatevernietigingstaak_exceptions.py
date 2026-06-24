@@ -10,6 +10,10 @@ class InvalidVernietigingstaakDataException(UpdateVernietigingstaakException):
     """Raised when the provided data for updating is invalid."""
     pass
 
+class InvalidVernietigingstaakUpdateException(UpdateVernietigingstaakException):
+    """Raised when the provided update data is invalid (e.g., naam is leeg)."""
+    pass
+
 class VernietigingstaakUpdateNotAllowedException(UpdateVernietigingstaakException):
     """Raised when the update operation is not allowed."""
     pass

@@ -15,7 +15,8 @@ def test_update_vernietigingstaak_success(service):
         instance = mock_repo.return_value
         instance.get_by_id.return_value = mock_task
         instance.save.return_value = None
-        result = service.update_vernietigingstaak(taak_id, update_data)
+        s = VernietigingstaakService(repository=instance)
+        result = s.update_vernietigingstaak(taak_id, update_data)
         instance.get_by_id.assert_called_once_with(taak_id)
         for k, v in update_data.items():
             assert getattr(mock_task, k) == v
@@ -28,18 +29,20 @@ def test_update_vernietigingstaak_not_found(service):
     with patch("src.services.updatevernietigingstaak.VernietigingstaakRepository") as mock_repo:
         instance = mock_repo.return_value
         instance.get_by_id.return_value = None
+        s = VernietigingstaakService(repository=instance)
         with pytest.raises(VernietigingstaakNotFoundException):
-            service.update_vernietigingstaak(taak_id, update_data)
+            s.update_vernietigingstaak(taak_id, update_data)
 
 def test_update_vernietigingstaak_invalid_update(service):
     taak_id = 13
-    update_data = {"naam": ""}  # Veronderstel lege naam is ongeldig
+    update_data = {"naam": ""}  # lege naam moet fout geven
     mock_task = MagicMock()
     with patch("src.services.updatevernietigingstaak.VernietigingstaakRepository") as mock_repo:
         instance = mock_repo.return_value
         instance.get_by_id.return_value = mock_task
+        s = VernietigingstaakService(repository=instance)
         with pytest.raises(InvalidVernietigingstaakUpdateException):
-            service.update_vernietigingstaak(taak_id, update_data)
+            s.update_vernietigingstaak(taak_id, update_data)
 
 def test_update_vernietigingstaak_partial_update(service):
     taak_id = 17
@@ -49,7 +52,8 @@ def test_update_vernietigingstaak_partial_update(service):
         instance = mock_repo.return_value
         instance.get_by_id.return_value = mock_task
         instance.save.return_value = None
-        service.update_vernietigingstaak(taak_id, update_data)
+        s = VernietigingstaakService(repository=instance)
+        s.update_vernietigingstaak(taak_id, update_data)
         assert mock_task.status == "in_behandeling"
         instance.save.assert_called_once_with(mock_task)
 
@@ -61,6 +65,7 @@ def test_update_vernietigingstaak_repository_save_failure(service):
         instance = mock_repo.return_value
         instance.get_by_id.return_value = mock_task
         instance.save.side_effect = Exception("Databasefout")
+        s = VernietigingstaakService(repository=instance)
         with pytest.raises(Exception) as excinfo:
-            service.update_vernietigingstaak(taak_id, update_data)
+            s.update_vernietigingstaak(taak_id, update_data)
         assert "Databasefout" in str(excinfo.value)
