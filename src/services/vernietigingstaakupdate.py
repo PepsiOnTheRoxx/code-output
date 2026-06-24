@@ -1,9 +1,13 @@
 from src.services.vernietigingstaakupdate_exceptions import (
-    VernietigingstaakNotFoundException,
-    InvalidVernietigingstaakUpdateException,
+    VernietigingstaakNietGevondenException,
+    VernietigingstaakOngeldigeStatusException,
 )
-from src.services.vernietigingstaakupdate import is_valid_status
 
+def is_valid_status(status):
+    # Placeholder, you can change/reuse with real logic
+    return status in [
+        'aangevraagd', 'in_behandeling', 'voltooid', 'geannuleerd'
+    ]
 
 class VernietigingstaakRepository:
     def get_by_id(self, taak_id):
@@ -12,7 +16,6 @@ class VernietigingstaakRepository:
     def save(self, task):
         raise NotImplementedError
 
-
 class VernietigingstaakService:
     def __init__(self, repository=None):
         self.repository = repository or VernietigingstaakRepository()
@@ -20,10 +23,10 @@ class VernietigingstaakService:
     def update(self, taak_id, update_data):
         taak = self.repository.get_by_id(taak_id)
         if taak is None:
-            raise VernietigingstaakNotFoundException(f"Vernietigingstaak {taak_id} niet gevonden")
+            raise VernietigingstaakNietGevondenException(f"Vernietigingstaak {taak_id} niet gevonden")
         for key, value in update_data.items():
             if key == "status":
                 if not is_valid_status(value):
-                    raise InvalidVernietigingstaakUpdateException(f"Ongeldige status: {value}")
+                    raise VernietigingstaakOngeldigeStatusException(f"Ongeldige status: {value}")
             setattr(taak, key, value)
         self.repository.save(taak)

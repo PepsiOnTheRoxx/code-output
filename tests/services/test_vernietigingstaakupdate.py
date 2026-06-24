@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.vernietigingstaakupdate import VernietigingstaakService
-from src.services.vernietigingstaakupdate_exceptions import VernietigingstaakNotFoundException, InvalidVernietigingstaakUpdateException
+from src.services.vernietigingstaakupdate_exceptions import VernietigingstaakNietGevondenException, VernietigingstaakOngeldigeStatusException
 
 @pytest.fixture
 def mock_repo():
@@ -29,7 +29,7 @@ def test_update_vernietigingstaak_bestaat_niet(service, mock_repo):
     taak_id = 555
     mock_repo.get_by_id.return_value = None
     update_data = {"status": "geannuleerd"}
-    with pytest.raises(VernietigingstaakNotFoundException):
+    with pytest.raises(VernietigingstaakNietGevondenException):
         service.update(taak_id, update_data)
     mock_repo.get_by_id.assert_called_once_with(taak_id)
     mock_repo.save.assert_not_called()
@@ -40,7 +40,7 @@ def test_update_vernietigingstaak_onjuiste_gegevens(service, mock_repo):
     mock_repo.get_by_id.return_value = huidige_taak
     update_data = {"status": "ongeldige_status"}
     with patch("src.services.vernietigingstaakupdate.is_valid_status", return_value=False):
-        with pytest.raises(InvalidVernietigingstaakUpdateException):
+        with pytest.raises(VernietigingstaakOngeldigeStatusException):
             service.update(taak_id, update_data)
     mock_repo.get_by_id.assert_called_once_with(taak_id)
     mock_repo.save.assert_not_called()
