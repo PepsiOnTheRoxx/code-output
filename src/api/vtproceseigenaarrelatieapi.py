@@ -7,11 +7,16 @@ from src.api.vtproceseigenaarrelatieapi_exceptions import (
 _relaties = []
 _next_id = 1
 
+def _reset_storage():
+    global _relaties, _next_id
+    _relaties = []
+    _next_id = 1
+
 def get_relatie(relatie_id):
     for relatie in _relaties:
         if relatie["id"] == relatie_id:
             return relatie
-    raise RelatieNotFoundException
+    raise RelatieNotFoundException()
 
 def create_relatie(relatie_data):
     global _next_id
@@ -19,11 +24,11 @@ def create_relatie(relatie_data):
         "facttype_id" not in relatie_data or
         relatie_data.get("proceseigenaar_id") is None or
         relatie_data.get("facttype_id") is None):
-        raise InvalidRelatieDataException
+        raise InvalidRelatieDataException()
     for relatie in _relaties:
         if (relatie["proceseigenaar_id"] == relatie_data["proceseigenaar_id"] and
             relatie["facttype_id"] == relatie_data["facttype_id"]):
-            raise RelatieAlreadyExistsException
+            raise RelatieAlreadyExistsException()
     new_relatie = {
         "id": _next_id,
         "proceseigenaar_id": relatie_data["proceseigenaar_id"],
@@ -40,11 +45,11 @@ def update_relatie(relatie_id, update_data):
             relatie = r
             break
     if not relatie:
-        raise RelatieNotFoundException
+        raise RelatieNotFoundException()
     if "proceseigenaar_id" in update_data and update_data["proceseigenaar_id"] is None:
-        raise InvalidRelatieDataException
+        raise InvalidRelatieDataException()
     if "facttype_id" in update_data and update_data["facttype_id"] is None:
-        raise InvalidRelatieDataException
+        raise InvalidRelatieDataException()
     relatie.update(update_data)
     return relatie
 
@@ -53,7 +58,7 @@ def delete_relatie(relatie_id):
         if relatie["id"] == relatie_id:
             del _relaties[i]
             return
-    raise RelatieNotFoundException
+    raise RelatieNotFoundException()
 
 def list_relaties():
     return list(_relaties)
