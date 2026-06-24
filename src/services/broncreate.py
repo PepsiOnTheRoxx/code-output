@@ -1,4 +1,4 @@
-from src.services.broncreate_exceptions import BronAlreadyExistsException, InvalidBronDataException
+from src.services.broncreate_exceptions import BronCreateException, BronCreateValidationException
 
 class BronRepository:
     def exists_bron(self, naam):
@@ -18,14 +18,14 @@ class BronService:
         attr_15 = bron_data.get("attribute_15")
         attr_16 = bron_data.get("attribute_16")
         if not naam or not isinstance(naam, str) or naam.strip() == "":
-            raise InvalidBronDataException("Naam is ongeldig of ontbreekt.")
+            raise BronCreateValidationException("Naam is ongeldig of ontbreekt.")
         if attr_15 is None or attr_15 == "":
-            raise InvalidBronDataException("attribute_15 is ongeldig of ontbreekt.")
+            raise BronCreateValidationException("attribute_15 is ongeldig of ontbreekt.")
         if attr_16 is None or attr_16 == "":
-            raise InvalidBronDataException("attribute_16 is ongeldig of ontbreekt.")
+            raise BronCreateValidationException("attribute_16 is ongeldig of ontbreekt.")
 
         if self.repository.exists_bron(naam):
-            raise BronAlreadyExistsException(f"Bron met naam '{naam}' bestaat al.")
+            raise BronCreateException(f"Bron met naam '{naam}' bestaat al.")
 
         try:
             bron = self.repository.save_bron(bron_data)
