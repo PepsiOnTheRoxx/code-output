@@ -2,23 +2,15 @@ class GebruikerAPIException(Exception):
     """Base exception for GebruikerAPI errors."""
     pass
 
-class GebruikerNietGevondenException(GebruikerAPIException):
+class GebruikerNotFoundException(GebruikerAPIException):
     """Gebruiker niet gevonden."""
     pass
 
-class GebruikerAanmakenMisluktException(GebruikerAPIException):
-    """Aanmaken van gebruiker mislukt."""
+class GebruikerAlreadyExistsException(GebruikerAPIException):
+    """Aanmaken van gebruiker mislukt omdat deze al bestaat."""
     pass
 
-class GebruikerBijwerkenMisluktException(GebruikerAPIException):
-    """Bijwerken van gebruiker mislukt."""
-    pass
-
-class GebruikerVerwijderenMisluktException(GebruikerAPIException):
-    """Verwijderen van gebruiker mislukt."""
-    pass
-
-class OngeldigeGebruikerDataException(GebruikerAPIException):
+class GebruikerValidationException(GebruikerAPIException):
     """De meegegeven gebruiker data is ongeldig."""
     pass
 
