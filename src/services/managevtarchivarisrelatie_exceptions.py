@@ -1,23 +1,11 @@
-class ManageVTArchivarisRelatieException(Exception):
-    """Base exception for ManageVTArchivarisRelatie feature."""
+class ArchivarisAlreadyExistsException(Exception):
     pass
 
-class VTArchivarisRelatieNotFoundException(ManageVTArchivarisRelatieException):
-    """Raised when the VTArchivaris-relatie is not found."""
+class ArchivarisRelationNotFoundException(Exception):
     pass
 
-class VTArchivarisRelatieAlreadyExistsException(ManageVTArchivarisRelatieException):
-    """Raised when the VTArchivaris-relatie already exists."""
+class UserNotFoundException(Exception):
     pass
 
-class InvalidVTArchivarisRelatieDataException(ManageVTArchivarisRelatieException):
-    """Raised when provided data for VTArchivaris-relatie is invalid."""
-    pass
-
-class UnauthorizedVTArchivarisRelatieActionException(ManageVTArchivarisRelatieException):
-    """Raised when an action is not authorized on VTArchivaris-relatie."""
-    pass
-
-class VTArchivarisRelatieOperationFailedException(ManageVTArchivarisRelatieException):
-    """Raised when an operation on VTArchivaris-relatie fails."""
+class VernietigingstaakNotFoundException(Exception):
     pass
