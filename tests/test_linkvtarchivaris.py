@@ -1,6 +1,6 @@
 import pytest
 from src.linkvtarchivaris import VernietigingstaakRelatiesService
-from src.linkvtarchivaris_exceptions import GebruikerNietGevondenException, ArchivarisAlGekoppeldException, VernietigingstaakNietGevondenException, OnvoldoendeRechtenException
+from src.linkvtarchivaris_exceptions import ArchivarisNotFoundException, ArchivarisAlreadyLinkedException, VernietigingstaakNotFoundException, InvalidArchivarisRoleException
 
 @pytest.fixture
 def service():
@@ -17,20 +17,20 @@ def test_link_geverifieerde_gebruiker_als_archivaris_succesvol(service):
 def test_gebruiker_niet_gevonden(service):
     gebruiker_id = 9999  # aannemen dat deze niet bestaat
     taak_id = 200
-    with pytest.raises(GebruikerNietGevondenException):
+    with pytest.raises(ArchivarisNotFoundException):
         service.link_archivaris_aan_vernietigingstaak(gebruiker_id, taak_id)
 
 def test_vernietigingstaak_niet_gevonden(service):
     gebruiker_id = 100
     taak_id = 8888  # aannemen dat deze niet bestaat
-    with pytest.raises(VernietigingstaakNietGevondenException):
+    with pytest.raises(VernietigingstaakNotFoundException):
         service.link_archivaris_aan_vernietigingstaak(gebruiker_id, taak_id)
 
 def test_archivaris_al_gekoppeld(service):
     gebruiker_id = 110
     taak_id = 220
     service.link_archivaris_aan_vernietigingstaak(gebruiker_id, taak_id)
-    with pytest.raises(ArchivarisAlGekoppeldException):
+    with pytest.raises(ArchivarisAlreadyLinkedException):
         service.link_archivaris_aan_vernietigingstaak(gebruiker_id, taak_id)
 
 def test_onvoldoende_rechten_gebruiker(service):
@@ -38,5 +38,5 @@ def test_onvoldoende_rechten_gebruiker(service):
     taak_id = 230
     # Stel permissie in dat gebruiker geen archivaris mag worden
     service.set_rechten(gebruiker_id, allowed=False)
-    with pytest.raises(OnvoldoendeRechtenException):
+    with pytest.raises(InvalidArchivarisRoleException):
         service.link_archivaris_aan_vernietigingstaak(gebruiker_id, taak_id)

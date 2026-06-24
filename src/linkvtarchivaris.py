@@ -20,14 +20,14 @@ class VernietigingstaakRelatiesService:
 
     def link_archivaris_aan_vernietigingstaak(self, gebruiker_id, taak_id):
         if gebruiker_id not in self._gebruikers:
-            raise GebruikerNietGevondenException()
+            raise ArchivarisNotFoundException()
         if taak_id not in self._vernietigingstaken:
-            raise VernietigingstaakNietGevondenException()
+            raise VernietigingstaakNotFoundException()
         rechten = self._rechten_overrides.get(gebruiker_id, self._gebruikers[gebruiker_id]['rechten'])
         if not rechten:
-            raise OnvoldoendeRechtenException()
+            raise InvalidArchivarisRoleException()
         if (gebruiker_id, taak_id) in self._gekoppelde_archivarissen:
-            raise ArchivarisAlGekoppeldException()
+            raise ArchivarisAlreadyLinkedException()
         self._gekoppelde_archivarissen.add((gebruiker_id, taak_id))
         return True
 
