@@ -22,11 +22,10 @@ class GebruikerService:
         if not isinstance(nieuwe_naam, str) or not nieuwe_naam.strip():
             raise OngeldigeGebruikerDataException("Naam is ongeldig of leeg")
 
-        nieuwe_email = payload.get("email", gebruiker.get("email"))
         if "email" in payload:
+            nieuwe_email = payload["email"]
             if not isinstance(nieuwe_email, str) or "@" not in nieuwe_email or not nieuwe_email.strip():
                 raise OngeldigeGebruikerDataException("Email is ongeldig")
-
         else:
             nieuwe_email = gebruiker.get("email")
 
