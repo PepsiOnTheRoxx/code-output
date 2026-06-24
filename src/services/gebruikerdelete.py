@@ -1,12 +1,12 @@
 from src.services.gebruikerdelete_exceptions import (
     GebruikerDeleteException,
-    GebruikerNietGevondenException as _OrigNotFoundExc,
+    GebruikerNietGevondenException,
     GebruikerDeleteNietToegestaanException,
     GebruikerDeleteDatabaseFoutException,
     GebruikerDeleteOnverwachteFoutException
 )
 
-class GebruikerNotFoundException(_OrigNotFoundExc):
+class GebruikerNotFoundException(GebruikerNietGevondenException):
     pass
 
 class GebruikerService:

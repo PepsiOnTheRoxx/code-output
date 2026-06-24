@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.gebruikerdelete import GebruikerService
-from src.services.gebruikerdelete_exceptions import GebruikerNotFoundException, GebruikerDeleteException
+from src.services.gebruikerdelete import GebruikerService, GebruikerNotFoundException
+from src.services.gebruikerdelete_exceptions import GebruikerDeleteException
 
 def test_gebruiker_verwijderen_succesvol():
     gebruiker_id = 42

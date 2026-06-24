@@ -17,3 +17,7 @@ class GebruikerDeleteDatabaseFoutException(GebruikerDeleteException):
 class GebruikerDeleteOnverwachteFoutException(GebruikerDeleteException):
     """Opgeworpen bij onverwachte fouten tijdens het verwijderen van een gebruiker."""
     pass
+
+# Toegevoegd voor test compatibiliteit
+class GebruikerNotFoundException(GebruikerNietGevondenException):
+    pass
