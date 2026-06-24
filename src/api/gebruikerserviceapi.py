@@ -4,9 +4,13 @@ from src.api.gebruikerserviceapi_exceptions import (
     GebruikerValidationException,
 )
 
+# Houd de service singleton in deze module
 class GebruikerService:
-    _db = {}  # Simulatie in-memory database
-    _id_counter = 1
+    def __init__(self):
+        if not hasattr(self, '_initialized'):
+            self._db = {}
+            self._id_counter = 1
+            self._initialized = True
 
     def get_by_id(self, gebruiker_id):
         gebruiker = self._db.get(gebruiker_id)
@@ -15,18 +19,15 @@ class GebruikerService:
         return gebruiker.copy()
 
     def create(self, gebruiker_data):
-        # Basisvalidatie
         if not isinstance(gebruiker_data, dict):
             raise GebruikerValidationException("Gegevens moeten een dictionary zijn.")
         naam = gebruiker_data.get("naam")
         email = gebruiker_data.get("email")
         if not naam or not isinstance(email, str) or "@" not in email:
             raise GebruikerValidationException("Ongeldige naam of e-mail.")
-        # Voorkom dubbele gebruiker (op email)
         for user in self._db.values():
             if user["email"].lower() == email.lower():
                 raise GebruikerAlreadyExistsException(f"Gebruiker met email {email} bestaat al.")
-        # Maak nieuwe gebruiker aan
         gebruiker_id = self._id_counter
         self._id_counter += 1
         gebruiker = {
@@ -43,7 +44,6 @@ class GebruikerService:
             raise GebruikerNotFoundException(f"Gebruiker met id {gebruiker_id} niet gevonden.")
         if not isinstance(gebruiker_data, dict):
             raise GebruikerValidationException("Gegevens moeten een dictionary zijn.")
-        # Prevent email conflict
         if "email" in gebruiker_data:
             email = gebruiker_data["email"]
             if not isinstance(email, str) or "@" not in email:
@@ -66,18 +66,21 @@ class GebruikerService:
         del self._db[gebruiker_id]
         return True
 
+# Singleton service instantie
+global _gebruiker_service_instance
+try:
+    _gebruiker_service_instance
+except NameError:
+    _gebruiker_service_instance = GebruikerService()
+
 def get_gebruiker(gebruiker_id):
-    service = GebruikerService()
-    return service.get_by_id(gebruiker_id)
+    return _gebruiker_service_instance.get_by_id(gebruiker_id)
 
 def create_gebruiker(gebruiker_data):
-    service = GebruikerService()
-    return service.create(gebruiker_data)
+    return _gebruiker_service_instance.create(gebruiker_data)
 
 def update_gebruiker(gebruiker_id, gebruiker_data):
-    service = GebruikerService()
-    return service.update(gebruiker_id, gebruiker_data)
+    return _gebruiker_service_instance.update(gebruiker_id, gebruiker_data)
 
 def delete_gebruiker(gebruiker_id):
-    service = GebruikerService()
-    return service.delete(gebruiker_id)
+    return _gebruiker_service_instance.delete(gebruiker_id)
