@@ -11,7 +11,7 @@ class VTBronnenRelatieService:
         self._koppelingen = set()
 
     def koppeling_toevoegen(self, vernietigingstaak_id, bron_id):
-        if not isinstance(vernietigingstaak_id, int) or vernietigingstaak_id is None:
+        if vernietigingstaak_id is None or not isinstance(vernietigingstaak_id, int):
             raise OngeldigeVernietigingstaakException()
         if not isinstance(bron_id, int):
             raise OngeldigeBronException()

@@ -1,23 +1,11 @@
-class VTBronnenRelatieServiceException(Exception):
-    """Base exception for VTBronnenRelatieService errors."""
+class KoppelingBestaatAlException(Exception):
     pass
 
-class VTBronnenRelatieNotFoundException(VTBronnenRelatieServiceException):
-    """Raised when a requested VTBronnenRelatie is not found."""
+class KoppelingNietGevondenException(Exception):
     pass
 
-class VTBronnenRelatieAlreadyExistsException(VTBronnenRelatieServiceException):
-    """Raised when trying to create a VTBronnenRelatie that already exists."""
+class OngeldigeBronException(Exception):
     pass
 
-class VTBronnenRelatieInvalidStateException(VTBronnenRelatieServiceException):
-    """Raised when the VTBronnenRelatie is in an invalid state for the requested operation."""
-    pass
-
-class VTBronnenRelatieValidationException(VTBronnenRelatieServiceException):
-    """Raised when data validation fails for a VTBronnenRelatie operation."""
-    pass
-
-class VTBronnenRelatiePersistenceException(VTBronnenRelatieServiceException):
-    """Raised when data persistence fails in VTBronnenRelatieService."""
+class OngeldigeVernietigingstaakException(Exception):
     pass
