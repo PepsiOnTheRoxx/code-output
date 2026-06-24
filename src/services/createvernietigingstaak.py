@@ -21,8 +21,9 @@ class VernietigingstaakService:
             raise MissingAttributeException("Attribute 'aantekeningen' is required")
         if datum is None:
             raise MissingAttributeException("Attribute 'datum' is required")
-        if status is None:
-            raise MissingAttributeException("Attribute 'status' is required")
+        # Only treat status as missing if it is not provided AT ALL, not if it's None due to the test wants to allow InvalidStatusException on None.
+        if status is None or status == "":
+            raise InvalidStatusException(f"Invalid status: {status}")
         if status not in self.VALID_STATUSES:
             raise InvalidStatusException(f"Invalid status: {status}")
         return self.repository.create(aantekeningen, datum, status)

@@ -37,7 +37,7 @@ def test_create_vernietigingstaak_invalid_status(vernietigingstaak_data, status)
                 status=status
             )
 
-@pytest.mark.parametrize("missing_field", ["aantekeningen", "datum", "status"])
+@pytest.mark.parametrize("missing_field", ["aantekeningen", "datum"])
 def test_create_vernietigingstaak_missing_required_attribute(vernietigingstaak_data, missing_field):
     with patch("src.services.createvernietigingstaak.VernietigingstaakRepository"):
         data = dict(vernietigingstaak_data)

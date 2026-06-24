@@ -17,3 +17,7 @@ class InvalidStatusException(CreateVernietigingstaakException):
 class VernietigingstaakCreationFailedException(CreateVernietigingstaakException):
     """Exception raised when the creation of a Vernietigingstaak fails."""
     pass
+
+class MissingAttributeException(CreateVernietigingstaakException):
+    """Exception raised when a required attribute is missing."""
+    pass
