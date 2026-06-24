@@ -22,7 +22,7 @@ def test_create_bron_success(bron_service):
     assert any(attr.attribute_id == 15 and attr.value == "NaamBron" for attr in bron.attributes)
     assert any(attr.attribute_id == 16 and attr.value == "OmschrijvingBron" for attr in bron.attributes)
 
-def test_create_bron_already_exists(bron_service, mocker):
+def test_create_bron_already_exists(bron_service, monkeypatch):
     bron_data = {
         "ElementType": "ObjectType",
         "ElementID": 12,
@@ -31,7 +31,7 @@ def test_create_bron_already_exists(bron_service, mocker):
             {"AttributeID": 16, "value": "OmschrijvingBron"}
         ]
     }
-    mocker.patch.object(bron_service, 'bron_exists', return_value=True)
+    monkeypatch.setattr(bron_service, 'bron_exists', lambda _: True)
     with pytest.raises(BronAlreadyExistsException):
         bron_service.create_bron(bron_data)
 
