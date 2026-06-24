@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.bronupdate import BronService
-from src.services.bronupdate_exceptions import BronNotFoundException, InvalidBronDataException
+from src.services.bronupdate_exceptions import BronUpdateNotFoundException, BronUpdateValidationException
 
 @pytest.fixture
 def bron_service():
@@ -25,7 +25,7 @@ def test_update_bron_not_found(bron_service):
     bron_id = 99
     nieuwe_data = {'naam': 'X', 'type': 'y'}
     with patch.object(bron_service, 'get_bron_by_id', return_value=None):
-        with pytest.raises(BronNotFoundException):
+        with pytest.raises(BronUpdateNotFoundException):
             bron_service.update_bron(bron_id, nieuwe_data)
 
 def test_update_bron_invalid_data(bron_service):
@@ -33,8 +33,8 @@ def test_update_bron_invalid_data(bron_service):
     nieuwe_data = {'naam': ''}  # Ongeldige data
     oude_bron = MagicMock()
     with patch.object(bron_service, 'get_bron_by_id', return_value=oude_bron), \
-         patch.object(bron_service, 'validate_data', side_effect=InvalidBronDataException):
-        with pytest.raises(InvalidBronDataException):
+         patch.object(bron_service, 'validate_data', side_effect=BronUpdateValidationException):
+        with pytest.raises(BronUpdateValidationException):
             bron_service.update_bron(bron_id, nieuwe_data)
 
 def test_update_existing_bron_partial_data(bron_service):
