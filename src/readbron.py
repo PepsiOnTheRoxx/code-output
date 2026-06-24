@@ -14,11 +14,10 @@ class BronService:
     def add_bron(self, bron):
         self.bronnen[bron.bron_id] = bron
 
-    def get_bron(self, bron_id):
-        if bron_id in self.bronnen:
-            return self.bronnen[bron_id]
-        else:
-            raise BronNotFoundException(f'Bron with ID {bron_id} not found')
+    def read_bron(self, bron_id):
+        if bron_id not in self.bronnen:
+            raise BronNotFoundException(f'Bron with ID {bron_id} not found.')
+        return self.bronnen[bron_id]
 
 # Voorbeeld gebruik om de functionaliteit te demonstreren
 if __name__ == "__main__":
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     bron_service.add_bron(Bron(2, "Bron 2", "Beschrijving van Bron 2"))
 
     try:
-        bron = bron_service.get_bron(1)
+        bron = bron_service.read_bron(1)
         print(f'Gevonden bron: {bron.name} - {bron.description}')
     except BronNotFoundException as e:
         print(e)
