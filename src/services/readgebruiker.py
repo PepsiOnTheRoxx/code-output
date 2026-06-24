@@ -1,4 +1,4 @@
-from src.services.readgebruiker_exceptions import GebruikerNotFoundException, InvalidGebruikerIdException
+from src.services.readgebruiker_exceptions import GebruikerNotFoundException, GebruikerInvalidInputException
 
 class GebruikerRepository:
     def get_gebruiker_by_id(self, gebruiker_id):
@@ -10,5 +10,5 @@ class GebruikerService:
 
     def read_gebruiker(self, gebruiker_id):
         if not isinstance(gebruiker_id, int):
-            raise InvalidGebruikerIdException("Gegeven gebruiker_id is ongeldig")
+            raise GebruikerInvalidInputException("Gegeven gebruiker_id is ongeldig")
         return self.repository.get_gebruiker_by_id(gebruiker_id)

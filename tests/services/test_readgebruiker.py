@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.readgebruiker import GebruikerService
-from src.services.readgebruiker_exceptions import GebruikerNotFoundException, InvalidGebruikerIdException
+from src.services.readgebruiker_exceptions import GebruikerNotFoundException, GebruikerInvalidInputException
 
 def test_read_gebruiker_returns_gebruiker_dict():
     gebruiker_id = 123
@@ -34,7 +34,7 @@ def test_read_gebruiker_raises_gebuiker_not_found():
 def test_read_gebruiker_raises_invalid_id():
     invalid_id = "abc"
     service = GebruikerService()
-    with pytest.raises(InvalidGebruikerIdException):
+    with pytest.raises(GebruikerInvalidInputException):
         service.read_gebruiker(invalid_id)
         
 def test_read_gebruiker_passes_through_other_exceptions():
