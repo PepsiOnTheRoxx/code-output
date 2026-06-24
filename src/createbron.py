@@ -9,7 +9,7 @@ class Bron:
 class BronService:
     def create_bron(self, naam, beschrijving):
         if not naam or not beschrijving:
-            raise BronCreationException("Naam en beschrijving moeten niet leeg zijn.")
+            raise BronCreationException("Naam en beschrijving zijn vereist.")
         return Bron(naam, beschrijving)
 
 def main():
