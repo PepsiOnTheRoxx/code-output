@@ -7,6 +7,9 @@ from src.services.managevtproceseigenaarrelatie_exceptions import (
     VerbodenWijzigingException
 )
 
+def setup_function():
+    VTProceseigenaarRelatieService._relaties = []
+
 def test_toevoegen_proceseigenaar_succesvol():
     service = VTProceseigenaarRelatieService()
     gebruiker_id = 42
