@@ -2,22 +2,30 @@ class DeleteVernietigingstaakError(Exception):
     """Base exception for DeleteVernietigingstaak feature."""
     pass
 
-class VernietigingstaakNotFoundError(DeleteVernietigingstaakError):
+class VernietigingstaakNotFoundException(DeleteVernietigingstaakError):
     """Raised when the Vernietigingstaak to delete is not found."""
     pass
 
-class VernietigingstaakDeletePermissionError(DeleteVernietigingstaakError):
+class UnauthorizedVernietigingstaakDeleteException(DeleteVernietigingstaakError):
     """Raised when the user does not have permission to delete the Vernietigingstaak."""
     pass
 
-class VernietigingstaakDeleteDependencyError(DeleteVernietigingstaakError):
-    """Raised when the Vernietigingstaak cannot be deleted due to existing dependencies."""
+class VernietigingstaakDeleteException(DeleteVernietigingstaakError):
+    """Raised when the Vernietigingstaak cannot be deleted due to existing dependencies or error."""
     pass
 
-class VernietigingstaakDeleteValidationError(DeleteVernietigingstaakError):
-    """Raised if Vernietigingstaak delete input or state is invalid."""
-    pass
+# Legacy aliases for compatibility
+def VernietigingstaakNotFoundError(*args, **kwargs):
+    return VernietigingstaakNotFoundException(*args, **kwargs)
 
-class VernietigingstaakDeleteDatabaseError(DeleteVernietigingstaakError):
-    """Raised when a database error occurs during deletion of the Vernietigingstaak."""
-    pass
+def VernietigingstaakDeletePermissionError(*args, **kwargs):
+    return UnauthorizedVernietigingstaakDeleteException(*args, **kwargs)
+
+def VernietigingstaakDeleteDependencyError(*args, **kwargs):
+    return VernietigingstaakDeleteException(*args, **kwargs)
+
+def VernietigingstaakDeleteValidationError(*args, **kwargs):
+    return ValueError(*args, **kwargs)
+
+def VernietigingstaakDeleteDatabaseError(*args, **kwargs):
+    return VernietigingstaakDeleteException(*args, **kwargs)
