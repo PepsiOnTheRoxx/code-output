@@ -1,8 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.managevtbronnenrelatie import VTBronnenRelatieService
-from src.services.managevtbronnenrelatie_exceptions import VTBronnenRelatieNotFoundException, VTBronAlreadyLinkedException, VTBronnenRelatieUpdateException
-
+from src.services.managevtbronnenrelatie_exceptions import VTBronnenRelatieNotFoundException, VTBronnenRelatieAlreadyExistsException, VTBronnenRelatieUpdateException
 
 def test_create_vtbron_relatie_success():
     with patch('src.services.managevtbronnenrelatie.VTBronnenRelatieRepository') as mock_repo_cls:
@@ -25,7 +24,7 @@ def test_create_vtbron_relatie_already_exists():
         service = VTBronnenRelatieService()
         mock_repo.exists.return_value = True
 
-        with pytest.raises(VTBronAlreadyLinkedException):
+        with pytest.raises(VTBronnenRelatieAlreadyExistsException):
             service.create_relatie(vernietigingstaak_id=1, bron_id=2)
 
 def test_delete_vtbron_relatie_success():

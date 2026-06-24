@@ -1,6 +1,6 @@
 from src.services.managevtbronnenrelatie_exceptions import (
     VTBronnenRelatieNotFoundException,
-    VTBronAlreadyLinkedException,
+    VTBronnenRelatieAlreadyExistsException,
     VTBronnenRelatieUpdateException
 )
 
@@ -27,7 +27,7 @@ class VTBronnenRelatieService:
 
     def create_relatie(self, vernietigingstaak_id, bron_id):
         if self._repo.exists(vernietigingstaak_id=vernietigingstaak_id, bron_id=bron_id):
-            raise VTBronAlreadyLinkedException()
+            raise VTBronnenRelatieAlreadyExistsException()
         self._repo.add(vernietigingstaak_id=vernietigingstaak_id, bron_id=bron_id)
         return True
 
@@ -40,8 +40,7 @@ class VTBronnenRelatieService:
     def update_relatie(self, vernietigingstaak_id, bron_id, nieuwe_bron_id):
         if not self._repo.exists(vernietigingstaak_id=vernietigingstaak_id, bron_id=bron_id):
             raise VTBronnenRelatieNotFoundException()
-        self._repo.update(vernietigingstaak_id=vernietigingstaak_id, bron_id=bron_id, nieuwe_bron_id=nieuwe_bron_id)
-        return True
+        return self._repo.update(vernietigingstaak_id=vernietigingstaak_id, bron_id=bron_id, nieuwe_bron_id=nieuwe_bron_id) or True
 
     def get_bronnen_by_taak(self, vernietigingstaak_id):
         return self._repo.get_bronnen_by_taak(vernietigingstaak_id=vernietigingstaak_id)
