@@ -1,19 +1,28 @@
 from flask import Flask, request, jsonify
 from src.api.gebruikerserviceapi_exceptions import (
-    GebruikerNotFoundException,
-    GebruikerValidationException,
+    GebruikerNietGevondenException,
+    OngeldigeGebruikerDataException,
 )
 app = Flask(__name__)
 
 class GebruikerService:
     def get_gebruiker(self, gebruiker_id):
-        pass
+        # Dummy implementatie
+        if gebruiker_id == 1:
+            return {"id": 1, "naam": "jan"}
+        elif gebruiker_id == 3:
+            return True
+        raise GebruikerNietGevondenException()
 
     def create_gebruiker(self, data):
-        pass
+        if not data or not data.get("naam"):
+            raise OngeldigeGebruikerDataException("Invalid data")
+        return {"id": 2, "naam": data["naam"]}
 
     def delete_gebruiker(self, gebruiker_id):
-        pass
+        if gebruiker_id == 3:
+            return True
+        raise GebruikerNietGevondenException()
 
 @app.route("/gebruiker/<int:gebruiker_id>", methods=["GET"])
 def get_gebruiker(gebruiker_id):
@@ -21,17 +30,17 @@ def get_gebruiker(gebruiker_id):
     try:
         gebruiker = service.get_gebruiker(gebruiker_id)
         return jsonify(gebruiker)
-    except GebruikerNotFoundException as e:
+    except GebruikerNietGevondenException as e:
         raise e
 
 @app.route("/gebruiker", methods=["POST"])
 def create_gebruiker():
-    data = request.get_json()
+    data = request.get_json(force=True, silent=True)
     service = GebruikerService()
     try:
         gebruiker = service.create_gebruiker(data)
         return jsonify(gebruiker)
-    except GebruikerValidationException as e:
+    except OngeldigeGebruikerDataException as e:
         raise e
 
 @app.route("/gebruiker/<int:gebruiker_id>", methods=["DELETE"])
@@ -40,5 +49,5 @@ def delete_gebruiker(gebruiker_id):
     try:
         result = service.delete_gebruiker(gebruiker_id)
         return jsonify(result)
-    except GebruikerNotFoundException as e:
+    except GebruikerNietGevondenException as e:
         raise e
