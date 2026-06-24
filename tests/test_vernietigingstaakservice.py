@@ -1,60 +1,41 @@
 import pytest
-from src.vernietigingstaakservice import VernietigingstaakService, Vernietigingstaak
+from unittest.mock import MagicMock, patch
+from src.vernietigingstaakservice import VernietigingstaakService
 
 @pytest.fixture
 def service():
     return VernietigingstaakService()
 
-@pytest.fixture
-def bestaande_taak():
-    return Vernietigingstaak(id=1, naam="Taak1", status="Aangemaakt", omschrijving="Omschrijving1")
+def test_delete_existing_taak_success(service):
+    taak_id = 123
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=True)
+    result = service.delete_vernietigingstaak(taak_id)
+    service._delete_taak.assert_called_once_with(taak_id)
+    assert result is True
 
-def test_update_vernietigingstaak_succes(service, bestaande_taak):
-    service.taken = {1: bestaande_taak}
-    update_data = {
-        "naam": "Taak1 Gewijzigd",
-        "status": "In Uitvoering",
-        "omschrijving": "Gewijzigde omschrijving"
-    }
-    taak = service.update_vernietigingstaak(1, update_data)
-    assert taak.naam == "Taak1 Gewijzigd"
-    assert taak.status == "In Uitvoering"
-    assert taak.omschrijving == "Gewijzigde omschrijving"
+def test_delete_non_existing_taak_raises_error(service):
+    taak_id = 555
+    service._get_taak_by_id = MagicMock(return_value=None)
+    with pytest.raises(ValueError):
+        service.delete_vernietigingstaak(taak_id)
 
-def test_update_vernietigingstaak_bestaat_niet(service):
-    update_data = {
-        "naam": "Taak2",
-        "status": "In Uitvoering",
-        "omschrijving": "Omschrijving2"
-    }
-    with pytest.raises(KeyError):
-        service.update_vernietigingstaak(999, update_data)
+def test_delete_taak_deletion_failure(service):
+    taak_id = 456
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=False)
+    result = service.delete_vernietigingstaak(taak_id)
+    assert result is False
 
-def test_update_vernietigingstaak_partial_update(service, bestaande_taak):
-    service.taken = {1: bestaande_taak}
-    update_data = {
-        "status": "Voltooid"
-    }
-    taak = service.update_vernietigingstaak(1, update_data)
-    assert taak.status == "Voltooid"
-    assert taak.naam == "Taak1"
-    assert taak.omschrijving == "Omschrijving1"
+def test_delete_taak_calls_correct_methods(service):
+    taak_id = 789
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=True)
+    service.delete_vernietigingstaak(taak_id)
+    service._get_taak_by_id.assert_called_once_with(taak_id)
+    service._delete_taak.assert_called_once_with(taak_id)
 
-def test_update_vernietigingstaak_invalid_attribute(service, bestaande_taak):
-    service.taken = {1: bestaande_taak}
-    update_data = {
-        "onbestaande_attribuut": "waarde"
-    }
-    taak = service.update_vernietigingstaak(1, update_data)
-    assert not hasattr(taak, "onbestaande_attribuut")
-    assert taak.naam == "Taak1"
-    assert taak.status == "Aangemaakt"
-    assert taak.omschrijving == "Omschrijving1"
-
-def test_update_vernietigingstaak_empty_update(service, bestaande_taak):
-    service.taken = {1: bestaande_taak}
-    update_data = {}
-    taak = service.update_vernietigingstaak(1, update_data)
-    assert taak.naam == "Taak1"
-    assert taak.status == "Aangemaakt"
-    assert taak.omschrijving == "Omschrijving1"
+def test_delete_taak_invalid_id(service):
+    invalid_id = None
+    with pytest.raises(TypeError):
+        service.delete_vernietigingstaak(invalid_id)
