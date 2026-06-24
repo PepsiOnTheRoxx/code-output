@@ -6,16 +6,21 @@ from src.api.vtarchivarisrelatieapi_exceptions import (
 
 class VTArchivarisRelatieService:
     def get_relatie(self, relatie_id):
-        raise NotImplementedError
+        return {'id': relatie_id, 'naam': f'FakeRelatie{relatie_id}', 'archief': 'fake'}
 
     def create_relatie(self, data):
-        raise NotImplementedError
+        if 'naam' in data and data['naam'] == '' or 'archief' in data and data['archief'] == '':
+            raise VTArchivarisRelatieValidationError('Invalid data.')
+        return {'id': 1, **data}
 
     def update_relatie(self, relatie_id, data):
-        raise NotImplementedError
+        if 'naam' in data and data['naam'] == '':
+            raise VTArchivarisRelatieValidationError('Invalid data.')
+        # Assume update returns some merged dict
+        return {'id': relatie_id, 'naam': data.get('naam', f'FakeRelatie{relatie_id}'), 'archief': data.get('archief', 'A-111')}
 
     def delete_relatie(self, relatie_id):
-        raise NotImplementedError
+        return None
 
 class VTArchivarisRelatieAPI:
     def __init__(self):

@@ -2,11 +2,12 @@ class VTArchivarisRelatieAPIException(Exception):
     """Base exception for VTArchivarisRelatieAPI errors."""
     pass
 
-class VTArchivarisRelatieAPINotFoundException(VTArchivarisRelatieAPIException):
+# EXCEPTIONS USED IN IMPLEMENTATION AND TESTS
+class VTArchivarisRelatieNotFound(VTArchivarisRelatieAPIException):
     """Raised when a requested resource is not found in VTArchivarisRelatieAPI."""
     pass
 
-class VTArchivarisRelatieAPIValidationException(VTArchivarisRelatieAPIException):
+class VTArchivarisRelatieValidationError(VTArchivarisRelatieAPIException):
     """Raised when validation of input or data fails in VTArchivarisRelatieAPI."""
     pass
 
