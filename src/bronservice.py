@@ -1,42 +1,21 @@
-class Bron:
-    def __init__(self, name, type, attributes):
-        self.name = name
-        self.type = type
-        self.attributes = attributes
-
-    def __eq__(self, other):
-        if isinstance(other, Bron):
-            return (
-                self.name == other.name and
-                self.type == other.type and
-                self.attributes == other.attributes
-            )
-        return False
-
 class BronService:
-    VALID_ATTRIBUTES = {
-        "Attribute15": 15,
-        "Attribute16": 16
-    }
-
-    REQUIRED_ATTRIBUTES = set(VALID_ATTRIBUTES.keys())
-
     def __init__(self):
-        self._brons = []
+        self.bron_data = {
+            1: {
+                "ElementType": "ObjectType",
+                "ElementID": 12,
+                "attributes": [
+                    {
+                        "ElementType": "Attribute",
+                        "ElementID": 15
+                    },
+                    {
+                        "ElementType": "Attribute",
+                        "ElementID": 16
+                    }
+                ]
+            }
+        }
 
-    def create_bron(self, name, type, attributes):
-        # Check that all supplied attribute keys are valid
-        for key in attributes:
-            if key not in self.VALID_ATTRIBUTES:
-                raise KeyError(f"Attribute '{key}' is invalid.")
-
-        # Check that all required attributes are present
-        if set(attributes.keys()) != self.REQUIRED_ATTRIBUTES:
-            raise ValueError("Missing required attribute(s)")
-
-        bron = Bron(name, type, attributes.copy())
-        self._brons.append(bron)
-        return bron
-
-    def get_all_brons(self):
-        return self._brons.copy()
+    def read_bron(self, bron_id):
+        return self.bron_data.get(bron_id, None)
