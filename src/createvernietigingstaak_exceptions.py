@@ -6,8 +6,16 @@ class InvalidAantekeningenException(CreateVernietigingstaakException):
     """Raised when aantekeningen are invalid."""
     pass
 
+class MissingAantekeningenException(CreateVernietigingstaakException):
+    """Raised when aantekeningen are missing."""
+    pass
+
 class InvalidDatumException(CreateVernietigingstaakException):
     """Raised when datum is invalid."""
+    pass
+
+class MissingDatumException(CreateVernietigingstaakException):
+    """Raised when datum is missing."""
     pass
 
 class InvalidStatusException(CreateVernietigingstaakException):
