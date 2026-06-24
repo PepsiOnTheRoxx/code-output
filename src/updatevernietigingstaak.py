@@ -18,20 +18,14 @@ class VernietigingstaakService:
             raise VernietigingstaakNotFoundException(f"Vernietigingstaak met id {taak_id} niet gevonden.")
 
         if bestaande_taak.get('status') in self.STATUSES_GEEN_UPDATE:
-            # Opmerking: UpdateNotAllowedException komt uit de tests, niet uit de exceptions-definitie.
-            # Dus we importeren het via de test-import, en geven hem hier door.
-            from src.updatevernietigingstaak_exceptions import UpdateNotAllowedException
             raise UpdateNotAllowedException(f"Update niet toegestaan voor status '{bestaande_taak.get('status')}'.")
 
         if not self._validate_update_data(update_data):
             raise InvalidVernietigingstaakDataException("Ongeldige data voor vernietigingstaak.")
 
         VernietigingstaakRepository.update(taak_id, update_data)
-
-        # Versmelt nieuwe en bestaande data, update_data mag overlappen/overschrijven
         updated = dict(bestaande_taak)
         updated.update(update_data)
-
         return updated
 
     def _validate_update_data(self, data):
@@ -42,13 +36,12 @@ class VernietigingstaakService:
         # valideer DATUM
         if 'datum' in data:
             value = data['datum']
-            # Eenvoudig format: 'YYYY-MM-DD'
             if not isinstance(value, str) or len(value) != 10:
                 return False
             try:
                 jaar, maand, dag = value.split('-')
                 int(jaar), int(maand), int(dag)
-                if len(jaar) != 4 or len(maand) != 2 or len(dag) != 2:
+                if len(jaar)!=4 or len(maand)!=2 or len(dag)!=2:
                     return False
             except Exception:
                 return False

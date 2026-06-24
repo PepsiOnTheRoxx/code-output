@@ -17,3 +17,7 @@ class AttributeUpdateNotAllowedException(UpdateVernietigingstaakException):
 class AttributeValueConflictException(UpdateVernietigingstaakException):
     """Raised when there is a conflict in attribute values during the update."""
     pass
+
+class UpdateNotAllowedException(UpdateVernietigingstaakException):
+    """Raised when an update is not allowed for the current status."""
+    pass
