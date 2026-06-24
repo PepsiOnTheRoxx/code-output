@@ -25,3 +25,16 @@ class LinkVTProceseigenaarPermissionDeniedException(LinkVTProceseigenaarExceptio
 class InvalidLinkVTProceseigenaarInputException(LinkVTProceseigenaarException):
     """Raised when input values for linking a proceseigenaar are invalid."""
     pass
+
+# Toevoeging: aliases naar 'Nederlands'-stijl exceptions tbv main code/tests compatibility
+class GebruikerNietGevondenException(ProceseigenaarNotFoundException):
+    pass
+
+class TaakNietGevondenException(VernietigingstaakNotFoundException):
+    pass
+
+class ProceseigenaarAlGekoppeldException(ProceseigenaarAlreadyLinkedException):
+    pass
+
+class OngeldigeRelatieException(InvalidLinkVTProceseigenaarInputException):
+    pass

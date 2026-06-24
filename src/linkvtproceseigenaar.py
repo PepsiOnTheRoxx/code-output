@@ -1,17 +1,5 @@
 from src.linkvtproceseigenaar_exceptions import *
 
-class GebruikerNietGevondenException(Exception):
-    pass
-
-class TaakNietGevondenException(Exception):
-    pass
-
-class ProceseigenaarAlGekoppeldException(Exception):
-    pass
-
-class OngeldigeRelatieException(Exception):
-    pass
-
 class VernietigingstaakRelatiesService:
     def __init__(self):
         self._gebruikers = set([1, 2, 3, 4])
