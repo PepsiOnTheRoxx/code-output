@@ -1,12 +1,13 @@
 import pytest
 from src.services.brondelete import BronService
 from src.services.brondelete_exceptions import BronNotFoundException, BronDeleteException
+from unittest.mock import MagicMock
 
 @pytest.fixture
-def bron_service(mocker):
+def bron_service():
     service = BronService()
-    mocker.patch.object(service, 'bron_exists')
-    mocker.patch.object(service, 'delete_bron')
+    service.bron_exists = MagicMock()
+    service.delete_bron = MagicMock()
     return service
 
 def test_delete_existing_bron(bron_service):
