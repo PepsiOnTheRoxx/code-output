@@ -7,14 +7,19 @@ import re
 
 class GebruikerRepository:
     def get_by_id(self, gebruiker_id):
-        raise NotImplementedError
+        # Wordt gemockt in de tests
+        return None
 
     def update(self, gebruiker):
-        raise NotImplementedError
+        # Wordt gemockt in de tests
+        pass
 
 class GebruikerService:
-    def __init__(self):
-        self.repo = GebruikerRepository()
+    def __init__(self, repo=None):
+        if repo is not None:
+            self.repo = repo
+        else:
+            self.repo = GebruikerRepository()
 
     def update_gebruiker(self, gebruiker_id, data):
         gebruiker = self.repo.get_by_id(gebruiker_id)
