@@ -1,40 +1,31 @@
 import pytest
-from src.gebruikerservice import GebruikerService, Gebruiker
+from src.gebruikerservice import GebruikerService, GebruikerNietGevondenFout
 
 @pytest.fixture
 def gebruiker_service():
-    return GebruikerService()
+    service = GebruikerService()
+    service.voeg_gebruiker_toe('jan', 'Jan Jansen', 'jan@voorbeeld.nl')
+    service.voeg_gebruiker_toe('piet', 'Piet Pietersen', 'piet@voorbeeld.nl')
+    return service
 
-@pytest.fixture
-def bestaande_gebruiker():
-    return Gebruiker(id=1, naam="Jan", email="jan@example.com")
+def test_verwijder_bestaande_gebruiker(gebruiker_service):
+    assert gebruiker_service.bestaat_gebruiker('jan')
+    gebruiker_service.verwijder_gebruiker('jan')
+    assert not gebruiker_service.bestaat_gebruiker('jan')
 
-def test_update_gebruiker_succes(gebruiker_service, bestaande_gebruiker):
-    gebruiker_service.add_gebruiker(bestaande_gebruiker)
-    updated_data = {"naam": "Jan Bijgewerkt", "email": "jan.bijgewerkt@example.com"}
-    updated_gebruiker = gebruiker_service.update_gebruiker(1, updated_data)
-    assert updated_gebruiker.naam == "Jan Bijgewerkt"
-    assert updated_gebruiker.email == "jan.bijgewerkt@example.com"
+def test_verwijder_andere_gebruiker_blijft_bestaan(gebruiker_service):
+    gebruiker_service.verwijder_gebruiker('jan')
+    assert gebruiker_service.bestaat_gebruiker('piet')
 
-def test_update_gebruiker_partial_update(gebruiker_service, bestaande_gebruiker):
-    gebruiker_service.add_gebruiker(bestaande_gebruiker)
-    updated_data = {"naam": "Jan Nieuw"}
-    updated_gebruiker = gebruiker_service.update_gebruiker(1, updated_data)
-    assert updated_gebruiker.naam == "Jan Nieuw"
-    assert updated_gebruiker.email == "jan@example.com"
+def test_verwijder_niet_bestaande_gebruiker_geeft_fout(gebruiker_service):
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('klaas')
 
-def test_update_gebruiker_nonexistent(gebruiker_service):
-    with pytest.raises(KeyError):
-        gebruiker_service.update_gebruiker(42, {"naam": "Onbekend"})
+def test_verwijder_gebruiker_meerdere_keer(gebruiker_service):
+    gebruiker_service.verwijder_gebruiker('jan')
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('jan')
 
-def test_update_gebruiker_invalid_attribute(gebruiker_service, bestaande_gebruiker):
-    gebruiker_service.add_gebruiker(bestaande_gebruiker)
-    updated_data = {"adres": "Straat 1"}
-    with pytest.raises(AttributeError):
-        gebruiker_service.update_gebruiker(1, updated_data)
-
-def test_update_gebruiker_empty_update(gebruiker_service, bestaande_gebruiker):
-    gebruiker_service.add_gebruiker(bestaande_gebruiker)
-    updated_gebruiker = gebruiker_service.update_gebruiker(1, {})
-    assert updated_gebruiker.naam == "Jan"
-    assert updated_gebruiker.email == "jan@example.com"
+def test_verwijder_gebruiker_met_leeg_id(gebruiker_service):
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('')
