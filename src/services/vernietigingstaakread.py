@@ -1,8 +1,7 @@
-from src.services.vernietigingstaakread_exceptions import VernietigingstaakNotFoundException, UnauthorizedAccessException
+from src.services.vernietigingstaakread_exceptions import VernietigingstaakNotFoundError, VernietigingstaakPermissionDeniedError
 
 class VernietigingstaakService:
     def __init__(self):
-        # Simuleer dat er ergens storage/backing data is
         self._storage = {
             42: {
                 "id": 42,
@@ -29,13 +28,12 @@ class VernietigingstaakService:
                 "object_type": 10
             }
         }
-        # Simuleer toegangscontrole
         self._unauthorized_ids = {7}
 
     def read(self, vernietigingstaak_id):
         if vernietigingstaak_id in self._unauthorized_ids:
-            raise UnauthorizedAccessException()
+            raise VernietigingstaakPermissionDeniedError()
         data = self._storage.get(vernietigingstaak_id)
         if not data:
-            raise VernietigingstaakNotFoundException()
+            raise VernietigingstaakNotFoundError()
         return data
