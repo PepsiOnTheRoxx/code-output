@@ -2,22 +2,23 @@ class VTBehandelaarRelatieAPIException(Exception):
     """Base exception for VTBehandelaarRelatieAPI errors."""
     pass
 
+# --- The following are not used/needed for this API/tests ---
 class BehandelaarNotFoundException(VTBehandelaarRelatieAPIException):
-    """Raised when a behandelaar (practitioner) could not be found."""
     pass
-
 class InvalidBehandelaarRelatieDataException(VTBehandelaarRelatieAPIException):
-    """Raised when provided data for behandelaar relatie is invalid."""
     pass
-
 class BehandelaarRelatieAlreadyExistsException(VTBehandelaarRelatieAPIException):
-    """Raised when a requested behandelaar relatie already exists."""
     pass
-
 class UnauthorizedBehandelaarRelatieAccessException(VTBehandelaarRelatieAPIException):
-    """Raised when user is not authorized to access behandelaar relatie."""
+    pass
+class BehandelaarRelatieAPIDatabaseException(VTBehandelaarRelatieAPIException):
     pass
 
-class BehandelaarRelatieAPIDatabaseException(VTBehandelaarRelatieAPIException):
-    """Raised on database errors in VTBehandelaarRelatieAPI."""
+# --- These are needed for the API/tests and will be used ---
+class VTBehandelaarRelatieNotFound(VTBehandelaarRelatieAPIException):
+    """Raised when the behandelaar relatie is not found."""
+    pass
+
+class VTBehandelaarRelatieInvalidData(VTBehandelaarRelatieAPIException):
+    """Raised when provided data for behandelaar relatie is invalid."""
     pass
