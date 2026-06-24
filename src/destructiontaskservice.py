@@ -21,4 +21,10 @@ class DestructionTaskService:
         if not isinstance(attribute_10, str):
             raise TypeError("Attribute 10 must be a string")
 
+        if not isinstance(attribute_11, str):
+            raise TypeError("Attribute 11 must be a string")
+
+        if not isinstance(attribute_12, str):
+            raise TypeError("Attribute 12 must be a string")
+
         return Vernietigingstaak(attribute_10, attribute_11, attribute_12)
