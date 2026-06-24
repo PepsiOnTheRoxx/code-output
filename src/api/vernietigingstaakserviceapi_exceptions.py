@@ -2,11 +2,11 @@ class VernietigingstaakServiceAPIException(Exception):
     """Base exception for VernietigingstaakServiceAPI errors."""
     pass
 
-class VernietigingstaakNotFoundError(VernietigingstaakServiceAPIException):
+class VernietigingstaakNotFoundException(VernietigingstaakServiceAPIException):
     """Raised when a Vernietigingstaak is not found."""
     pass
 
-class VernietigingstaakValidationError(VernietigingstaakServiceAPIException):
+class VernietigingstaakValidationException(VernietigingstaakServiceAPIException):
     """Raised when provided data for Vernietigingstaak is invalid."""
     pass
 
@@ -14,7 +14,7 @@ class VernietigingstaakPermissionDenied(VernietigingstaakServiceAPIException):
     """Raised when permission is denied for an operation."""
     pass
 
-class VernietigingstaakConflictError(VernietigingstaakServiceAPIException):
+class VernietigingstaakConflictException(VernietigingstaakServiceAPIException):
     """Raised when a conflict occurs, e.g., duplicate Vernietigingstaak."""
     pass
 
