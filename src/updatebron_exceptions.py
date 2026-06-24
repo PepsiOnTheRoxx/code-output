@@ -21,3 +21,11 @@ class BronUpdateConflictException(UpdateBronException):
 class BronUpdateValidationException(UpdateBronException):
     """Raised when validation fails for Bron update."""
     pass
+
+class InvalidBronDataException(UpdateBronException):
+    """Raised when the provided data for update is invalid (e.g. empty naam)."""
+    pass
+
+class BronUpdateNotAllowedException(UpdateBronException):
+    """Raised when the update is not allowed on a Bron (e.g. locked)."""
+    pass

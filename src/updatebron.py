@@ -20,7 +20,6 @@ class BronService:
             if key not in allowed_keys:
                 continue
             if key == 'naam' and nieuwe_data[key] == '':
-                from src.updatebron_exceptions import InvalidBronDataException
                 raise InvalidBronDataException()
         
         if 'naam' in nieuwe_data:
