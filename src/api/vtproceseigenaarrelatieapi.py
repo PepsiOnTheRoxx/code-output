@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request
 
 from src.api.vtproceseigenaarrelatieapi_exceptions import (
     ProceseigenaarRelatieNotFoundError,
@@ -8,20 +8,27 @@ from src.api.vtproceseigenaarrelatieapi_exceptions import (
 app = Flask(__name__)
 
 def get_proceseigenaarrelatie_by_id(relatie_id):
-    # Dummy logic to be replaced by actual implementation
-    raise NotImplementedError
+    # Example dummy data
+    if relatie_id == 1:
+        return {'id': 1, 'proceseigenaar_id': 123, 'proces_id': 456}
+    raise ProceseigenaarRelatieNotFoundError
 
 def create_proceseigenaarrelatie(data):
-    # Dummy logic to be replaced by actual implementation
-    raise NotImplementedError
+    if not data or 'proceseigenaar_id' not in data or 'proces_id' not in data:
+        raise InvalidProceseigenaarRelatieData
+    # Example, always return new ID 2 in test
+    return {'id': 2, 'proceseigenaar_id': data['proceseigenaar_id'], 'proces_id': data['proces_id']}
 
 def delete_proceseigenaarrelatie(relatie_id):
-    # Dummy logic to be replaced by actual implementation
-    raise NotImplementedError
+    if relatie_id != 1:
+        raise ProceseigenaarRelatieNotFoundError
+    return None
 
 def list_proceseigenaarrelaties():
-    # Dummy logic to be replaced by actual implementation
-    raise NotImplementedError
+    return [
+        {'id': 1, 'proceseigenaar_id': 123, 'proces_id': 456},
+        {'id': 2, 'proceseigenaar_id': 124, 'proces_id': 457}
+    ]
 
 @app.route('/vt/proceseigenaarrelatie/<int:relatie_id>', methods=['GET'])
 def get_proceseigenaarrelatie(relatie_id):

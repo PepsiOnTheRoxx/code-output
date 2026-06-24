@@ -5,8 +5,8 @@ from src.api import vtproceseigenaarrelatieapi_exceptions
 
 @pytest.fixture
 def client():
-    with patch('src.api.vtproceseigenaarrelatieapi.app.test_client') as test_client:
-        yield test_client.return_value
+    with vtproceseigenaarrelatieapi.app.test_client() as test_client:
+        yield test_client
 
 def test_get_proceseigenaarrelatie_success(client):
     mock_response = {'id': 1, 'proceseigenaar_id': 123, 'proces_id': 456}
