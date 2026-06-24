@@ -2,11 +2,11 @@ class BronReadError(Exception):
     """Base exception for BronRead feature in BronService."""
     pass
 
-class BronNotFoundError(BronReadError):
+class BronNotFoundException(BronReadError):
     """Raised when the requested Bron is not found."""
     pass
 
-class BronReadPermissionError(BronReadError):
+class BronAccessException(BronReadError):
     """Raised when reading a Bron is not permitted."""
     pass
 
