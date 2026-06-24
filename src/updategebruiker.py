@@ -1,35 +1,41 @@
 class GebruikerNotFoundException(Exception):
     pass
 
-class Gebruiker:
-    def __init__(self, gebruiker_id, naam, email):
-        self.gebruiker_id = gebruiker_id
-        self.naam = naam
-        self.email = email
+class InvalidGebruikerDataException(Exception):
+    pass
 
-class GebruikerRepository:
+class UserService:
     def __init__(self):
         self._gebruikers = {}
 
-    def voeg_toe(self, gebruiker):
-        self._gebruikers[gebruiker.gebruiker_id] = gebruiker
+    def update_gebruiker(self, gebruiker_id, updated_data):
+        if not isinstance(gebruiker_id, int) or gebruiker_id not in self._gebruikers:
+            raise GebruikerNotFoundException()
 
-    def zoek_op_id(self, gebruiker_id):
-        return self._gebruikers.get(gebruiker_id)
+        if updated_data is None:
+            raise InvalidGebruikerDataException()
 
-    def update(self, gebruiker_id, naam=None, email=None):
-        gebruiker = self.zoek_op_id(gebruiker_id)
-        if gebruiker is None:
-            raise GebruikerNotFoundException(f"Gebruiker met id {gebruiker_id} niet gevonden")
-        if naam is not None:
-            gebruiker.naam = naam
-        if email is not None:
-            gebruiker.email = email
-        return gebruiker
+        if not isinstance(updated_data, dict):
+            raise InvalidGebruikerDataException()
 
-class UserService:
-    def __init__(self, gebruiker_repository):
-        self.gebruiker_repository = gebruiker_repository
+        gebruiker = self._gebruikers[gebruiker_id]
+        nieuwe_naam = gebruiker['naam']
+        nieuwe_email = gebruiker['email']
 
-    def update_gebruiker(self, gebruiker_id, naam=None, email=None):
-        return self.gebruiker_repository.update(gebruiker_id, naam=naam, email=email)
+        if 'naam' in updated_data:
+            waarde = updated_data['naam']
+            if waarde is not None:
+                nieuwe_naam = waarde
+        if 'email' in updated_data:
+            waarde = updated_data['email']
+            if waarde is not None:
+                nieuwe_email = waarde
+
+        if 'naam' in updated_data or 'email' in updated_data:
+            self._gebruikers[gebruiker_id]['naam'] = nieuwe_naam
+            self._gebruikers[gebruiker_id]['email'] = nieuwe_email
+
+        # update only known fields, ignore extra
+        # if nothing updated, just return original
+
+        return dict(self._gebruikers[gebruiker_id])
