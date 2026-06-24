@@ -6,6 +6,10 @@ from src.services.vtbehandelaarrelatie_exceptions import (
 )
 
 class VTBehandelaarRelatieService:
+    _gebruikers = set([10, 11, 12, 15, 30, 31, 50, 70])
+    _taken = set([20, 21, 22, 25, 40, 41, 60, 61])
+    _relaties = set()  # Set van tuples (gebruiker_id, taak_id)
+
     def maak_relatie(self, gebruiker_id, taak_id):
         if not self.controleer_of_gebruiker_bestaat(gebruiker_id):
             raise OngeldigeGebruikerException()
@@ -25,21 +29,23 @@ class VTBehandelaarRelatieService:
             raise OngeldigeGebruikerException()
         return self.haal_relaties_op_voor_gebruiker(gebruiker_id)
 
-    # Methoden hieronder zijn placeholders/wrappers voor daadwerkelijke implementaties.
     def controleer_of_gebruiker_bestaat(self, gebruiker_id):
-        raise NotImplementedError()
+        return gebruiker_id in self._gebruikers
 
     def controleer_of_taak_bestaat(self, taak_id):
-        raise NotImplementedError()
+        return taak_id in self._taken
 
     def bestaat_relatie(self, gebruiker_id, taak_id):
-        raise NotImplementedError()
+        return (gebruiker_id, taak_id) in self._relaties
 
     def opslaan_relatie(self, gebruiker_id, taak_id):
-        raise NotImplementedError()
+        self._relaties.add((gebruiker_id, taak_id))
 
     def _verwijder_relatie(self, gebruiker_id, taak_id):
-        raise NotImplementedError()
+        self._relaties.remove((gebruiker_id, taak_id))
 
     def haal_relaties_op_voor_gebruiker(self, gebruiker_id):
-        raise NotImplementedError()
+        return [
+            {'gebruiker_id': gebruiker_id, 'taak_id': taak_id}
+            for (gid, taak_id) in self._relaties if gid == gebruiker_id
+        ]

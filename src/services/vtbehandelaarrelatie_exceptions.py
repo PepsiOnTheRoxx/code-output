@@ -2,7 +2,6 @@ class VTBehandelaarRelatieException(Exception):
     '''Base exception for VTBehandelaarRelatieService errors.'''
     pass
 
-# Custom exceptions (Dutch names as required)
 class VTBehandelaarRelatieBestaatAlException(VTBehandelaarRelatieException):
     '''Raised when attempting to create a duplicate BehandelaarRelatie.'''
     pass
