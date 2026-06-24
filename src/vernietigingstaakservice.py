@@ -1,32 +1,14 @@
-class Vernietigingstaak:
-    def __init__(self, aantekeningen, datum, status):
-        self.aantekeningen = aantekeningen
-        self.datum = datum
-        self.status = status
-
 class VernietigingstaakService:
-    VALID_STATUSES = {"In behandeling", "Gepland", "Voltooid"}
-
     def __init__(self):
-        self.tasks = []
+        # Simuleer storage
+        self._taken = {
+            1: {"id": 1, "status": "In afwachting", "datum": "2024-05-01"},
+            2: {"id": 2, "status": "Voltooid", "datum": "2024-05-10"},
+            3: {"id": 3, "status": "Geannuleerd", "datum": "2024-05-15"},
+            4: {"id": 4, "status": "Bezig", "datum": "2024-06-01"},
+        }
 
-    def create_vernietigingstaak(self, aantekeningen, datum, status):
-        if not aantekeningen:
-            raise ValueError("Aantekeningen zijn verplicht")
-
-        # validate datum: must be YYYY-MM-DD
-        import re
-        if not isinstance(datum, str) or not re.match(r"^\d{4}-\d{2}-\d{2}$", datum):
-            raise ValueError("Datum is niet geldig")
-        try:
-            import datetime
-            datetime.datetime.strptime(datum, "%Y-%m-%d")
-        except Exception:
-            raise ValueError("Datum is niet geldig")
-
-        if status not in self.VALID_STATUSES:
-            raise ValueError("Status is niet geldig")
-
-        taak = Vernietigingstaak(aantekeningen, datum, status)
-        self.tasks.append(taak)
-        return taak
+    def read_vernietigingstaak(self, taak_id):
+        if taak_id not in self._taken:
+            raise Exception(f"Vernietigingstaak met id {taak_id} bestaat niet")
+        return self._taken[taak_id].copy()
