@@ -1,15 +1,15 @@
 from src.services.updatebron_exceptions import BronNotFoundException, InvalidBronDataException
 
 def get_bron_by_id(bron_id):
-    # Placeholder voor dependency injection / mocking
+    # Implementatie/gemockte variant bij test
     pass
 
 def save_bron(bron_data):
-    # Placeholder voor dependency injection / mocking
+    # Implementatie/gemockte variant bij test
     pass
 
 def validate_bron_data(bron_data):
-    # Placeholder voor dependency injection / mocking
+    # Implementatie/gemockte variant bij test
     pass
 
 def update_bron(bron_id, new_data):
