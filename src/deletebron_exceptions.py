@@ -6,6 +6,10 @@ class BronNotFoundException(DeleteBronException):
     """Raised when the specified Bron is not found."""
     pass
 
+class BronInUseException(DeleteBronException):
+    """Raised when the Bron is in use and cannot be deleted."""
+    pass
+
 class BronDeletePermissionException(DeleteBronException):
     """Raised when the user does not have permission to delete the Bron."""
     pass
