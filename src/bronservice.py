@@ -1,13 +1,13 @@
-from typing import List, Dict
-
 class Bron:
-    def __init__(self, name: str, element_type: List[Dict], attributes: List[Dict]):
+    def __init__(self, name, element_type, attributes):
         self.name = name
         self.element_type = element_type
         self.attributes = attributes
 
 class BronService:
-    def create_bron(self, data: Dict) -> Bron:
+    valid_element_types = {"ObjectType", "Attribute"}
+
+    def create_bron(self, data):
         name = data.get("name")
         element_type = data.get("element_type", [])
         attributes = data.get("attributes", [])
@@ -15,14 +15,23 @@ class BronService:
         if not name:
             raise ValueError("Name is required")
 
-        valid_element_types = {"ObjectType", "Attribute"}
-        if any(et["ElementType"] not in valid_element_types for et in element_type):
-            raise ValueError("Invalid element type")
+        self.validate_element_types(element_type)
 
-        element_ids = set()
-        for et in element_type:
-            if et["ElementID"] in element_ids:
-                raise ValueError("Duplicate ElementID found")
-            element_ids.add(et["ElementID"])
+        if self.has_duplicate_element_id(element_type):
+            raise ValueError("Duplicate ElementID found")
 
         return Bron(name, element_type, attributes)
+
+    def validate_element_types(self, element_types):
+        for elem in element_types:
+            if elem["ElementType"] not in self.valid_element_types:
+                raise ValueError("Invalid element type")
+
+    def has_duplicate_element_id(self, element_types):
+        seen_ids = set()
+        for elem in element_types:
+            elem_id = elem["ElementID"]
+            if elem_id in seen_ids:
+                return True
+            seen_ids.add(elem_id)
+        return False
