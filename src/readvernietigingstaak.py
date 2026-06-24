@@ -1,36 +1,22 @@
-class VernietigingstaakNotFoundError(Exception):
+class VernietigingstaakNotFound(Exception):
     pass
 
 class Vernietigingstaak:
-    def __init__(self, id, naam, status):
+    def __init__(self, id, description):
         self.id = id
-        self.naam = naam
-        self.status = status
-
-class VernietigingstaakRepository:
-    def __init__(self):
-        self._data = {}
-
-    def add(self, vernietigingstaak):
-        self._data[vernietigingstaak.id] = vernietigingstaak
-
-    def get_by_id(self, id):
-        try:
-            return self._data[id]
-        except KeyError:
-            raise VernietigingstaakNotFoundError(f"Vernietigingstaak with id {id} not found.")
-
-    def all(self):
-        return list(self._data.values())
+        self.description = description
 
 class DestructionTaskService:
-    def __init__(self, repository=None):
-        if repository is None:
-            repository = VernietigingstaakRepository()
-        self.repository = repository
+    def __init__(self):
+        self._tasks = {}
 
     def read(self, id):
-        return self.repository.get_by_id(id)
+        if not isinstance(id, int):
+            raise TypeError("id must be an integer")
+        try:
+            return self._tasks[id]
+        except KeyError:
+            raise VernietigingstaakNotFound(f"Vernietigingstaak with id {id} not found.")
 
     def read_all(self):
-        return self.repository.all()
+        return list(self._tasks.values())
