@@ -25,14 +25,14 @@ class BronService:
         self._brons = []
 
     def create_bron(self, name, type, attributes):
-        # Check that all required attributes are present
-        if set(attributes.keys()) != self.REQUIRED_ATTRIBUTES:
-            raise ValueError("Missing required attribute(s)")
-
         # Check that all supplied attribute keys are valid
         for key in attributes:
             if key not in self.VALID_ATTRIBUTES:
                 raise KeyError(f"Attribute '{key}' is invalid.")
+
+        # Check that all required attributes are present
+        if set(attributes.keys()) != self.REQUIRED_ATTRIBUTES:
+            raise ValueError("Missing required attribute(s)")
 
         bron = Bron(name, type, attributes.copy())
         self._brons.append(bron)
