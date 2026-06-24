@@ -7,7 +7,6 @@ from src.services.managevtproceseigenaarrelatie_exceptions import (
     VerbodenWijzigingException
 )
 
-
 def test_toevoegen_proceseigenaar_succesvol():
     service = VTProceseigenaarRelatieService()
     gebruiker_id = 42
@@ -17,7 +16,6 @@ def test_toevoegen_proceseigenaar_succesvol():
             service.toevoegen_proceseigenaar(gebruiker_id, vernietigingstaak_id)
             mock_opslaan.assert_called_once_with(gebruiker_id, vernietigingstaak_id)
 
-
 def test_toevoegen_proceseigenaar_al_bestaand():
     service = VTProceseigenaarRelatieService()
     gebruiker_id = 11
@@ -25,7 +23,6 @@ def test_toevoegen_proceseigenaar_al_bestaand():
     with patch.object(service, "bestaat_relatie", return_value=True):
         with pytest.raises(VTProceseigenaarAlBestaandException):
             service.toevoegen_proceseigenaar(gebruiker_id, vernietigingstaak_id)
-
 
 def test_verwijderen_proceseigenaar_succesvol():
     service = VTProceseigenaarRelatieService()
@@ -36,7 +33,6 @@ def test_verwijderen_proceseigenaar_succesvol():
             service.verwijderen_proceseigenaar(gebruiker_id, vernietigingstaak_id)
             mock_verwijder.assert_called_once_with(gebruiker_id, vernietigingstaak_id)
 
-
 def test_verwijderen_proceseigenaar_niet_gevonden():
     service = VTProceseigenaarRelatieService()
     gebruiker_id = 2
@@ -45,7 +41,6 @@ def test_verwijderen_proceseigenaar_niet_gevonden():
         with pytest.raises(VTProceseigenaarNietGevondenException):
             service.verwijderen_proceseigenaar(gebruiker_id, vernietigingstaak_id)
 
-
 def test_gewijzigde_proceseigenaar_verboden():
     service = VTProceseigenaarRelatieService()
     gebruiker_id = 100
@@ -53,7 +48,6 @@ def test_gewijzigde_proceseigenaar_verboden():
     with patch.object(service, "is_wijziging_toegestaan", return_value=False):
         with pytest.raises(VerbodenWijzigingException):
             service.wijzig_proceseigenaar(gebruiker_id, vernietigingstaak_id, nieuwe_gebruiker_id=101)
-
 
 def test_gewijzigde_proceseigenaar_succesvol():
     service = VTProceseigenaarRelatieService()
@@ -65,7 +59,6 @@ def test_gewijzigde_proceseigenaar_succesvol():
             service.wijzig_proceseigenaar(gebruiker_id, vernietigingstaak_id, nieuwe_gebruiker_id)
             mock_update.assert_called_once_with(gebruiker_id, vernietigingstaak_id, nieuwe_gebruiker_id)
 
-
 def test_raadpleeg_proceseigenaar_gevonden():
     service = VTProceseigenaarRelatieService()
     vernietigingstaak_id = 999
@@ -73,7 +66,6 @@ def test_raadpleeg_proceseigenaar_gevonden():
     with patch.object(service, "get_proceseigenaar_by_vernietigingstaak", return_value=proceseigenaar):
         result = service.raadpleeg_proceseigenaar(vernietigingstaak_id)
         assert result == proceseigenaar
-
 
 def test_raadpleeg_proceseigenaar_niet_gevonden():
     service = VTProceseigenaarRelatieService()
