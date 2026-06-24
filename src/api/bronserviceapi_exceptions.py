@@ -1,19 +1,11 @@
-class BronAPIException(Exception):
-    """Base exception for BronAPI related errors."""
+class BronServiceAPIException(Exception):
+    """Base exception for BronServiceAPI related errors."""
     pass
 
-class BronAPINotFoundException(BronAPIException):
+class BronNotFoundException(BronServiceAPIException):
     """Exception raised when a requested resource is not found."""
     pass
 
-class BronAPIInvalidRequestException(BronAPIException):
-    """Exception raised for invalid API requests."""
-    pass
-
-class BronAPIUnauthorizedException(BronAPIException):
-    """Exception raised for unauthorized API access."""
-    pass
-
-class BronAPIInternalErrorException(BronAPIException):
-    """Exception raised for internal errors in the BronAPI component."""
+class BronAlreadyExistsException(BronServiceAPIException):
+    """Exception raised when trying to create a resource that already exists."""
     pass
