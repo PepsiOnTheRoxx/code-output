@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.deletebron import DeleteBron, BronService
-from src.services.deletebron_exceptions import BronNotFoundException, BronDeleteException
+from src.services.deletebron_exceptions import BronNotFoundException, DeleteBronException
 
 def test_deletebron_success():
     bron_service = BronService()
@@ -27,6 +27,6 @@ def test_deletebron_delete_exception():
     bron_obj = MagicMock(id=bron_id)
 
     with patch.object(bron_service, 'get_bron_by_id', return_value=bron_obj):
-        with patch.object(bron_service, 'delete_bron', side_effect=BronDeleteException):
-            with pytest.raises(BronDeleteException):
+        with patch.object(bron_service, 'delete_bron', side_effect=DeleteBronException):
+            with pytest.raises(DeleteBronException):
                 DeleteBron(bron_service).execute(bron_id)

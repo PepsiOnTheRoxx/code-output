@@ -1,4 +1,4 @@
-from src.services.deletebron_exceptions import BronNotFoundException, BronDeleteException
+from src.services.deletebron_exceptions import BronNotFoundException, DeleteBronException
 
 class BronService:
     def get_bron_by_id(self, bron_id):
@@ -17,4 +17,7 @@ class DeleteBron:
         bron = self.bron_service.get_bron_by_id(bron_id)
         if bron is None:
             raise BronNotFoundException(f"Bron with id {bron_id} not found")
-        self.bron_service.delete_bron(bron_id)
+        try:
+            self.bron_service.delete_bron(bron_id)
+        except DeleteBronException as e:
+            raise e
