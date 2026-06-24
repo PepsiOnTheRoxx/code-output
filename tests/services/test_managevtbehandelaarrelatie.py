@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import MagicMock, patch
 from src.services.managevtbehandelaarrelatie import VTBehandelaarRelatieService
 from src.services.managevtbehandelaarrelatie_exceptions import (
-    VTBehandelaarRelatieBestaatAlException,
-    VTBehandelaarRelatieNietGevondenException,
-    OngeldigeBehandelaarException,
+    VTBehandelaarRelatieAlreadyExists,
+    VTBehandelaarRelatieNotFound,
+    InvalidVTBehandelaarRelatieData,
 )
 
 @pytest.fixture
@@ -22,15 +22,15 @@ def test_voeg_behandelaar_toe_succesvol(service):
 def test_voeg_behandelaar_toe_bestaat_al_exception(service):
     gebruiker_id = 1
     vernietigingstaak_id = 20
-    with patch.object(service, "voeg_behandelaar_toe", side_effect=VTBehandelaarRelatieBestaatAlException):
-        with pytest.raises(VTBehandelaarRelatieBestaatAlException):
+    with patch.object(service, "voeg_behandelaar_toe", side_effect=VTBehandelaarRelatieAlreadyExists):
+        with pytest.raises(VTBehandelaarRelatieAlreadyExists):
             service.voeg_behandelaar_toe(gebruiker_id, vernietigingstaak_id)
 
 def test_voeg_behandelaar_toe_ongeldige_behandelaar_exception(service):
     gebruiker_id = 99
     vernietigingstaak_id = 21
-    with patch.object(service, "voeg_behandelaar_toe", side_effect=OngeldigeBehandelaarException):
-        with pytest.raises(OngeldigeBehandelaarException):
+    with patch.object(service, "voeg_behandelaar_toe", side_effect=InvalidVTBehandelaarRelatieData):
+        with pytest.raises(InvalidVTBehandelaarRelatieData):
             service.voeg_behandelaar_toe(gebruiker_id, vernietigingstaak_id)
 
 def test_verwijder_behandelaar_succesvol(service):
@@ -44,8 +44,8 @@ def test_verwijder_behandelaar_succesvol(service):
 def test_verwijder_behandelaar_niet_gevonden_exception(service):
     gebruiker_id = 3
     vernietigingstaak_id = 18
-    with patch.object(service, "verwijder_behandelaar", side_effect=VTBehandelaarRelatieNietGevondenException):
-        with pytest.raises(VTBehandelaarRelatieNietGevondenException):
+    with patch.object(service, "verwijder_behandelaar", side_effect=VTBehandelaarRelatieNotFound):
+        with pytest.raises(VTBehandelaarRelatieNotFound):
             service.verwijder_behandelaar(gebruiker_id, vernietigingstaak_id)
 
 def test_get_behandelaars_by_taak_succesvol(service):

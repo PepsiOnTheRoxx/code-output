@@ -1,7 +1,7 @@
 from src.services.managevtbehandelaarrelatie_exceptions import (
-    VTBehandelaarRelatieBestaatAlException,
-    VTBehandelaarRelatieNietGevondenException,
-    OngeldigeBehandelaarException,
+    VTBehandelaarRelatieAlreadyExists,
+    VTBehandelaarRelatieNotFound,
+    InvalidVTBehandelaarRelatieData,
 )
 
 class VTBehandelaarRelatieService:
@@ -14,11 +14,11 @@ class VTBehandelaarRelatieService:
 
     def voeg_behandelaar_toe(self, gebruiker_id, vernietigingstaak_id):
         if not self._is_geldige_behandelaar(gebruiker_id):
-            raise OngeldigeBehandelaarException()
+            raise InvalidVTBehandelaarRelatieData()
 
         key = (gebruiker_id, vernietigingstaak_id)
         if key in self._relaties:
-            raise VTBehandelaarRelatieBestaatAlException()
+            raise VTBehandelaarRelatieAlreadyExists()
 
         self._relaties[key] = True
         self._taak_to_behandelaars.setdefault(vernietigingstaak_id, set()).add(gebruiker_id)
@@ -28,7 +28,7 @@ class VTBehandelaarRelatieService:
     def verwijder_behandelaar(self, gebruiker_id, vernietigingstaak_id):
         key = (gebruiker_id, vernietigingstaak_id)
         if key not in self._relaties:
-            raise VTBehandelaarRelatieNietGevondenException()
+            raise VTBehandelaarRelatieNotFound()
 
         del self._relaties[key]
         if vernietigingstaak_id in self._taak_to_behandelaars:
