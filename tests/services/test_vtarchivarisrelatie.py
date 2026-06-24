@@ -2,10 +2,10 @@ import pytest
 from unittest.mock import patch, MagicMock
 from src.services.vtarchivarisrelatie import VTArchivarisRelatieService
 from src.services.vtarchivarisrelatie_exceptions import (
-    ArchivarisRelatieAlreadyExistsException,
-    ArchivarisRelatieNotFoundException,
-    InvalidGebruikerException,
-    InvalidVernietigingstaakException,
+    VTArchivarisRelatieAlreadyExistsException as ArchivarisRelatieAlreadyExistsException,
+    VTArchivarisRelatieNotFoundException as ArchivarisRelatieNotFoundException,
+    VTArchivarisRelatieInvalidUserException as InvalidGebruikerException,
+    VTArchivarisRelatieInvalidTaakException as InvalidVernietigingstaakException,
 )
 
 @pytest.fixture
