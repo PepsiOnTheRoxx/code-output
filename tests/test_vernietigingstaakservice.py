@@ -1,43 +1,41 @@
 import pytest
-from src.vernietigingstaakservice import VernietigingstaakService, Vernietigingstaak
+from unittest.mock import MagicMock, patch
+from src.vernietigingstaakservice import VernietigingstaakService
 
 @pytest.fixture
 def service():
     return VernietigingstaakService()
 
-def test_create_vernietigingstaak_success(service):
-    aantekeningen = "Dit is een test taak"
-    datum = "2024-06-12"
-    status = "In behandeling"
-    task = service.create_vernietigingstaak(aantekeningen, datum, status)
-    assert isinstance(task, Vernietigingstaak)
-    assert task.aantekeningen == aantekeningen
-    assert task.datum == datum
-    assert task.status == status
+def test_delete_existing_taak_success(service):
+    taak_id = 123
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=True)
+    result = service.delete_vernietigingstaak(taak_id)
+    service._delete_taak.assert_called_once_with(taak_id)
+    assert result is True
 
-def test_create_vernietigingstaak_missing_aantekeningen(service):
-    datum = "2024-06-12"
-    status = "In behandeling"
+def test_delete_non_existing_taak_raises_error(service):
+    taak_id = 555
+    service._get_taak_by_id = MagicMock(return_value=None)
     with pytest.raises(ValueError):
-        service.create_vernietigingstaak(None, datum, status)
+        service.delete_vernietigingstaak(taak_id)
 
-def test_create_vernietigingstaak_invalid_datum(service):
-    aantekeningen = "Vernietiging gepland"
-    datum = "invalid-date"
-    status = "Gepland"
-    with pytest.raises(ValueError):
-        service.create_vernietigingstaak(aantekeningen, datum, status)
+def test_delete_taak_deletion_failure(service):
+    taak_id = 456
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=False)
+    result = service.delete_vernietigingstaak(taak_id)
+    assert result is False
 
-def test_create_vernietigingstaak_invalid_status(service):
-    aantekeningen = "Test"
-    datum = "2024-06-12"
-    status = "Onbekend"
-    with pytest.raises(ValueError):
-        service.create_vernietigingstaak(aantekeningen, datum, status)
+def test_delete_taak_calls_correct_methods(service):
+    taak_id = 789
+    service._get_taak_by_id = MagicMock(return_value={"id": taak_id})
+    service._delete_taak = MagicMock(return_value=True)
+    service.delete_vernietigingstaak(taak_id)
+    service._get_taak_by_id.assert_called_once_with(taak_id)
+    service._delete_taak.assert_called_once_with(taak_id)
 
-def test_create_vernietigingstaak_persists_task(service):
-    aantekeningen = "Bewaar termijn is verstreken"
-    datum = "2024-06-13"
-    status = "Voltooid"
-    task = service.create_vernietigingstaak(aantekeningen, datum, status)
-    assert task in service.tasks
+def test_delete_taak_invalid_id(service):
+    invalid_id = None
+    with pytest.raises(TypeError):
+        service.delete_vernietigingstaak(invalid_id)

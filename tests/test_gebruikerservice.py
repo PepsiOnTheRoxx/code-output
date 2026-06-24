@@ -1,38 +1,31 @@
 import pytest
-from src.gebruikerservice import GebruikerService
+from src.gebruikerservice import GebruikerService, GebruikerNietGevondenFout
 
 @pytest.fixture
-def service():
-    return GebruikerService()
+def gebruiker_service():
+    service = GebruikerService()
+    service.voeg_gebruiker_toe('jan', 'Jan Jansen', 'jan@voorbeeld.nl')
+    service.voeg_gebruiker_toe('piet', 'Piet Pietersen', 'piet@voorbeeld.nl')
+    return service
 
-def test_create_gebruiker_success(service):
-    email = "test@voorbeeld.nl"
-    naam = "Test Gebruiker"
-    gebruiker = service.create_gebruiker(email, naam)
-    assert gebruiker.emailadres == email
-    assert gebruiker.naam == naam
-    assert hasattr(gebruiker, "id")
+def test_verwijder_bestaande_gebruiker(gebruiker_service):
+    assert gebruiker_service.bestaat_gebruiker('jan')
+    gebruiker_service.verwijder_gebruiker('jan')
+    assert not gebruiker_service.bestaat_gebruiker('jan')
 
-def test_create_gebruiker_missing_email(service):
-    naam = "Test Gebruiker"
-    with pytest.raises(ValueError):
-        service.create_gebruiker(None, naam)
+def test_verwijder_andere_gebruiker_blijft_bestaan(gebruiker_service):
+    gebruiker_service.verwijder_gebruiker('jan')
+    assert gebruiker_service.bestaat_gebruiker('piet')
 
-def test_create_gebruiker_missing_naam(service):
-    email = "test@voorbeeld.nl"
-    with pytest.raises(ValueError):
-        service.create_gebruiker(email, None)
+def test_verwijder_niet_bestaande_gebruiker_geeft_fout(gebruiker_service):
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('klaas')
 
-def test_create_gebruiker_invalid_email_format(service):
-    naam = "Test Gebruiker"
-    invalid_email = "geenemailformaat"
-    with pytest.raises(ValueError):
-        service.create_gebruiker(invalid_email, naam)
+def test_verwijder_gebruiker_meerdere_keer(gebruiker_service):
+    gebruiker_service.verwijder_gebruiker('jan')
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('jan')
 
-def test_create_gebruiker_duplicate_email(service):
-    email = "test@voorbeeld.nl"
-    naam1 = "Gebruiker 1"
-    naam2 = "Gebruiker 2"
-    service.create_gebruiker(email, naam1)
-    with pytest.raises(ValueError):
-        service.create_gebruiker(email, naam2)
+def test_verwijder_gebruiker_met_leeg_id(gebruiker_service):
+    with pytest.raises(GebruikerNietGevondenFout):
+        gebruiker_service.verwijder_gebruiker('')
