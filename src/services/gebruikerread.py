@@ -5,6 +5,6 @@ class GebruikerService:
         self._gebruikers = {}
 
     def lees_gebruiker(self, gebruiker_id):
-        if type(gebruiker_id) is not int or gebruiker_id is None or gebruiker_id not in self._gebruikers or gebruiker_id <= 0:
+        if not isinstance(gebruiker_id, int) or gebruiker_id is None or gebruiker_id not in self._gebruikers or gebruiker_id <= 0:
             raise GebruikerNietGevondenException()
         return self._gebruikers[gebruiker_id]

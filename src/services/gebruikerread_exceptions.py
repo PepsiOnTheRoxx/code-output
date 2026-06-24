@@ -2,7 +2,7 @@ class GebruikerReadException(Exception):
     """Base exception for GebruikerRead errors."""
     pass
 
-class GebruikerReadNotFoundException(GebruikerReadException):
+class GebruikerNietGevondenException(GebruikerReadException):
     """Raised when a Gebruiker could not be found."""
     pass
 
