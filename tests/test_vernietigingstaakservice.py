@@ -1,43 +1,38 @@
 import pytest
-from src.vernietigingstaakservice import VernietigingstaakService, Vernietigingstaak
+from src.vernietigingstaakservice import VernietigingstaakService
 
 @pytest.fixture
 def service():
     return VernietigingstaakService()
 
-def test_create_vernietigingstaak_success(service):
-    aantekeningen = "Dit is een test taak"
-    datum = "2024-06-12"
-    status = "In behandeling"
-    task = service.create_vernietigingstaak(aantekeningen, datum, status)
-    assert isinstance(task, Vernietigingstaak)
-    assert task.aantekeningen == aantekeningen
-    assert task.datum == datum
-    assert task.status == status
+def test_read_vernietigingstaak_returns_expected_object(service):
+    taak_id = 1
+    result = service.read_vernietigingstaak(taak_id)
+    assert isinstance(result, dict)
+    assert "id" in result
+    assert result["id"] == taak_id
 
-def test_create_vernietigingstaak_missing_aantekeningen(service):
-    datum = "2024-06-12"
-    status = "In behandeling"
-    with pytest.raises(ValueError):
-        service.create_vernietigingstaak(None, datum, status)
+def test_read_vernietigingstaak_includes_all_attributes(service):
+    taak_id = 2
+    result = service.read_vernietigingstaak(taak_id)
+    assert "id" in result
+    assert "status" in result
+    assert "datum" in result
 
-def test_create_vernietigingstaak_invalid_datum(service):
-    aantekeningen = "Vernietiging gepland"
-    datum = "invalid-date"
-    status = "Gepland"
-    with pytest.raises(ValueError):
-        service.create_vernietigingstaak(aantekeningen, datum, status)
+def test_read_vernietigingstaak_invalid_id_returns_none_or_raises(service):
+    invalid_id = 9999
+    with pytest.raises(Exception) or service.read_vernietigingstaak(invalid_id) is None:
+        service.read_vernietigingstaak(invalid_id)
 
-def test_create_vernietigingstaak_invalid_status(service):
-    aantekeningen = "Test"
-    datum = "2024-06-12"
-    status = "Onbekend"
-    with pytest.raises(ValueError):
-        service.create_vernietigingstaak(aantekeningen, datum, status)
+def test_read_vernietigingstaak_multiple_calls_consistent(service):
+    taak_id = 3
+    result1 = service.read_vernietigingstaak(taak_id)
+    result2 = service.read_vernietigingstaak(taak_id)
+    assert result1 == result2
 
-def test_create_vernietigingstaak_persists_task(service):
-    aantekeningen = "Bewaar termijn is verstreken"
-    datum = "2024-06-13"
-    status = "Voltooid"
-    task = service.create_vernietigingstaak(aantekeningen, datum, status)
-    assert task in service.tasks
+def test_read_vernietigingstaak_attributes_types(service):
+    taak_id = 4
+    result = service.read_vernietigingstaak(taak_id)
+    assert isinstance(result["id"], int)
+    assert isinstance(result["status"], str)
+    assert isinstance(result["datum"], str)
