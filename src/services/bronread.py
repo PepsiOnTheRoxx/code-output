@@ -1,11 +1,21 @@
 from src.services.bronread_exceptions import BronNotFoundException, BronAccessException
 
 class BronRepository:
+    def __init__(self):
+        # In-memory "database"
+        self._bronnen = [
+            {'id': 1, 'naam': 'BronA'},
+            {'id': 2, 'naam': 'BronB'},
+        ]
+
     def get_by_id(self, bron_id):
-        raise NotImplementedError
+        for bron in self._bronnen:
+            if bron['id'] == bron_id:
+                return bron
+        return None
 
     def get_all(self):
-        raise NotImplementedError
+        return list(self._bronnen)
 
 class BronService:
     def __init__(self):
