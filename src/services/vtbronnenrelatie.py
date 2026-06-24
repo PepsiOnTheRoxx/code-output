@@ -4,23 +4,49 @@ from src.services.vtbronnenrelatie_exceptions import (
     RelatieBestaatAlException,
 )
 
+# Simpele in-memory opslag voor bron, taak en relaties
+__BRONNEN = {}
+__TAKEN = {}
+__RELATIES = set()  # Set van tuples (bron_id, taak_id)
+
+def reset_stores():
+    global __BRONNEN, __TAKEN, __RELATIES
+    __BRONNEN.clear()
+    __TAKEN.clear()
+    __RELATIES.clear()
+
 class BronRepository:
     def get_by_id(self, bron_id):
-        pass
+        return __BRONNEN.get(bron_id)
+
+    def save(self, bron):
+        __BRONNEN[bron['id']] = bron
+        return bron
 
 class VernietigingstaakRepository:
     def get_by_id(self, taak_id):
-        pass
+        return __TAKEN.get(taak_id)
+
+    def save(self, taak):
+        __TAKEN[taak['id']] = taak
+        return taak
 
 class RelatieRepository:
     def get_by_bron_en_taak(self, bron_id, taak_id):
-        pass
+        if (bron_id, taak_id) in __RELATIES:
+            # Iets simpels als representatie
+            return {'bron_id': bron_id, 'taak_id': taak_id}
+        return None
 
     def create(self, bron_id, taak_id):
-        pass
+        __RELATIES.add((bron_id, taak_id))
+        return {'bron_id': bron_id, 'taak_id': taak_id}
 
     def delete_by_bron_en_taak(self, bron_id, taak_id):
-        pass
+        if (bron_id, taak_id) in __RELATIES:
+            __RELATIES.remove((bron_id, taak_id))
+            return True
+        return False
 
 class VTBronnenRelatieService:
     def __init__(self):

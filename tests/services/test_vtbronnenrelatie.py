@@ -1,7 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.vtbronnenrelatie import VTBronnenRelatieService
+from src.services.vtbronnenrelatie import VTBronnenRelatieService, reset_stores, BronRepository, VernietigingstaakRepository
 from src.services.vtbronnenrelatie_exceptions import BronNotFoundException, VernietigingstaakNotFoundException, RelatieBestaatAlException
+
+@pytest.fixture(autouse=True)
+def clear_datastores():
+    reset_stores()
+    yield
+    reset_stores()
 
 @pytest.fixture
 def service():
