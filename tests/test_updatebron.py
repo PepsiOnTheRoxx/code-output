@@ -12,27 +12,36 @@ class BronService:
     def update_bron(self, bron_id, new_data):
         if bron_id not in self.bron_data:
             raise BronNotFoundException(f'Bron with ID {bron_id} not found.')
-        self.bron_data[bron_id].update(new_data)
+        for key, value in new_data.items():
+            if key == 'name':
+                self.bron_data[bron_id]['name'] = value
+            else:
+                self.bron_data[bron_id]['attributes'][key] = value
 
     def get_bron(self, bron_id):
         if bron_id not in self.bron_data:
             raise BronNotFoundException(f'Bron with ID {bron_id} not found.')
-        return self.bron_data[bron_id]
+        # return a deep copy to prevent test pollution
+        return {
+            'name': self.bron_data[bron_id]['name'],
+            'attributes': dict(self.bron_data[bron_id]['attributes'])
+        }
 
 def test_update_bron_success():
     service = BronService()
     service.update_bron(12, {'name': 'Updated Bron', 15: 'Updated Value A'})
     updated_bron = service.get_bron(12)
     assert updated_bron['name'] == 'Updated Bron'
-    assert updated_bron[15] == 'Updated Value A'
-    assert updated_bron[16] == 'Value B'
+    assert updated_bron['attributes'][15] == 'Updated Value A'
+    assert updated_bron['attributes'][16] == 'Value B'
 
 def test_update_bron_partial_success():
     service = BronService()
     service.update_bron(12, {16: 'Updated Value B'})
     updated_bron = service.get_bron(12)
-    assert updated_bron[16] == 'Updated Value B'
-    assert updated_bron[15] == 'Value A'
+    assert updated_bron['name'] == 'Bron 1'
+    assert updated_bron['attributes'][15] == 'Value A'
+    assert updated_bron['attributes'][16] == 'Updated Value B'
 
 def test_update_bron_not_found():
     service = BronService()
