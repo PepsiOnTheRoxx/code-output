@@ -2,8 +2,16 @@ class GebruikerDeleteException(Exception):
     """Basisklasse voor GebruikerDelete exceptions."""
     pass
 
-class GebruikerNietGevondenException(GebruikerDeleteException):
+class GebruikerBestaatNietException(GebruikerDeleteException):
     """Gebruiker kon niet worden gevonden."""
+    pass
+
+class VerwijderNietToegestaanException(GebruikerDeleteException):
+    """Niet toegestaan om gebruiker te verwijderen."""
+    pass
+
+class GebruikerNietGevondenException(GebruikerDeleteException):
+    """Alias voor backwards compatibility."""
     pass
 
 class GebruikerVerwijderFoutException(GebruikerDeleteException):
