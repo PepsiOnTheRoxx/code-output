@@ -1,4 +1,4 @@
-from src.services.readvernietigingstaak_exceptions import VernietigingstaakNotFound, InvalidVernietigingstaakID
+from src.services.readvernietigingstaak_exceptions import VernietigingstaakNotFoundException, VernietigingstaakInvalidInputException
 
 class VernietigingstaakService:
     def read_vernietigingstaak(self, taak_id):

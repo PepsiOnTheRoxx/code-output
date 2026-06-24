@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.services.readvernietigingstaak import VernietigingstaakService
-from src.services.readvernietigingstaak_exceptions import VernietigingstaakNotFound, InvalidVernietigingstaakID
+from src.services.readvernietigingstaak_exceptions import VernietigingstaakNotFoundException, VernietigingstaakInvalidInputException
 
 @pytest.fixture
 def service():
@@ -15,13 +15,13 @@ def test_read_vernietigingstaak_success(service):
         mock_get.assert_called_once_with(10)
 
 def test_read_vernietigingstaak_not_found(service):
-    with patch.object(service, 'get_by_id', side_effect=VernietigingstaakNotFound("Not found")):
-        with pytest.raises(VernietigingstaakNotFound):
+    with patch.object(service, 'get_by_id', side_effect=VernietigingstaakNotFoundException("Not found")):
+        with pytest.raises(VernietigingstaakNotFoundException):
             service.read_vernietigingstaak(99)
 
 def test_read_vernietigingstaak_invalid_id(service):
-    with patch.object(service, 'get_by_id', side_effect=InvalidVernietigingstaakID("Invalid ID")):
-        with pytest.raises(InvalidVernietigingstaakID):
+    with patch.object(service, 'get_by_id', side_effect=VernietigingstaakInvalidInputException("Invalid ID")):
+        with pytest.raises(VernietigingstaakInvalidInputException):
             service.read_vernietigingstaak("invalid")
 
 def test_read_vernietigingstaak_calls_correct_method(service):
