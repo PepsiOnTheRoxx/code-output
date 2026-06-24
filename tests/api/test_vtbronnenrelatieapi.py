@@ -5,8 +5,8 @@ from src.api.vtbronnenrelatieapi import (
     VTBronnenRelatieAPI,
 )
 from src.api.vtbronnenrelatieapi_exceptions import (
-    VTBRonnenRelatieNotFoundException,
-    VTBRonnenRelatieValidationException,
+    VTBronnenRelatieNotFoundException,
+    VTBronnenRelatieValidationException,
 )
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def test_get_relatie_success(client):
         assert response.get_json() == relatie_data
 
 def test_get_relatie_not_found(client):
-    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.get_relatie_by_id', side_effect=VTBRonnenRelatieNotFoundException("Not found")):
+    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.get_relatie_by_id', side_effect=VTBronnenRelatieNotFoundException("Not found")):
         response = client.get('/vtbronnenrelatie/9999')
         assert response.status_code == 404
         assert response.get_json()['error'] == 'Not found'
@@ -43,7 +43,7 @@ def test_post_relatie_success(client):
 
 def test_post_relatie_validation_error(client):
     post_data = {'naam': ''}  # ongeldig, leeg veld
-    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.create_relatie', side_effect=VTBRonnenRelatieValidationException('Validatiefout')):
+    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.create_relatie', side_effect=VTBronnenRelatieValidationException('Validatiefout')):
         response = client.post('/vtbronnenrelatie', json=post_data)
         assert response.status_code == 400
         assert response.get_json()['error'] == 'Validatiefout'
@@ -58,7 +58,7 @@ def test_put_relatie_success(client):
 
 def test_put_relatie_not_found(client):
     put_data = {'naam': 'BestaatNiet'}
-    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.update_relatie', side_effect=VTBRonnenRelatieNotFoundException("Niet gevonden")):
+    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.update_relatie', side_effect=VTBronnenRelatieNotFoundException("Niet gevonden")):
         response = client.put('/vtbronnenrelatie/9999', json=put_data)
         assert response.status_code == 404
         assert response.get_json()['error'] == 'Niet gevonden'
@@ -69,7 +69,7 @@ def test_delete_relatie_success(client):
         assert response.status_code == 204
 
 def test_delete_relatie_not_found(client):
-    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.delete_relatie', side_effect=VTBRonnenRelatieNotFoundException("Verwijderen mislukt")):
+    with patch('src.api.vtbronnenrelatieapi.VTBronnenRelatieAPI.delete_relatie', side_effect=VTBronnenRelatieNotFoundException("Verwijderen mislukt")):
         response = client.delete('/vtbronnenrelatie/9999')
         assert response.status_code == 404
         assert response.get_json()['error'] == 'Verwijderen mislukt'

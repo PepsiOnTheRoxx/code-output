@@ -1,8 +1,8 @@
 from flask import request, jsonify
 
 from src.api.vtbronnenrelatieapi_exceptions import (
-    VTBRonnenRelatieNotFoundException,
-    VTBRonnenRelatieValidationException,
+    VTBronnenRelatieNotFoundException,
+    VTBronnenRelatieValidationException,
 )
 
 class VTBronnenRelatieAPI:
@@ -18,7 +18,7 @@ class VTBronnenRelatieAPI:
         def get_relatie_route(relatie_id):
             try:
                 return jsonify(self.get_relatie_by_id(relatie_id)), 200
-            except VTBRonnenRelatieNotFoundException as ex:
+            except VTBronnenRelatieNotFoundException as ex:
                 return jsonify({'error': str(ex)}), 404
             except Exception as ex:
                 return jsonify({'error': str(ex)}), 500
@@ -28,7 +28,7 @@ class VTBronnenRelatieAPI:
             try:
                 data = request.json
                 return jsonify(self.create_relatie(data)), 201
-            except VTBRonnenRelatieValidationException as ex:
+            except VTBronnenRelatieValidationException as ex:
                 return jsonify({'error': str(ex)}), 400
             except Exception as ex:
                 return jsonify({'error': str(ex)}), 500
@@ -38,9 +38,9 @@ class VTBronnenRelatieAPI:
             try:
                 data = request.json
                 return jsonify(self.update_relatie(relatie_id, data)), 200
-            except VTBRonnenRelatieNotFoundException as ex:
+            except VTBronnenRelatieNotFoundException as ex:
                 return jsonify({'error': str(ex)}), 404
-            except VTBRonnenRelatieValidationException as ex:
+            except VTBronnenRelatieValidationException as ex:
                 return jsonify({'error': str(ex)}), 400
             except Exception as ex:
                 return jsonify({'error': str(ex)}), 500
@@ -50,7 +50,7 @@ class VTBronnenRelatieAPI:
             try:
                 self.delete_relatie(relatie_id)
                 return '', 204
-            except VTBRonnenRelatieNotFoundException as ex:
+            except VTBronnenRelatieNotFoundException as ex:
                 return jsonify({'error': str(ex)}), 404
             except Exception as ex:
                 return jsonify({'error': str(ex)}), 500
@@ -61,16 +61,16 @@ class VTBronnenRelatieAPI:
 
     def get_relatie_by_id(self, relatie_id):
         # Implementatie hier (mock/voorbeeld)
-        raise VTBRonnenRelatieNotFoundException("Not implemented")
+        raise VTBronnenRelatieNotFoundException("Not implemented")
 
     def create_relatie(self, data):
         # Implementatie hier (mock/voorbeeld)
-        raise VTBRonnenRelatieValidationException("Not implemented")
+        raise VTBronnenRelatieValidationException("Not implemented")
 
     def update_relatie(self, relatie_id, data):
         # Implementatie hier (mock/voorbeeld)
-        raise VTBRonnenRelatieNotFoundException("Not implemented")
+        raise VTBronnenRelatieNotFoundException("Not implemented")
 
     def delete_relatie(self, relatie_id):
         # Implementatie hier (mock/voorbeeld)
-        raise VTBRonnenRelatieNotFoundException("Not implemented")
+        raise VTBronnenRelatieNotFoundException("Not implemented")
