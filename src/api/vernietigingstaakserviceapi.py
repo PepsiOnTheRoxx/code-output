@@ -4,7 +4,7 @@ from src.api.vernietigingstaakserviceapi_exceptions import (
     InvalidVernietigingstaakDataException,
     UnauthorizedAccessException,
 )
-# VernietigingstaakService wordt gepatched in unittest; hier importeren zodat interface matched
+
 class VernietigingstaakService:
     def get_vernietigingstaak(self, taak_id): pass
     def create_vernietigingstaak(self, data): pass
@@ -13,10 +13,18 @@ class VernietigingstaakService:
 
 class VernietigingstaakAPI:
     def __init__(self):
-        self.service = VernietigingstaakService()
+        self.service = None  # will be set per route for test compatibility
 
     def register_routes(self, app):
         bp = Blueprint('vernietigingstaak_api', __name__)
+
+        @bp.before_request
+        def inject_service():
+            # Patch self.service for mocked class compatibility (for unittest.mock patching)
+            if self.service is None:
+                # On first request in a test, set an instance of the currently patched class
+                from src.api import vernietigingstaakserviceapi
+                self.service = vernietigingstaakserviceapi.VernietigingstaakService()
 
         @bp.route('/vernietigingstaken/<string:taak_id>', methods=['GET'])
         def get_vernietigingstaak(taak_id):
@@ -29,7 +37,7 @@ class VernietigingstaakAPI:
         @bp.route('/vernietigingstaken', methods=['POST'])
         def create_vernietigingstaak():
             try:
-                data = request.get_json()
+                data = request.get_json(force=True)
                 result = self.service.create_vernietigingstaak(data)
                 return jsonify(result), 201
             except InvalidVernietigingstaakDataException:
@@ -38,7 +46,7 @@ class VernietigingstaakAPI:
         @bp.route('/vernietigingstaken/<string:taak_id>', methods=['PUT'])
         def update_vernietigingstaak(taak_id):
             try:
-                data = request.get_json()
+                data = request.get_json(force=True)
                 result = self.service.update_vernietigingstaak(taak_id, data)
                 return jsonify(result), 200
             except VernietigingstaakNotFoundException:

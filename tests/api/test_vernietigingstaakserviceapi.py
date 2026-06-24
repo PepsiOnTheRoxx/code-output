@@ -13,6 +13,7 @@ from src.api.vernietigingstaakserviceapi_exceptions import (
 def client():
     app = Flask(__name__)
     api = VernietigingstaakAPI()
+    api.service = None  # ensure it's injected at request time
     api.register_routes(app)
     app.config['TESTING'] = True
     with app.test_client() as client:
