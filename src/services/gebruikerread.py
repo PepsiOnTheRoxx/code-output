@@ -2,10 +2,10 @@ from src.services.gebruikerread_exceptions import GebruikerNietGevondenException
 
 class GebruikerRepository:
     def get_gebruiker_by_id(self, gebruiker_id):
-        pass
+        pass  # Wordt gemockt in de tests
 
     def get_alle_gebruikers(self):
-        pass
+        pass  # Wordt gemockt in de tests
 
 class GebruikerService:
     def __init__(self):

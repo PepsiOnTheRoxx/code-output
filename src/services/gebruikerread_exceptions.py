@@ -2,8 +2,12 @@ class GebruikerReadException(Exception):
     """Base exception for GebruikerRead feature in GebruikerService."""
     pass
 
-class GebruikerNotFoundException(GebruikerReadException):
+class GebruikerNietGevondenException(GebruikerReadException):
     """Raised when a gebruiker (user) is not found."""
+    pass
+
+class OnbekendeFoutException(GebruikerReadException):
+    """Raised when an unknown error occurs while reading gebruiker."""
     pass
 
 class GebruikerReadDatabaseException(GebruikerReadException):
