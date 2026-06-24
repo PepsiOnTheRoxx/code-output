@@ -4,29 +4,39 @@ class Bron:
         self.type = type
         self.attributes = attributes
 
+    def __eq__(self, other):
+        if isinstance(other, Bron):
+            return (
+                self.name == other.name and
+                self.type == other.type and
+                self.attributes == other.attributes
+            )
+        return False
+
 class BronService:
+    VALID_ATTRIBUTES = {
+        "Attribute15": 15,
+        "Attribute16": 16
+    }
+
+    REQUIRED_ATTRIBUTES = set(VALID_ATTRIBUTES.keys())
+
     def __init__(self):
         self._brons = []
-        self._valid_attributes = {
-            "Attribute15": 15,
-            "Attribute16": 16
-        }
 
     def create_bron(self, name, type, attributes):
-        required_attrs = set(self._valid_attributes.keys())
-        if set(attributes.keys()) != required_attrs:
-            missing = required_attrs - set(attributes.keys())
-            if missing:
-                raise ValueError("Missing required attributes")
-            invalid = set(attributes.keys()) - required_attrs
-            if invalid:
-                raise KeyError("Invalid attribute(s)")
-        for key in attributes.keys():
-            if key not in self._valid_attributes:
-                raise KeyError(f"Invalid attribute: {key}")
+        # Check that all required attributes are present
+        if set(attributes.keys()) != self.REQUIRED_ATTRIBUTES:
+            raise ValueError("Missing required attribute(s)")
+
+        # Check that all supplied attribute keys are valid
+        for key in attributes:
+            if key not in self.VALID_ATTRIBUTES:
+                raise KeyError(f"Attribute '{key}' is invalid.")
+
         bron = Bron(name, type, attributes.copy())
         self._brons.append(bron)
         return bron
 
     def get_all_brons(self):
-        return list(self._brons)
+        return self._brons.copy()
