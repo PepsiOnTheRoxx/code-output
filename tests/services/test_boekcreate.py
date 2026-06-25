@@ -1,8 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekcreate import BoekCreateService
-from src.services.boekcreate_exceptions import BoekBestaatAlException, BoekAanmakenMisluktException
-
+from src.services.boekcreate_exceptions import BoekCreateDuplicateException, BoekCreateDatabaseException
 
 def test_boek_create_success():
     db_connection = MagicMock()
@@ -48,7 +47,6 @@ def test_boek_create_success():
     )
     db_connection.commit.assert_called_once()
 
-
 def test_boek_create_boek_bestaat_al_exception():
     db_connection = MagicMock()
     mock_cursor = MagicMock()
@@ -65,17 +63,15 @@ def test_boek_create_boek_bestaat_al_exception():
         "pagina_aantal": 300,
     }
 
-    # Simuleer bestaand boek (SELECT 1 FROM boeken WHERE isbn=?) geeft niet-None waarde terug
     mock_cursor.fetchone.return_value = (1,)
 
     service = BoekCreateService(db_connection)
-    with pytest.raises(BoekBestaatAlException):
+    with pytest.raises(BoekCreateDuplicateException):
         service.create_boek(boek_data)
 
     query_exists = "SELECT 1 FROM boeken WHERE isbn=?"
     mock_cursor.execute.assert_any_call(query_exists, (boek_data["isbn"],))
     db_connection.commit.assert_not_called()
-
 
 def test_boek_create_aanmaken_mislukt_exception_rowcount_zero():
     db_connection = MagicMock()
@@ -93,12 +89,11 @@ def test_boek_create_aanmaken_mislukt_exception_rowcount_zero():
         "pagina_aantal": 300,
     }
 
-    # Boek bestaat niet, maar insert mislukt
     mock_cursor.fetchone.return_value = None
     mock_cursor.rowcount = 0
 
     service = BoekCreateService(db_connection)
-    with pytest.raises(BoekAanmakenMisluktException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(boek_data)
 
     query_exists = "SELECT 1 FROM boeken WHERE isbn=?"
@@ -123,7 +118,6 @@ def test_boek_create_aanmaken_mislukt_exception_rowcount_zero():
     )
     db_connection.commit.assert_not_called()
 
-
 def test_boek_create_rollback_on_db_exception():
     db_connection = MagicMock()
     mock_cursor = MagicMock()
@@ -144,7 +138,7 @@ def test_boek_create_rollback_on_db_exception():
     mock_cursor.execute.side_effect = [None, Exception("DB failure")]
 
     service = BoekCreateService(db_connection)
-    with pytest.raises(BoekAanmakenMisluktException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(boek_data)
 
     db_connection.rollback.assert_called_once()
