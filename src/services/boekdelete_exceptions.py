@@ -3,21 +3,13 @@ class BoekDeleteException(Exception):
     pass
 
 class BoekNietGevondenException(BoekDeleteException):
-    """Raised when the specified Boek is not found."""
+    """Raised when the boek to delete is not found."""
     pass
 
-class BoekDeletePermissionException(BoekDeleteException):
-    """Raised when user has no permission to delete the Boek."""
+class BoekDeleteMisluktException(BoekDeleteException):
+    """Raised when the deletion of a boek fails."""
     pass
 
-class BoekDeleteDependencyException(BoekDeleteException):
-    """Raised when the Boek cannot be deleted due to dependencies."""
-    pass
-
-class BoekDeleteDatabaseException(BoekDeleteException):
-    """Raised when a database error occurs during Boek deletion."""
-    pass
-
-class BoekDeleteValidationException(BoekDeleteException):
-    """Raised when validation fails for Boek deletion."""
+class OngeldigeBoekIdException(BoekDeleteException):
+    """Raised when an invalid boek id is provided."""
     pass
