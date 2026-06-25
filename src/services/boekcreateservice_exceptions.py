@@ -10,10 +10,13 @@ class InvalidBoekDataException(BoekCreateServiceException):
     """Raised when provided boek data is invalid."""
     pass
 
-class BoekDatabaseException(BoekCreateServiceException):
+class BoekCreateServiceDatabaseException(BoekCreateServiceException):
     """Raised when there is a database error during boek creation."""
     pass
 
 class BoekServiceDependencyException(BoekCreateServiceException):
     """Raised when a dependency service fails during boek creation."""
     pass
+
+# Alias for tests and service-use
+BoekDatabaseException = BoekCreateServiceDatabaseException

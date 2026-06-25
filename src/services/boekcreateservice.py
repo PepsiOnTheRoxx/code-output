@@ -1,7 +1,7 @@
 from src.services.boekcreateservice_exceptions import (
     BoekAlreadyExistsException,
     InvalidBoekDataException,
-    BoekDatabaseException,
+    BoekDatabaseException as BoekDatabaseException,
     BoekServiceDependencyException,
 )
 from database import get_connection
@@ -76,20 +76,21 @@ class BoekCreateService:
 
     def create_boek(self, boek_data):
         if not self._validate_boek_data(boek_data):
-            raise InvalidBoekDataException("Missing or invalid boek data.")
+            raise InvalidBoekDataException("Ongeldige boekdata")
         if self.repository.exists_by_isbn(boek_data["isbn"]):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
-        # Haal alle schema relevante velden + extra jaar
-        auteur = boek_data.get("auteur")
-        beschrijving = boek_data.get("beschrijving")
-        is_uitgeleend = boek_data.get("is_uitgeleend", 0)
-        isbn = boek_data.get("isbn")
-        kaft_foto_url = boek_data.get("kaft_foto_url")
-        publicatiedatum = boek_data.get("publicatiedatum")
-        titel = boek_data.get("titel")
-        uitgeleend_datum = boek_data.get("uitgeleend_datum")
-        uitgeleend_max_tot = boek_data.get("uitgeleend_max_tot")
-        jaar = boek_data.get("jaar")
-        return self.repository.add(
-            auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot, jaar
-        )
+            raise BoekAlreadyExistsException("Boek al aanwezig")
+        try:
+            return self.repository.add(
+                auteur=boek_data.get("auteur"),
+                beschrijving=boek_data.get("beschrijving"),
+                is_uitgeleend=boek_data.get("is_uitgeleend", 0),
+                isbn=boek_data.get("isbn"),
+                kaft_foto_url=boek_data.get("kaft_foto_url"),
+                publicatiedatum=boek_data.get("publicatiedatum"),
+                titel=boek_data.get("titel"),
+                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
+                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot"),
+                jaar=boek_data.get("jaar")
+            )
+        except Exception as exc:
+            raise BoekDatabaseException(f"Database error: {exc}")
