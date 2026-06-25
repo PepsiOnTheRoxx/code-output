@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException
+from src.services.boekcreate_exceptions import BoekCreateDuplicateException, BoekCreateInvalidAttributeException
 
 @pytest.fixture
 def mock_db():
@@ -62,7 +62,7 @@ def test_create_boek_already_exists(mock_db):
         'taal': 'Nederlands'
     }
     mock_cursor.fetchone.return_value = (1,)
-    with pytest.raises(BoekAlreadyExistsException):
+    with pytest.raises(BoekCreateDuplicateException):
         service.create_boek(**boek_data)
     mock_cursor.execute.assert_any_call(
         "SELECT 1 FROM boek WHERE isbn=?",
@@ -83,7 +83,7 @@ def test_create_boek_invalid_data_missing_attribute(mock_db):
         'genre': 'Fictie',
         'taal': 'Nederlands'
     }
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateInvalidAttributeException):
         service.create_boek(**boek_data)
     assert not mock_conn.commit.called
 
@@ -100,6 +100,6 @@ def test_create_boek_invalid_data_wrong_type(mock_db):
         'genre': 'Fictie',
         'taal': 'Nederlands'
     }
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateInvalidAttributeException):
         service.create_boek(**boek_data)
     assert not mock_conn.commit.called

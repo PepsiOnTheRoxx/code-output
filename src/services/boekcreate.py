@@ -1,13 +1,13 @@
 from src.services.boekcreate_exceptions import (
-    BoekAlreadyExistsException,
-    InvalidBoekDataException,
+    BoekCreateDuplicateException,
+    BoekCreateInvalidAttributeException,
 )
 
 class BoekService:
     def __init__(self, db_connection):
         self.db_connection = db_connection
 
-    def create_boek(self, titel, auteur, isbn, publicatiejaar, uitgever, pagina_teller, genre, taal):
+    def create_boek(self, **kwargs):
         required_fields = {
             'titel': str,
             'auteur': str,
@@ -18,27 +18,17 @@ class BoekService:
             'genre': str,
             'taal': str,
         }
-        input_data = {
-            'titel': titel,
-            'auteur': auteur,
-            'isbn': isbn,
-            'publicatiejaar': publicatiejaar,
-            'uitgever': uitgever,
-            'pagina_teller': pagina_teller,
-            'genre': genre,
-            'taal': taal,
-        }
-        # Check for missing attributes
+        # Controleer op ontbrekende of onjuiste attributen
         for attr, t in required_fields.items():
-            if attr not in input_data or input_data[attr] is None:
-                raise InvalidBoekDataException(f"Vereist attribuut ontbreekt: {attr}")
-            if not isinstance(input_data[attr], t):
-                raise InvalidBoekDataException(f"Attribuut {attr} moet type {t.__name__} zijn.")
+            if attr not in kwargs or kwargs[attr] is None:
+                raise BoekCreateInvalidAttributeException(f"Vereist attribuut ontbreekt: {attr}")
+            if not isinstance(kwargs[attr], t):
+                raise BoekCreateInvalidAttributeException(f"Attribuut {attr} moet type {t.__name__} zijn.")
 
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT 1 FROM boek WHERE isbn=?", (isbn,))
+        cursor.execute("SELECT 1 FROM boek WHERE isbn=?", (kwargs['isbn'],))
         if cursor.fetchone() is not None:
-            raise BoekAlreadyExistsException(f"Boek met isbn {isbn} bestaat al.")
+            raise BoekCreateDuplicateException(f"Boek met isbn {kwargs['isbn']} bestaat al.")
 
         insert_sql = (
             "INSERT INTO boek (titel, auteur, isbn, publicatiejaar, uitgever, pagina_teller, genre, taal) "
@@ -47,14 +37,14 @@ class BoekService:
         cursor.execute(
             insert_sql,
             (
-                titel,
-                auteur,
-                isbn,
-                publicatiejaar,
-                uitgever,
-                pagina_teller,
-                genre,
-                taal
+                kwargs['titel'],
+                kwargs['auteur'],
+                kwargs['isbn'],
+                kwargs['publicatiejaar'],
+                kwargs['uitgever'],
+                kwargs['pagina_teller'],
+                kwargs['genre'],
+                kwargs['taal']
             )
         )
         self.db_connection.commit()
