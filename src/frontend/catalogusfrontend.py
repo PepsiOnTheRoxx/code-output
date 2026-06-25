@@ -14,14 +14,16 @@ def catalogus_frontend():
     conn = get_db()
     boeken = conn.execute('SELECT rowid as id, * FROM boeken').fetchall()
     conn.close()
-    return render_template('catalogus_frontend.html', boeken=boeken)
+    # Gebruik de juiste template-naam (zoals verwacht in tests/previews)
+    return render_template('catalogus.html', boeken=boeken)
 
 @catalogusfrontend_bp.route('/boek/<int:boek_id>')
 def boek_detail_frontend(boek_id):
     conn = get_db()
     boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     conn.close()
-    return render_template('boek_detail_frontend.html', boek=boek)
+    # Gebruik de juiste template-naam (zoals verwacht in tests/previews)
+    return render_template('boek_detail.html', boek=boek)
 
 @catalogusfrontend_bp.route('/boek/toevoegen', methods=['GET', 'POST'])
 def boek_toevoegen_frontend():
@@ -49,4 +51,5 @@ def boek_aanpassen_frontend(boek_id):
         return redirect(url_for('catalogusfrontend.boek_detail_frontend', boek_id=boek_id))
     boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     conn.close()
+    # Ook hier correct template gebruiken
     return render_template('boek_aanpassen_frontend.html', boek=boek)
