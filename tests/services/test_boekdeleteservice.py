@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekdeleteservice import BoekDeleteService
-from src.services.boekdeleteservice_exceptions import BoekNotFoundException, DatabaseDeleteException
+from src.services.boekdeleteservice_exceptions import BoekNietGevondenException, BoekVerwijderFoutException
 
 @pytest.fixture
 def mock_connection():
@@ -30,7 +30,7 @@ def test_verwijder_boek_niet_gevonden(boek_delete_service, mock_connection):
     cursor_mock.rowcount = 0
 
     boek_id = 777
-    with pytest.raises(BoekNotFoundException):
+    with pytest.raises(BoekNietGevondenException):
         boek_delete_service.verwijder_boek(boek_id)
 
     mock_connection.cursor.assert_called_once()
@@ -43,7 +43,7 @@ def test_verwijder_boek_database_fout(boek_delete_service, mock_connection):
     cursor_mock.execute.side_effect = Exception("database error")
 
     boek_id = 12
-    with pytest.raises(DatabaseDeleteException):
+    with pytest.raises(BoekVerwijderFoutException):
         boek_delete_service.verwijder_boek(boek_id)
 
     mock_connection.cursor.assert_called_once()
