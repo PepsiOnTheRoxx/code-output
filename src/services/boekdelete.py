@@ -11,7 +11,7 @@ class BoekService:
     def find_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
         try:
-            cursor.execute("SELECT * FROM Boek WHERE id = ?", (boek_id,))
+            cursor.execute("SELECT rowid, * FROM boeken WHERE rowid = ?", (boek_id,))
             boek = cursor.fetchone()
             return boek
         except Exception as e:
@@ -20,7 +20,7 @@ class BoekService:
     def delete_boek(self, boek_id):
         cursor = self.db_connection.cursor()
         try:
-            cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
+            cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_id,))
             if cursor.rowcount == 0:
                 raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()
