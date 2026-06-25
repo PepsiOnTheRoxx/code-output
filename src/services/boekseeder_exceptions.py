@@ -1,15 +1,19 @@
 class BoekSeederException(Exception):
-    """Base exception for BoekSeeder errors."""
+    """Basisklasse voor BoekSeeder exceptions."""
     pass
 
-class OnvoldoendeBoekenException(BoekSeederException):
-    """Raised when less than the minimum required dummy books are provided."""
+class BoekSeederDatabaseError(BoekSeederException):
+    """Exception voor database fouten tijdens seeden."""
     pass
 
-class BoekSeederServiceException(BoekSeederException):
-    """Raised when an error occurs in the service layer of BoekSeeder."""
+class BoekSeederMinimumBooksError(BoekSeederException):
+    """Exception als het minimum aantal boeken niet gehaald wordt."""
     pass
 
-class OngeldigBoekTypeException(BoekSeederException):
-    """Raised when an invalid type is used for Boek."""
+class BoekSeederInvalidBoekDataError(BoekSeederException):
+    """Exception voor ongeldig Boek data tijdens seeden."""
+    pass
+
+class BoekSeederAlreadySeededError(BoekSeederException):
+    """Exception als er reeds gesedeerd is."""
     pass

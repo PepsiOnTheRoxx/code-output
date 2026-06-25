@@ -1,42 +1,70 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from src.services.boekseeder import BoekSeeder
-from src.services.boekseeder_exceptions import BoekSeederException
+from src.services.boekseeder_exceptions import DatabaseSeedError
 
-def test_boekseeder_voegt_vijf_of_meer_boeken_toe():
-    mock_service = MagicMock()
-    seeder = BoekSeeder(service=mock_service)
+@patch('src.services.boekseeder.db')
+def test_seeder_inserts_minimaal_vijf_boeken(mock_db):
+    mock_session = MagicMock()
+    mock_db.session = mock_session
+    mock_query = mock_session.query.return_value
+    mock_query.count.return_value = 0  # Simuleer eerste opstart (leeg)
+    seeder = BoekSeeder()
     seeder.seed()
-    assert mock_service.voeg_boek_toe.call_count >= 5
+    assert mock_session.add.call_count >= 5
+    mock_session.commit.assert_called_once()
 
-def test_boekseeder_boek_data_juist_doorgegeven():
-    mock_service = MagicMock()
-    seeder = BoekSeeder(service=mock_service)
+@patch('src.services.boekseeder.db')
+def test_seeder_voegt_niet_opnieuw_toe_als_boeken_bestaan(mock_db):
+    mock_session = MagicMock()
+    mock_db.session = mock_session
+    mock_query = mock_session.query.return_value
+    mock_query.count.return_value = 5  # Simuleer boeken bestaan al
+    seeder = BoekSeeder()
     seeder.seed()
-    for call_args in mock_service.voeg_boek_toe.call_args_list:
-        boek_data = call_args[0][0]
-        assert isinstance(boek_data, dict)
-        assert "titel" in boek_data
-        assert "auteur" in boek_data
+    assert mock_session.add.call_count == 0
+    mock_session.commit.assert_not_called()
 
-def test_boekseeder_raises_exception_bij_service_fout():
-    mock_service = MagicMock()
-    mock_service.voeg_boek_toe.side_effect = Exception("Fout in service")
-    seeder = BoekSeeder(service=mock_service)
-    with pytest.raises(BoekSeederException):
+@patch('src.services.boekseeder.db')
+def test_seeder_rollback_bij_database_fout(mock_db):
+    mock_session = MagicMock()
+    mock_db.session = mock_session
+    mock_query = mock_session.query.return_value
+    mock_query.count.return_value = 0
+    mock_session.commit.side_effect = Exception("Database error")
+    seeder = BoekSeeder()
+    with pytest.raises(DatabaseSeedError):
         seeder.seed()
+    mock_session.rollback.assert_called_once()
 
-def test_boekseeder_seed_herhaald_uitvoerbaar():
-    mock_service = MagicMock()
-    seeder = BoekSeeder(service=mock_service)
-    seeder.seed()
-    eerste_calls = mock_service.voeg_boek_toe.call_count
-    seeder.seed()
-    tweede_calls = mock_service.voeg_boek_toe.call_count
-    assert eerste_calls == tweede_calls // 2
+@patch('src.services.boekseeder.db')
+def test_seeder_raises_seederror_bij_commit_faalt(mock_db):
+    mock_session = MagicMock()
+    mock_db.session = mock_session
+    mock_query = mock_session.query.return_value
+    mock_query.count.return_value = 0
+    mock_session.commit.side_effect = Exception("Commit faalt")
+    seeder = BoekSeeder()
+    with pytest.raises(DatabaseSeedError):
+        seeder.seed()
+    mock_session.rollback.assert_called_once()
 
-def test_boekseeder_seed_returntype_is_none():
-    mock_service = MagicMock()
-    seeder = BoekSeeder(service=mock_service)
-    result = seeder.seed()
-    assert result is None
+@patch('src.services.boekseeder.db')
+def test_seeder_seed_meerdere_malen_idempotent(mock_db):
+    mock_session = MagicMock()
+    mock_db.session = mock_session
+    mock_query = mock_session.query.return_value
+
+    # Eerste keer: geen boeken
+    mock_query.count.return_value = 0
+    seeder = BoekSeeder()
+    seeder.seed()
+    assert mock_session.add.call_count >= 5
+    mock_session.commit.assert_called_once()
+    mock_session.reset_mock()
+
+    # Tweede keer: nu zijn er boeken
+    mock_query.count.return_value = 5
+    seeder.seed()
+    assert mock_session.add.call_count == 0
+    mock_session.commit.assert_not_called()
