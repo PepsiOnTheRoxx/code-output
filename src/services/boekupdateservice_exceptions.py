@@ -2,11 +2,11 @@ class BoekUpdateServiceException(Exception):
     """Base exception for BoekUpdateService errors."""
     pass
 
-class BoekNotFoundException(BoekUpdateServiceException):
+class BoekNietGevondenException(BoekUpdateServiceException):
     """Raised when the specified book does not exist."""
     pass
 
-class InvalidBoekDataException(BoekUpdateServiceException):
+class OngeldigeBoekDataException(BoekUpdateServiceException):
     """Raised when provided book data is invalid."""
     pass
 
