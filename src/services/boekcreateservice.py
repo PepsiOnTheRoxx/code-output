@@ -76,12 +76,11 @@ class BoekCreateService:
 
     def create_boek(self, data):
         if not self._validate_boek_data(data):
-            raise InvalidBoekDataException("Ongeldige boek data")
-        isbn = data.get("isbn")
-        if self.repository.exists_by_isbn(isbn):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al")
+            raise InvalidBoekDataException("Boekdata ongeldig")
+        if self.repository.exists_by_isbn(data["isbn"]):
+            raise BoekAlreadyExistsException("Boek bestaat al")
         try:
-            boek = self.repository.add(
+            return self.repository.add(
                 auteur=data.get("auteur"),
                 beschrijving=data.get("beschrijving"),
                 is_uitgeleend=data.get("is_uitgeleend", 0),
@@ -93,8 +92,7 @@ class BoekCreateService:
                 uitgeleend_max_tot=data.get("uitgeleend_max_tot"),
                 jaar=data.get("jaar")
             )
-            return boek
-        except BoekCreateServiceDatabaseException as e:
-            raise e
+        except BoekCreateServiceDatabaseException:
+            raise
         except Exception as e:
-            raise BoekServiceDependencyException(str(e))
+            raise BoekCreateServiceDatabaseException(str(e))
