@@ -1,27 +1,35 @@
 class DatabaseSetupException(Exception):
-    """Basisexceptie voor alle DatabaseSetup gerelateerde fouten."""
-    pass
-
-class DatabaseInitializationError(DatabaseSetupException):
-    """Fout bij initialiseren van de database (bibliotheek.db)."""
-    pass
-
-class TableCreationError(DatabaseSetupException):
-    """Fout bij het aanmaken van de Boek tabel."""
-    pass
-
-class MissingAttributeError(DatabaseSetupException):
-    """Fout: verplicht attribuut ontbreekt in de Boek tabel."""
-    pass
-
-class InvalidAttributeTypeError(DatabaseSetupException):
-    """Fout: onjuist datatype gevonden voor attribuut in de Boek tabel."""
+    """Basis exceptie voor DatabaseSetup component."""
     pass
 
 class DatabaseConnectionError(DatabaseSetupException):
-    """Fout bij het maken van connectie met de database."""
+    """Kan geen verbinding maken met de database."""
     pass
 
-class MetadataMismatchError(DatabaseSetupException):
-    """Onverwachte verschillen tussen het datamodel en de database."""
+class DatabaseTableCreationError(DatabaseSetupException):
+    """Fout bij het aanmaken van een of meer tabellen."""
+    pass
+
+class AttributeMissingError(DatabaseSetupException):
+    """Verplicht attribuut ontbreekt in metamodel of database."""
+    pass
+
+class AttributeTypeError(DatabaseSetupException):
+    """Attribuut heeft een ongeldig type volgens het metamodel."""
+    pass
+
+class BoekTableMissingError(DatabaseSetupException):
+    """Tabel 'Boek' ontbreekt in database."""
+    pass
+
+class BoekColumnMissingError(DatabaseSetupException):
+    """Kolom van 'Boek' ontbreekt in database."""
+    pass
+
+class BoekInvalidColumnTypeError(DatabaseSetupException):
+    """'Boek'-kolomtype komt niet overeen met definitie in metamodel."""
+    pass
+
+class DatabaseMigrationRequired(DatabaseSetupException):
+    """Database migratie vereist vanwege gewijzigde metamodel structuur."""
     pass
