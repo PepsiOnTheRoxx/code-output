@@ -11,6 +11,20 @@ SCHEMA_FIELDS = [
     'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
 ]
 
+class Boek:
+    def __init__(self, id, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
+        self.id = id
+        self.titel = titel
+        self.auteur = auteur
+        self.isbn = isbn
+        self.beschrijving = beschrijving
+        self.is_uitgeleend = is_uitgeleend
+        self.kaft_foto_url = kaft_foto_url
+        self.publicatiedatum = publicatiedatum
+        self.uitgeleend_datum = uitgeleend_datum
+        self.uitgeleend_max_tot = uitgeleend_max_tot
+        self.jaar = jaar
+
 class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
@@ -38,22 +52,19 @@ class BoekRepository:
             )
             self.db_connection.commit()
             boek_id = cursor.lastrowid
-            # Maak een object/dict met ALLE velden van het schema terug, plus optioneel 'jaar'
-            attrs = {
-                "id": boek_id,
-                "titel": titel,
-                "auteur": auteur,
-                "isbn": isbn,
-                "beschrijving": beschrijving,
-                "is_uitgeleend": is_uitgeleend,
-                "kaft_foto_url": kaft_foto_url,
-                "publicatiedatum": publicatiedatum,
-                "uitgeleend_datum": uitgeleend_datum,
-                "uitgeleend_max_tot": uitgeleend_max_tot
-            }
-            if jaar is not None:
-                attrs["jaar"] = jaar
-            return type("Boek", (), attrs)()
+            return Boek(
+                id=boek_id,
+                titel=titel,
+                auteur=auteur,
+                isbn=isbn,
+                beschrijving=beschrijving,
+                is_uitgeleend=is_uitgeleend,
+                kaft_foto_url=kaft_foto_url,
+                publicatiedatum=publicatiedatum,
+                uitgeleend_datum=uitgeleend_datum,
+                uitgeleend_max_tot=uitgeleend_max_tot,
+                jaar=jaar
+            )
         except Exception as e:
             raise BoekCreateServiceDatabaseException(str(e))
 
@@ -76,23 +87,25 @@ class BoekCreateService:
 
     def create_boek(self, data):
         if not self._validate_boek_data(data):
-            raise InvalidBoekDataException("Boekdata ongeldig")
+            raise InvalidBoekDataException("Boek data is niet geldig")
         if self.repository.exists_by_isbn(data["isbn"]):
-            raise BoekAlreadyExistsException("Boek bestaat al")
-        try:
-            return self.repository.add(
-                auteur=data.get("auteur"),
-                beschrijving=data.get("beschrijving"),
-                is_uitgeleend=data.get("is_uitgeleend", 0),
-                isbn=data.get("isbn"),
-                kaft_foto_url=data.get("kaft_foto_url"),
-                publicatiedatum=data.get("publicatiedatum"),
-                titel=data.get("titel"),
-                uitgeleend_datum=data.get("uitgeleend_datum"),
-                uitgeleend_max_tot=data.get("uitgeleend_max_tot"),
-                jaar=data.get("jaar")
-            )
-        except BoekCreateServiceDatabaseException:
-            raise
-        except Exception as e:
-            raise BoekCreateServiceDatabaseException(str(e))
+            raise BoekAlreadyExistsException(f"Boek met ISBN {data['isbn']} bestaat al.")
+        # Neem alle potentiële sleutelwaarden op uit SCHEMA_FIELDS, evt. defaults
+        boek_args = {}
+        for key in SCHEMA_FIELDS:
+            boek_args[key] = data.get(key)
+        # Extra veld: jaar
+        jaar = data.get("jaar")
+        boek = self.repository.add(
+            auteur=boek_args['auteur'],
+            beschrijving=boek_args['beschrijving'],
+            is_uitgeleend=boek_args.get('is_uitgeleend', 0),
+            isbn=boek_args['isbn'],
+            kaft_foto_url=boek_args['kaft_foto_url'],
+            publicatiedatum=boek_args['publicatiedatum'],
+            titel=boek_args['titel'],
+            uitgeleend_datum=boek_args['uitgeleend_datum'],
+            uitgeleend_max_tot=boek_args['uitgeleend_max_tot'],
+            jaar=jaar,
+        )
+        return boek
