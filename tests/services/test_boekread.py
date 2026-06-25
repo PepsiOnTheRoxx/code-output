@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.services.boekread import BoekReadService
-from src.services.boekread_exceptions import BoekNietGevondenException, DatabaseFoutException
+from src.services.boekread_exceptions import BoekNietGevondenException, BoekDatabaseFoutException
 
 @pytest.fixture
 def mock_db_connection():
@@ -72,7 +72,7 @@ def test_haal_alle_boeken_op_database_fout(mock_db_connection):
     mock_db_connection.cursor.return_value = mock_cursor
 
     service = BoekReadService(mock_db_connection)
-    with pytest.raises(DatabaseFoutException):
+    with pytest.raises(BoekDatabaseFoutException):
         service.haal_alle_boeken_op()
 
 def test_haal_boek_op_id_database_fout(mock_db_connection):
@@ -81,5 +81,5 @@ def test_haal_boek_op_id_database_fout(mock_db_connection):
     mock_db_connection.cursor.return_value = mock_cursor
 
     service = BoekReadService(mock_db_connection)
-    with pytest.raises(DatabaseFoutException):
+    with pytest.raises(BoekDatabaseFoutException):
         service.haal_boek_op_id(1)

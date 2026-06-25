@@ -1,4 +1,4 @@
-from src.services.boekread_exceptions import BoekNietGevondenException, DatabaseFoutException
+from src.services.boekread_exceptions import BoekNietGevondenException, BoekDatabaseFoutException
 
 class BoekReadService:
     def __init__(self, db_connection):
@@ -11,7 +11,7 @@ class BoekReadService:
             rows = cursor.fetchall()
             return [{'id': r[0], 'titel': r[1], 'auteur': r[2]} for r in rows]
         except Exception:
-            raise DatabaseFoutException()
+            raise BoekDatabaseFoutException()
 
     def haal_boek_op_id(self, boek_id):
         try:
@@ -24,4 +24,4 @@ class BoekReadService:
         except BoekNietGevondenException:
             raise
         except Exception:
-            raise DatabaseFoutException()
+            raise BoekDatabaseFoutException()
