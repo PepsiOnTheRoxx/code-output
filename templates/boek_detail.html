@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Boekdetail - {{ boek.titel if boek else 'Onbekend boek' }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+  <a href="{{ url_for('boekdetailfrontend.index') }}" class="btn btn-secondary mb-3">&laquo; Terug naar catalogus</a>
+  <h1>Boekdetail</h1>
+
+  {% if boek %}
+    <dl class="row">
+      <dt class="col-sm-3">Titel</dt>
+      <dd class="col-sm-9">{{ boek.titel }}</dd>
+      <dt class="col-sm-3">Auteur</dt>
+      <dd class="col-sm-9">{{ boek.auteur }}</dd>
+      <dt class="col-sm-3">ISBN</dt>
+      <dd class="col-sm-9">{{ boek.isbn }}</dd>
+      <dt class="col-sm-3">Jaar</dt>
+      <dd class="col-sm-9">{{ boek.jaar }}</dd>
+      <dt class="col-sm-3">Genre</dt>
+      <dd class="col-sm-9">{{ boek.genre }}</dd>
+    </dl>
+    <div class="mb-3">
+      <a href="{{ url_for('boekdetailfrontend.aanpassen', boek_id=boek.id) }}" class="btn btn-warning">Aanpassen</a>
+    </div>
+    <h4>Uitleenstatus</h4>
+    {% if uitleen %}
+      <div class="alert alert-info">Uitgeleend aan <b>{{ uitleen.lener_naam }}</b> sinds {{ uitleen.uitleendatum }}</div>
+    {% else %}
+      <div class="alert alert-success">Boek is beschikbaar</div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-danger">Boek niet gevonden.</div>
+  {% endif %}
+  <a href="{{ url_for('boekdetailfrontend.index') }}" class="btn btn-link">Terug naar catalogus</a>
+</div>
+</body>
+</html>
