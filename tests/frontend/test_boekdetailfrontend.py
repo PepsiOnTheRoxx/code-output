@@ -11,19 +11,20 @@ def client():
     app = Flask(__name__)
     app.config['TESTING'] = True
 
-    # Patch DB_PATH in implementation
     import src.frontend.boekdetailfrontend as frontend_impl
     frontend_impl.DB_PATH = db_path
 
-    # Make test tables
+    # Test DB setup: add columns that might appear in real templates
     conn = sqlite3.connect(db_path)
-    conn.execute('PRAGMA foreign_keys = OFF;')  # Just in case
+    conn.execute('PRAGMA foreign_keys = OFF;')
     conn.executescript('''
     CREATE TABLE IF NOT EXISTS boeken (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         titel TEXT,
         auteur TEXT,
-        jaar TEXT
+        jaar TEXT,
+        isbn TEXT,
+        genre TEXT
     );
     CREATE TABLE IF NOT EXISTS uitleningen (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +39,7 @@ def client():
 
     app.register_blueprint(boekdetailfrontend_bp, url_prefix='')
     with app.test_client() as c:
-        c.application = app  # Typical use; allows test to inspect the Flask app
+        c.application = app
         yield c
     os.close(db_fd)
     os.unlink(db_path)
@@ -46,7 +47,8 @@ def client():
 def test_index_empty(client):
     rv = client.get('/')
     assert rv.status_code == 200
-    assert b'Boekenlijst' in rv.data or b'boeken' in rv.data or b'boek' in rv.data
+    assert b'Boekenlijst' in rv.data
+    assert b'Voeg nieuw boek toe' in rv.data
 
 def test_nieuw_boek_and_redirect(client):
     rv = client.get('/boek/nieuw')
@@ -58,13 +60,16 @@ def test_nieuw_boek_and_redirect(client):
     rv = client.get(f'/boek/{boek_id}')
     assert rv.status_code == 200
     assert b'Testboek' in rv.data
+    assert b'AuteurX' in rv.data
+    assert b'2022' in rv.data
+    assert b'Terug naar overzicht' in rv.data
 
 def test_aanpassen_boek(client):
     import src.frontend.boekdetailfrontend as frontend_impl
     db_path = frontend_impl.DB_PATH
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
-    cursor = conn.execute('INSERT INTO boeken (titel, auteur, jaar) VALUES (?, ?, ?)', ('Oud Titel', 'Orig Auteur', '2018'))
+    cursor = conn.execute('INSERT INTO boeken (titel, auteur, jaar, isbn, genre) VALUES (?, ?, ?, ?, ?)', ('Oud Titel', 'Orig Auteur', '2018', '123-456', 'Roman'))
     boek_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -80,3 +85,27 @@ def test_aanpassen_boek(client):
     assert rv.status_code == 200
     assert b'Nieuw Titel' in rv.data
     assert b'Nieuwe Auteur' in rv.data
+    assert b'2018' not in rv.data
+    assert b'ISBN' in rv.data
+    assert b'123-456' in rv.data
+    assert b'Roman' in rv.data
+    assert b'Bewerk boek' in rv.data
+
+def test_boek_detail_with_uitleen(client):
+    import src.frontend.boekdetailfrontend as frontend_impl
+    db_path = frontend_impl.DB_PATH
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.execute('INSERT INTO boeken (titel, auteur, jaar, isbn, genre) VALUES (?, ?, ?, ?, ?)', ('Zeldzaam', 'Uniek', '2024', 'ZYX-999', 'Nonfictie'))
+    boek_id = cursor.lastrowid
+    conn.execute('INSERT INTO uitleningen (boek_id, lener, uitleendatum, retourdatum) VALUES (?, ?, ?, NULL)', (boek_id, 'Jansen', '2024-06-20'))
+    conn.commit()
+    conn.close()
+    rv = client.get(f'/boek/{boek_id}')
+    assert rv.status_code == 200
+    assert b'Uitgeleend aan: Jansen' in rv.data
+    assert b'uitgeleend op 2024-06-20' in rv.data
+    assert b'Beschikbaar' not in rv.data
+    # navigatie
+    assert b'Terug naar overzicht' in rv.data
+    assert b'Bewerk boek' in rv.data

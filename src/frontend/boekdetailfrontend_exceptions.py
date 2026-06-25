@@ -1,1 +1,1 @@
-# No custom exceptions needed for this implementation
+# Geen custom exceptions benodigd voor deze implementatie
