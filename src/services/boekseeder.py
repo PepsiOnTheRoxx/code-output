@@ -7,12 +7,20 @@ from src.services.boekseeder_exceptions import (
     BoekSeedingException
 )
 
+# Dummy data met ALLE vereiste velden uit het schema:
 dummy_boeken = [
-    {"titel": "Boek 1", "auteur": "Auteur 1"},
-    {"titel": "Boek 2", "auteur": "Auteur 2"},
-    {"titel": "Boek 3", "auteur": "Auteur 3"},
-    {"titel": "Boek 4", "auteur": "Auteur 4"},
-    {"titel": "Boek 5", "auteur": "Auteur 5"},
+    {
+        "titel": f"Boek {i+1}",
+        "auteur": f"Auteur {i+1}",
+        "beschrijving": f"Beschrijving voor boek {i+1}",
+        "isbn": f"978000000000{i}",
+        "kaft_foto_url": "https://example.com/kaft.jpg",
+        "publicatiedatum": "2023-01-01",
+        "is_uitgeleend": False,
+        "uitgeleend_datum": None,
+        "uitgeleend_max_tot": None
+    }
+    for i in range(5)
 ]
 
 class BoekService:
@@ -38,7 +46,6 @@ class BoekSeeder:
             except BoekSeederException:
                 raise
             except Exception as exc:
-                # Laat fouten door als exact de naam 'Exception' (zoals mock bij test), want type-matching is belangrijk.
                 if type(exc).__name__ == 'Exception':
                     raise BoekSeedingException(str(exc))
                 raise

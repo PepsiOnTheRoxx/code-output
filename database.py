@@ -15,8 +15,7 @@ def init_db():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        # De kolomvolgorde wordt nu precies zoals opgegeven in de prompt:
-        # auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
+        # Schema volgens: auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS boeken ("
             "auteur TEXT,"

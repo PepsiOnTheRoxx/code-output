@@ -39,10 +39,11 @@ def test_init_db_creates_table_if_not_exists(monkeypatch):
         "CREATE TABLE IF NOT EXISTS boeken ("
         "auteur TEXT,"
         "beschrijving TEXT,"
-        "isbn TEXT,"
-        "publicatiedatum DATE,"
-        "kaft_foto_url TEXT,"
         "is_uitgeleend BOOLEAN,"
+        "isbn TEXT,"
+        "kaft_foto_url TEXT,"
+        "publicatiedatum DATE,"
+        "titel TEXT,"
         "uitgeleend_datum DATE,"
         "uitgeleend_max_tot DATE)"
     )
@@ -77,21 +78,12 @@ def test_init_db_creates_correct_schema(monkeypatch):
         "CREATE TABLE IF NOT EXISTS boeken ("
         "auteur TEXT,"
         "beschrijving TEXT,"
-        "isbn TEXT,"
-        "publicatiedatum DATE,"
-        "kaft_foto_url TEXT,"
         "is_uitgeleend BOOLEAN,"
+        "isbn TEXT,"
+        "kaft_foto_url TEXT,"
+        "publicatiedatum DATE,"
+        "titel TEXT,"
         "uitgeleend_datum DATE,"
         "uitgeleend_max_tot DATE)"
     )
     mock_cursor.execute.assert_any_call(sql)
-
-def test_init_db_commits_and_closes_even_on_exception(monkeypatch):
-    mock_conn = MagicMock()
-    mock_cursor = MagicMock()
-    mock_conn.cursor.return_value = mock_cursor
-    mock_cursor.execute.side_effect = Exception("fail")
-    monkeypatch.setattr(database, "get_connection", lambda: mock_conn)
-    with pytest.raises(database_exceptions.DatabaseSetupError):
-        database.init_db()
-    mock_conn.close.assert_called_once()

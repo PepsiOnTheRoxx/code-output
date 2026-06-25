@@ -9,7 +9,7 @@ def boek_data():
         "id": 1,
         "titel": "De ontdekking van de hemel",
         "auteur": "Harry Mulisch",
-        "jaar": 1992
+        "publicatiedatum": "1992-10-01"
     }
 
 def test_get_boek_by_id_success(boek_data):
@@ -21,7 +21,7 @@ def test_get_boek_by_id_success(boek_data):
         assert result["id"] == 1
         assert result["titel"] == "De ontdekking van de hemel"
         assert result["auteur"] == "Harry Mulisch"
-        assert result["jaar"] == 1992
+        assert result["publicatiedatum"] == "1992-10-01"
         instance.get_by_id.assert_called_once_with(1)
 
 def test_get_boek_by_id_not_found():

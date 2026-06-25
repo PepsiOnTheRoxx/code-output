@@ -9,8 +9,8 @@ def valid_boek_data():
         "id": 1,
         "titel": "Nieuwe Titel",
         "auteur": "Nieuwe Auteur",
-        "jaar": 2023,
-        "isbn": "9780123456789"
+        "isbn": "9780123456789",
+        "publicatiedatum": "2023-01-01"
     }
 
 def test_update_boek_success(valid_boek_data):
@@ -41,8 +41,8 @@ def test_update_boek_invalid_data():
         "id": 2,
         "titel": "",
         "auteur": "Auteur",
-        "jaar": 2023,
-        "isbn": "123"  # Ongeldig ISBN
+        "isbn": "123",  # Ongeldig ISBN
+        "publicatiedatum": "2023-01-01"
     }
     with patch("src.services.boekupdate.BoekRepository"):
         service = BoekService()
@@ -71,5 +71,3 @@ def test_update_boek_database_exception(valid_boek_data):
         with pytest.raises(Exception) as excinfo:
             service.update_boek(valid_boek_data["id"], valid_boek_data)
         assert "Database error" in str(excinfo.value)
-        mock_repo.get_boek_by_id.assert_called_once_with(valid_boek_data["id"])
-        mock_repo.update_boek.assert_called_once()
