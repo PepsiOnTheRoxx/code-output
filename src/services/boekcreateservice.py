@@ -58,6 +58,21 @@ class BoekRepository:
         except Exception as e:
             raise BoekCreateServiceDatabaseException(str(e))
 
+    # Voeg een alias toe voor seeder compatibility
+    def voeg_boek_toe(self, boek_data):
+        # Vereiste velden
+        auteur = boek_data.get('auteur')
+        beschrijving = boek_data.get('beschrijving')
+        is_uitgeleend = boek_data.get('is_uitgeleend', 0)
+        isbn = boek_data.get('isbn')
+        kaft_foto_url = boek_data.get('kaft_foto_url')
+        publicatiedatum = boek_data.get('publicatiedatum')
+        titel = boek_data.get('titel')
+        uitgeleend_datum = boek_data.get('uitgeleend_datum')
+        uitgeleend_max_tot = boek_data.get('uitgeleend_max_tot')
+        jaar = boek_data.get('jaar') if 'jaar' in boek_data else None
+        return self.add(auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot, jaar)
+
 class BoekCreateService:
     def __init__(self, db_connection=None, repository=None):
         if repository is not None:
@@ -68,24 +83,30 @@ class BoekCreateService:
 
     def create_boek(self, boek_data):
         required = ['titel', 'auteur', 'isbn']
-        if not all(k in boek_data and boek_data[k] for k in required):
-            raise InvalidBoekDataException('titel, auteur en isbn zijn verplicht')
+        for key in required:
+            if not boek_data.get(key) or not isinstance(boek_data.get(key), str) or not boek_data[key].strip():
+                raise InvalidBoekDataException(f"'{key}' is verplicht en mag niet leeg zijn")
+        # Check of boek al bestaat
         if self.repo.exists_by_isbn(boek_data['isbn']):
-            raise BoekAlreadyExistsException()
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al")
         try:
             return self.repo.add(
-                auteur=boek_data['auteur'],
-                beschrijving=boek_data.get('beschrijving'),
-                is_uitgeleend=boek_data.get('is_uitgeleend', 0),
-                isbn=boek_data['isbn'],
-                kaft_foto_url=boek_data.get('kaft_foto_url'),
-                publicatiedatum=boek_data.get('publicatiedatum'),
-                titel=boek_data['titel'],
-                uitgeleend_datum=boek_data.get('uitgeleend_datum'),
-                uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-                jaar=boek_data.get('jaar'),
+                boek_data['auteur'],
+                boek_data.get('beschrijving'),
+                boek_data.get('is_uitgeleend', 0),
+                boek_data['isbn'],
+                boek_data.get('kaft_foto_url'),
+                boek_data.get('publicatiedatum'),
+                boek_data['titel'],
+                boek_data.get('uitgeleend_datum'),
+                boek_data.get('uitgeleend_max_tot'),
+                jaar=boek_data.get('jaar')
             )
-        except BoekCreateServiceDatabaseException:
+        except BoekCreateServiceDatabaseException as ex:
             raise
-        except Exception as e:
-            raise BoekCreateServiceDatabaseException(str(e))
+        except Exception as ex:
+            raise BoekCreateServiceDatabaseException(str(ex))
+
+    def voeg_boek_toe(self, boek_data):
+        """ Voor boekseeder compatibility (verwacht deze interface). """
+        return self.create_boek(boek_data)
