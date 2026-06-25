@@ -10,6 +10,9 @@ class BoekReadDatabaseException(BoekReadServiceException):
     """Raised when a database error occurs while reading Boeken."""
     pass
 
+# Alias for compatibility with tests
+DatabaseReadException = BoekReadDatabaseException
+
 class InvalidBoekQueryException(BoekReadServiceException):
     """Raised when an invalid query is used for reading Boeken."""
     pass

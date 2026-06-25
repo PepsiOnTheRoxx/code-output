@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.boekreadservice import BoekReadService
-from src.services.boekreadservice_exceptions import BoekNotFoundException, DatabaseReadException
+from src.services.boekreadservice import BoekReadService, DatabaseReadException
+from src.services.boekreadservice_exceptions import BoekNotFoundException
 
 @pytest.fixture
 def mock_db_session():

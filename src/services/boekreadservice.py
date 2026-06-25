@@ -1,7 +1,10 @@
 from src.services.boekreadservice_exceptions import (
     BoekNotFoundException,
-    DatabaseReadException,
+    BoekReadDatabaseException,
 )
+
+# Alias for compatibility with tests
+DatabaseReadException = BoekReadDatabaseException
 
 class BoekReadService:
     def __init__(self, db_session):
