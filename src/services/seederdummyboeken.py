@@ -1,6 +1,6 @@
 from src.services.seederdummyboeken_exceptions import (
-    BoekSeederDatabaseError as DatabaseException,
-    BoekSeederAlreadySeededError as AlreadySeededException
+    BoekSeederDatabaseError,
+    BoekSeederAlreadySeededError
 )
 
 class BoekSeeder:
@@ -14,7 +14,7 @@ class BoekSeeder:
             result = cursor.fetchone()
             count = result[0] if result else 0
             if count >= 5:
-                raise AlreadySeededException("Database already contains minimum number of boeken.")
+                raise BoekSeederAlreadySeededError("Database already contains minimum number of boeken.")
             dummy_boeken = [
                 ("Het Diner", "Herman Koch", "9789023454795", 2009),
                 ("De donkere kamer van Damokles", "Willem Frederik Hermans", "9789023423654", 1958),
@@ -28,7 +28,7 @@ class BoekSeeder:
                     boek
                 )
             self.db_connection.commit()
-        except AlreadySeededException:
+        except BoekSeederAlreadySeededError:
             raise
         except Exception as e:
-            raise DatabaseException("Database error tijdens seeden: {}".format(str(e)))
+            raise BoekSeederDatabaseError("Database error tijdens seeden: {}".format(str(e)))
