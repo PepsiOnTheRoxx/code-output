@@ -1,138 +1,113 @@
 from flask import Flask
-from unittest.mock import patch, MagicMock
-import pytest
 from src.api.boekserviceapi import register_routes
-from src.api.boekserviceapi_exceptions import BoekAPINotFoundException
-import sys
-import types
+from src.api import boekserviceapi
+from src.api.boekserviceapi_exceptions import BoekNotFoundException, InvalidBoekDataException
+import pytest
+from unittest.mock import MagicMock, patch
 
 @pytest.fixture
 def client():
-    sys.modules['src.api'] = types.ModuleType('src.api')
-    sys.modules['src.api.boekservice'] = types.ModuleType('src.api.boekservice')
-    class DummyBoekService:
-        def __init__(self, conn):
-            pass
-        def get_all_boeken(self):
-            return []
-        def get_boek(self, boek_id):
-            return None
-        def create_boek(self, data):
-            return data
-        def update_boek(self, boek_id, data):
-            return data
-        def delete_boek(self, boek_id):
-            pass
-    sys.modules['src.api.boekservice'].BoekService = DummyBoekService
-
     app = Flask(__name__)
     register_routes(app)
-    return app.test_client(), app
+    return app.test_client()
 
-def test_get_boek_returns_200_and_json(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.get_boek.return_value = {"id": 1, "titel": "Titel", "auteur": "Auteur"}
-        app._test_boekservice_instance = mock_instance
-        response = client.get("/boeken/1")
-        assert response.status_code == 200
-        assert response.is_json
-        assert response.get_json() == {"id": 1, "titel": "Titel", "auteur": "Auteur"}
-        mock_instance.get_boek.assert_called_once_with(1)
-        delattr(app, '_test_boekservice_instance')
-
-def test_get_boek_not_found_returns_404(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.get_boek.side_effect = BoekAPINotFoundException()
-        app._test_boekservice_instance = mock_instance
-        response = client.get("/boeken/999")
-        assert response.status_code == 404
-        assert response.is_json
-        assert "error" in response.get_json()
-        mock_instance.get_boek.assert_called_once_with(999)
-        delattr(app, '_test_boekservice_instance')
-
-def test_post_boek_returns_201_and_json(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.create_boek.return_value = {"id": 5, "titel": "Nieuw", "auteur": "Auteur"}
-        app._test_boekservice_instance = mock_instance
-        payload = {"titel": "Nieuw", "auteur": "Auteur"}
-        response = client.post("/boeken", json=payload)
-        assert response.status_code == 201
-        assert response.is_json
-        assert response.get_json() == {"id": 5, "titel": "Nieuw", "auteur": "Auteur"}
-        mock_instance.create_boek.assert_called_once_with(payload)
-        delattr(app, '_test_boekservice_instance')
-
-def test_put_boek_returns_200_and_json(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.update_boek.return_value = {"id": 2, "titel": "Bewerkt", "auteur": "Auteur"}
-        app._test_boekservice_instance = mock_instance
-        payload = {"titel": "Bewerkt", "auteur": "Auteur"}
-        response = client.put("/boeken/2", json=payload)
-        assert response.status_code == 200
-        assert response.is_json
-        assert response.get_json() == {"id": 2, "titel": "Bewerkt", "auteur": "Auteur"}
-        mock_instance.update_boek.assert_called_once_with(2, payload)
-        delattr(app, '_test_boekservice_instance')
-
-def test_put_boek_not_found_returns_404(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.update_boek.side_effect = BoekAPINotFoundException()
-        app._test_boekservice_instance = mock_instance
-        payload = {"titel": "Niet bestaand", "auteur": "Auteur"}
-        response = client.put("/boeken/404", json=payload)
-        assert response.status_code == 404
-        assert response.is_json
-        assert "error" in response.get_json()
-        mock_instance.update_boek.assert_called_once_with(404, payload)
-        delattr(app, '_test_boekservice_instance')
-
-def test_delete_boek_returns_204(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        app._test_boekservice_instance = mock_instance
-        response = client.delete("/boeken/3")
-        assert response.status_code == 204
-        mock_instance.delete_boek.assert_called_once_with(3)
-        delattr(app, '_test_boekservice_instance')
-
-def test_delete_boek_not_found_returns_404(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        mock_instance.delete_boek.side_effect = BoekAPINotFoundException()
-        app._test_boekservice_instance = mock_instance
-        response = client.delete("/boeken/888")
-        assert response.status_code == 404
-        assert response.is_json
-        assert "error" in response.get_json()
-        mock_instance.delete_boek.assert_called_once_with(888)
-        delattr(app, '_test_boekservice_instance')
-
-def test_get_all_boeken_returns_200_and_json(client):
-    client, app = client
-    with patch("src.api.boekservice.BoekService") as MockService:
-        mock_instance = MockService.return_value
-        boeken_data = [
-            {"id": 1, "titel": "Boek1", "auteur": "Auteur1"},
-            {"id": 2, "titel": "Boek2", "auteur": "Auteur2"}
-        ]
-        mock_instance.get_all_boeken.return_value = boeken_data
-        app._test_boekservice_instance = mock_instance
+def test_get_all_boeken_returns_list(client):
+    boeken = [
+        {"id": 1, "titel": "Boek 1", "auteur": "Auteur 1"},
+        {"id": 2, "titel": "Boek 2", "auteur": "Auteur 2"}
+    ]
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.get_all_boeken.return_value = boeken
         response = client.get("/boeken")
         assert response.status_code == 200
         assert response.is_json
-        assert response.get_json() == boeken_data
-        mock_instance.get_all_boeken.assert_called_once()
-        delattr(app, '_test_boekservice_instance')
+        assert response.get_json() == boeken
+
+def test_get_boek_by_id_success(client):
+    boek = {"id": 1, "titel": "Test boek", "auteur": "Auteur"}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.get_boek_by_id.return_value = boek
+        response = client.get("/boeken/1")
+        assert response.status_code == 200
+        assert response.is_json
+        assert response.get_json() == boek
+
+def test_get_boek_by_id_not_found(client):
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.get_boek_by_id.side_effect = BoekNotFoundException("Niet gevonden")
+        response = client.get("/boeken/999")
+        assert response.status_code == 404
+        assert response.is_json
+        assert response.get_json()["error"] == "Niet gevonden"
+
+def test_create_boek_success(client):
+    boek_data = {"titel": "Nieuw Boek", "auteur": "Nieuwe Auteur"}
+    boek_response = {"id": 3, "titel": "Nieuw Boek", "auteur": "Nieuwe Auteur"}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.create_boek.return_value = boek_response
+        response = client.post("/boeken", json=boek_data)
+        assert response.status_code == 201
+        assert response.is_json
+        assert response.get_json() == boek_response
+
+def test_create_boek_invalid_data(client):
+    boek_data = {"titel": ""}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.create_boek.side_effect = InvalidBoekDataException("Ongeldige data")
+        response = client.post("/boeken", json=boek_data)
+        assert response.status_code == 400
+        assert response.is_json
+        assert response.get_json()["error"] == "Ongeldige data"
+
+def test_update_boek_success(client):
+    boek_data = {"titel": "Aangepast Boek", "auteur": "Aangepast Auteur"}
+    boek_response = {"id": 2, "titel": "Aangepast Boek", "auteur": "Aangepast Auteur"}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.update_boek.return_value = boek_response
+        response = client.put("/boeken/2", json=boek_data)
+        assert response.status_code == 200
+        assert response.is_json
+        assert response.get_json() == boek_response
+
+def test_update_boek_not_found(client):
+    boek_data = {"titel": "Onbekend"}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.update_boek.side_effect = BoekNotFoundException("Niet gevonden")
+        response = client.put("/boeken/999", json=boek_data)
+        assert response.status_code == 404
+        assert response.is_json
+        assert response.get_json()["error"] == "Niet gevonden"
+
+def test_update_boek_invalid_data(client):
+    boek_data = {"titel": ""}
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.update_boek.side_effect = InvalidBoekDataException("Ongeldige data")
+        response = client.put("/boeken/1", json=boek_data)
+        assert response.status_code == 400
+        assert response.is_json
+        assert response.get_json()["error"] == "Ongeldige data"
+
+def test_delete_boek_success(client):
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        response = client.delete("/boeken/1")
+        instance.delete_boek.assert_called_once_with(1)
+        assert response.status_code == 204
+        assert response.data == b""
+
+def test_delete_boek_not_found(client):
+    with patch("src.api.boekserviceapi.BoekService", autospec=True) as MockBoekService:
+        instance = MockBoekService.return_value
+        instance.delete_boek.side_effect = BoekNotFoundException("Niet gevonden")
+        response = client.delete("/boeken/999")
+        assert response.status_code == 404
+        assert response.is_json
+        assert response.get_json()["error"] == "Niet gevonden"
