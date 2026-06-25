@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from datetime import date
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException, DatabaseException
+from src.services.boekcreate_exceptions import BoekCreateDuplicateISBNException, BoekCreateInvalidDataException, BoekCreateDatabaseException
 
 def valid_boek_data():
     return {
@@ -30,7 +30,7 @@ def test_create_boek_success(mock_repo_cls):
 
     assert result == boek_data
     mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
-    mock_repo.create.assert_called_once_with(boek_data)
+    mock_repo.create.assert_called_once_with({k: v for k, v in boek_data.items() if v is not None})
 
 @patch("src.services.boekcreate.BoekRepository")
 def test_create_boek_already_exists(mock_repo_cls):
@@ -40,7 +40,7 @@ def test_create_boek_already_exists(mock_repo_cls):
     mock_repo_cls.return_value = mock_repo
 
     service = BoekService()
-    with pytest.raises(BoekAlreadyExistsException):
+    with pytest.raises(BoekCreateDuplicateISBNException):
         service.create_boek(**boek_data)
     mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
     mock_repo.create.assert_not_called()
@@ -53,7 +53,7 @@ def test_create_boek_invalid_data_missing_titel(mock_repo_cls):
     mock_repo_cls.return_value = mock_repo
 
     service = BoekService()
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateInvalidDataException):
         service.create_boek(**boek_data)
     mock_repo.exists.assert_not_called()
     mock_repo.create.assert_not_called()
@@ -66,7 +66,7 @@ def test_create_boek_invalid_data_empty_isbn(mock_repo_cls):
     mock_repo_cls.return_value = mock_repo
 
     service = BoekService()
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateInvalidDataException):
         service.create_boek(**boek_data)
     mock_repo.exists.assert_not_called()
     mock_repo.create.assert_not_called()
@@ -76,20 +76,21 @@ def test_create_boek_db_exception_on_create(mock_repo_cls):
     boek_data = valid_boek_data()
     mock_repo = MagicMock()
     mock_repo.exists.return_value = False
-    mock_repo.create.side_effect = DatabaseException("Fout bij aanmaken boek")
+    mock_repo.create.side_effect = BoekCreateDatabaseException("Fout bij aanmaken boek")
     mock_repo_cls.return_value = mock_repo
 
     service = BoekService()
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(**boek_data)
     mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
-    mock_repo.create.assert_called_once_with(boek_data)
+    mock_repo.create.assert_called_once_with({k: v for k, v in boek_data.items() if v is not None})
 
 @patch("src.services.boekcreate.BoekRepository")
 def test_create_boek_defaults_uitgeleend_niet_verplicht(mock_repo_cls):
     boek_data = valid_boek_data()
     boek_data.pop("uitgeleend_datum")
     boek_data.pop("uitgeleend_max_tot")
+    expected_data = {k: v for k, v in boek_data.items() if v is not None}
     mock_repo = MagicMock()
     mock_repo.create.return_value = boek_data
     mock_repo.exists.return_value = False
@@ -100,12 +101,13 @@ def test_create_boek_defaults_uitgeleend_niet_verplicht(mock_repo_cls):
 
     assert result == boek_data
     mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
-    mock_repo.create.assert_called_once_with(boek_data)
+    mock_repo.create.assert_called_once_with(expected_data)
 
 @patch("src.services.boekcreate.BoekRepository")
 def test_create_boek_with_publicatiedatum_none(mock_repo_cls):
     boek_data = valid_boek_data()
     boek_data["publicatiedatum"] = None
+    expected_data = {k: v for k, v in boek_data.items() if v is not None}
     mock_repo = MagicMock()
     mock_repo.create.return_value = boek_data
     mock_repo.exists.return_value = False
@@ -116,4 +118,4 @@ def test_create_boek_with_publicatiedatum_none(mock_repo_cls):
 
     assert result == boek_data
     mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
-    mock_repo.create.assert_called_once_with(boek_data)
+    mock_repo.create.assert_called_once_with(expected_data)
