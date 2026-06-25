@@ -37,7 +37,6 @@ class BoekRepository:
             raise BoekCreateServiceDatabaseException(str(e))
 
     def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
-        # Validatie moved naar service
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
@@ -53,17 +52,8 @@ class BoekRepository:
             self.db_connection.commit()
             boek_id = cursor.lastrowid
             return Boek(
-                id=boek_id,
-                titel=titel,
-                auteur=auteur,
-                isbn=isbn,
-                beschrijving=beschrijving,
-                is_uitgeleend=is_uitgeleend,
-                kaft_foto_url=kaft_foto_url,
-                publicatiedatum=publicatiedatum,
-                uitgeleend_datum=uitgeleend_datum,
-                uitgeleend_max_tot=uitgeleend_max_tot,
-                jaar=jaar
+                id=boek_id, titel=titel, auteur=auteur, isbn=isbn, beschrijving=beschrijving, is_uitgeleend=is_uitgeleend,
+                kaft_foto_url=kaft_foto_url, publicatiedatum=publicatiedatum, uitgeleend_datum=uitgeleend_datum, uitgeleend_max_tot=uitgeleend_max_tot, jaar=jaar
             )
         except Exception as e:
             raise BoekCreateServiceDatabaseException(str(e))
@@ -73,36 +63,29 @@ class BoekCreateService:
         if repository is not None:
             self.repo = repository
         else:
-            self.repo = BoekRepository(db_connection or get_connection())
+            self.db_connection = db_connection or get_connection()
+            self.repo = BoekRepository(self.db_connection)
 
     def create_boek(self, boek_data):
-        # Validatie zoals de tests verwachten
+        # Validatie: vereiste velden
         titel = boek_data.get("titel")
         auteur = boek_data.get("auteur")
         isbn = boek_data.get("isbn")
-        if not (titel and isinstance(titel, str) and titel.strip()):
-            raise InvalidBoekDataException("Titel is verplicht en mag niet leeg zijn.")
-        if not (auteur and isinstance(auteur, str) and auteur.strip()):
-            raise InvalidBoekDataException("Auteur is verplicht en mag niet leeg zijn.")
-        if not (isbn and isinstance(isbn, str) and isbn.strip()):
-            raise InvalidBoekDataException("ISBN is verplicht en mag niet leeg zijn.")
+
+        if not titel or not auteur or not isbn or not isinstance(titel, str) or not isinstance(auteur, str) or not isinstance(isbn, str) or titel.strip() == '' or auteur.strip() == '' or isbn.strip() == '':
+            raise InvalidBoekDataException("Vereiste velden: titel, auteur en isbn (alle als niet-lege string)")
+
+        # Check of boek al bestaat
         if self.repo.exists_by_isbn(isbn):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al.")
-        try:
-            boek = self.repo.add(
-                auteur=auteur,
-                beschrijving=boek_data.get("beschrijving"),
-                is_uitgeleend=boek_data.get("is_uitgeleend", 0),
-                isbn=isbn,
-                kaft_foto_url=boek_data.get("kaft_foto_url"),
-                publicatiedatum=boek_data.get("publicatiedatum"),
-                titel=titel,
-                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
-                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot"),
-                jaar=boek_data.get("jaar")
-            )
-            return boek
-        except BoekCreateServiceDatabaseException as e:
-            raise
-        except Exception as ex:
-            raise BoekCreateServiceDatabaseException(str(ex))
+            raise BoekAlreadyExistsException(f"Boek met isbn {isbn} bestaat al")
+
+        # Voeg alle velden toe met defaults indien niet aanwezig
+        boek_args = {field: boek_data.get(field) for field in SCHEMA_FIELDS}
+        boek_args["is_uitgeleend"] = boek_data.get("is_uitgeleend", 0)
+        # Optioneel attribuut voor test-compatibiliteit
+        boek_args["jaar"] = boek_data.get("jaar")
+        boek = self.repo.add(**boek_args)
+        return boek
+
+# Test-compatibel alias
+BoekService = BoekCreateService
