@@ -37,6 +37,7 @@ class BoekRepository:
             raise BoekCreateServiceDatabaseException(str(e))
 
     def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
+        # Validatie moved naar service
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
@@ -75,20 +76,33 @@ class BoekCreateService:
             self.repo = BoekRepository(db_connection or get_connection())
 
     def create_boek(self, boek_data):
-        # Validatie op presence van vereiste velden
-        if not boek_data or not boek_data.get('titel') or not boek_data.get('auteur') or not boek_data.get('isbn'):
-            raise InvalidBoekDataException('titel, auteur en isbn zijn verplicht')
-        if self.repo.exists_by_isbn(boek_data.get('isbn')):
-            raise BoekAlreadyExistsException('Boek met dit ISBN bestaat al')
-        return self.repo.add(
-            auteur=boek_data.get('auteur'),
-            beschrijving=boek_data.get('beschrijving'),
-            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
-            isbn=boek_data.get('isbn'),
-            kaft_foto_url=boek_data.get('kaft_foto_url'),
-            publicatiedatum=boek_data.get('publicatiedatum'),
-            titel=boek_data.get('titel'),
-            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
-            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-            jaar=boek_data.get('jaar', None)
-        )
+        # Validatie zoals de tests verwachten
+        titel = boek_data.get("titel")
+        auteur = boek_data.get("auteur")
+        isbn = boek_data.get("isbn")
+        if not (titel and isinstance(titel, str) and titel.strip()):
+            raise InvalidBoekDataException("Titel is verplicht en mag niet leeg zijn.")
+        if not (auteur and isinstance(auteur, str) and auteur.strip()):
+            raise InvalidBoekDataException("Auteur is verplicht en mag niet leeg zijn.")
+        if not (isbn and isinstance(isbn, str) and isbn.strip()):
+            raise InvalidBoekDataException("ISBN is verplicht en mag niet leeg zijn.")
+        if self.repo.exists_by_isbn(isbn):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al.")
+        try:
+            boek = self.repo.add(
+                auteur=auteur,
+                beschrijving=boek_data.get("beschrijving"),
+                is_uitgeleend=boek_data.get("is_uitgeleend", 0),
+                isbn=isbn,
+                kaft_foto_url=boek_data.get("kaft_foto_url"),
+                publicatiedatum=boek_data.get("publicatiedatum"),
+                titel=titel,
+                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
+                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot"),
+                jaar=boek_data.get("jaar")
+            )
+            return boek
+        except BoekCreateServiceDatabaseException as e:
+            raise
+        except Exception as ex:
+            raise BoekCreateServiceDatabaseException(str(ex))
