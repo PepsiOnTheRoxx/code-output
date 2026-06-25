@@ -26,7 +26,7 @@ class BoekService:
 
     def create_boek(self, **kwargs):
         required_fields = [
-            'auteur', 'beschrijving', 'isbn', 'publicatiedatum',
+            'titel', 'auteur', 'beschrijving', 'isbn', 'publicatiedatum',
             'kaft_foto_url', 'is_uitgeleend', 'uitgeleend_datum', 'uitgeleend_max_tot'
         ]
         # Check presence
@@ -36,6 +36,7 @@ class BoekService:
             if attr not in ['uitgeleend_datum','uitgeleend_max_tot'] and kwargs[attr] is None:
                 raise BoekCreateMissingAttributeException(f"Missing required attribute: {attr}")
 
+        titel = kwargs['titel']
         auteur = kwargs['auteur']
         beschrijving = kwargs['beschrijving']
         isbn = kwargs['isbn']
@@ -46,6 +47,8 @@ class BoekService:
         uitgeleend_max_tot = kwargs['uitgeleend_max_tot']
 
         # Validaties
+        if not isinstance(titel, str):
+            raise BoekCreateException("Titel moet een string zijn")
         if not isinstance(auteur, str):
             raise BoekCreateInvalidAuteurException()
         if not isinstance(beschrijving, str):
@@ -64,24 +67,17 @@ class BoekService:
             raise BoekCreateInvalidUitgeleendMaxTotException()
 
         sql = (
-            "INSERT INTO boeken (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO boeken (titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )
-        params = (
-            auteur,
-            beschrijving,
-            isbn,
-            publicatiedatum,
-            kaft_foto_url,
-            is_uitgeleend,
-            uitgeleend_datum,
-            uitgeleend_max_tot
+        values = (
+            titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot
         )
         try:
             with self.db_connection.cursor() as cursor:
-                cursor.execute(sql, params)
-                boek_id = cursor.lastrowid
-            self.db_connection.commit()
-            return boek_id
-        except Exception as ex:
-            raise BoekCreateDatabaseException("Database error during Boek create") from ex
+                cursor.execute(sql, values)
+                self.db_connection.commit()
+                return cursor.lastrowid
+        except Exception as exc:
+            self.db_connection.rollback()
+            raise BoekCreateDatabaseException(str(exc))
