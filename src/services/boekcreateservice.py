@@ -67,25 +67,20 @@ class BoekCreateService:
             self.repo = BoekRepository(self.db_connection)
 
     def create_boek(self, boek_data):
-        # Validatie: vereiste velden
-        titel = boek_data.get("titel")
-        auteur = boek_data.get("auteur")
-        isbn = boek_data.get("isbn")
-
-        if not titel or not auteur or not isbn or not isinstance(titel, str) or not isinstance(auteur, str) or not isinstance(isbn, str) or titel.strip() == '' or auteur.strip() == '' or isbn.strip() == '':
-            raise InvalidBoekDataException("Vereiste velden: titel, auteur en isbn (alle als niet-lege string)")
-
-        # Check of boek al bestaat
-        if self.repo.exists_by_isbn(isbn):
-            raise BoekAlreadyExistsException(f"Boek met isbn {isbn} bestaat al")
-
-        # Voeg alle velden toe met defaults indien niet aanwezig
-        boek_args = {field: boek_data.get(field) for field in SCHEMA_FIELDS}
-        boek_args["is_uitgeleend"] = boek_data.get("is_uitgeleend", 0)
-        # Optioneel attribuut voor test-compatibiliteit
-        boek_args["jaar"] = boek_data.get("jaar")
-        boek = self.repo.add(**boek_args)
-        return boek
-
-# Test-compatibel alias
-BoekService = BoekCreateService
+        required = ['titel', 'auteur', 'isbn']
+        if not all(k in boek_data and boek_data[k] for k in required):
+            raise InvalidBoekDataException('titel, auteur, isbn zijn verplicht en mogen niet leeg zijn')
+        if self.repo.exists_by_isbn(boek_data['isbn']):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
+        return self.repo.add(
+            auteur=boek_data['auteur'],
+            beschrijving=boek_data.get('beschrijving'),
+            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+            isbn=boek_data['isbn'],
+            kaft_foto_url=boek_data.get('kaft_foto_url'),
+            publicatiedatum=boek_data.get('publicatiedatum'),
+            titel=boek_data['titel'],
+            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
+            jaar=boek_data.get('jaar'),
+        )
