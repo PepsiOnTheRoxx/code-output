@@ -69,32 +69,38 @@ class BoekRepository:
             raise BoekCreateServiceDatabaseException(str(e))
 
 class BoekCreateService:
-    def __init__(self, db_connection=None):
-        if db_connection is None:
-            self.db_connection = get_connection()
+    def __init__(self, db_connection=None, repository=None):
+        if repository is not None:
+            self.repo = repository
         else:
-            self.db_connection = db_connection
-        self.repo = BoekRepository(self.db_connection)
+            self.db_connection = db_connection or get_connection()
+            self.repo = BoekRepository(self.db_connection)
 
     def create_boek(self, boek_data):
-        # Validatie voor verplichte velden
-        if not boek_data.get('titel') or not isinstance(boek_data.get('titel'), str):
-            raise InvalidBoekDataException("Titel is verplicht en mag niet leeg zijn.")
-        if not boek_data.get('auteur') or not isinstance(boek_data.get('auteur'), str):
-            raise InvalidBoekDataException("Auteur is verplicht en mag niet leeg zijn.")
-        if not boek_data.get('isbn') or not isinstance(boek_data.get('isbn'), str):
-            raise InvalidBoekDataException("ISBN is verplicht en mag niet leeg zijn.")
+        # Validatie vereist: titel, auteur, isbn verplicht en niet leeg
+        if not boek_data.get('titel') or not isinstance(boek_data['titel'], str) or not boek_data['titel'].strip():
+            raise InvalidBoekDataException('Titel is verplicht en mag niet leeg zijn')
+        if not boek_data.get('auteur') or not isinstance(boek_data['auteur'], str) or not boek_data['auteur'].strip():
+            raise InvalidBoekDataException('Auteur is verplicht en mag niet leeg zijn')
+        if not boek_data.get('isbn') or not isinstance(boek_data['isbn'], str) or not boek_data['isbn'].strip():
+            raise InvalidBoekDataException('ISBN is verplicht en mag niet leeg zijn')
         if self.repo.exists_by_isbn(boek_data['isbn']):
-            raise BoekAlreadyExistsException("Boek met dit ISBN bestaat al.")
-        return self.repo.add(
-            auteur=boek_data.get('auteur'),
-            beschrijving=boek_data.get('beschrijving'),
-            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
-            isbn=boek_data.get('isbn'),
-            kaft_foto_url=boek_data.get('kaft_foto_url'),
-            publicatiedatum=boek_data.get('publicatiedatum'),
-            titel=boek_data.get('titel'),
-            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
-            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-            jaar=boek_data.get('jaar')
-        )
+            raise BoekAlreadyExistsException('Er bestaat al een boek met deze ISBN-code')
+        try:
+            boek = self.repo.add(
+                auteur=boek_data['auteur'],
+                beschrijving=boek_data.get('beschrijving'),
+                is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+                isbn=boek_data['isbn'],
+                kaft_foto_url=boek_data.get('kaft_foto_url'),
+                publicatiedatum=boek_data.get('publicatiedatum'),
+                titel=boek_data['titel'],
+                uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+                uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
+                jaar=boek_data.get('jaar')
+            )
+            return boek
+        except BoekCreateServiceDatabaseException as e:
+            raise
+        except Exception as e:
+            raise BoekCreateServiceDatabaseException(str(e))
