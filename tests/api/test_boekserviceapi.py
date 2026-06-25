@@ -1,9 +1,8 @@
 from flask import Flask
 from src.api.boekserviceapi import register_routes
-from src.api import boekserviceapi
 from src.api.boekserviceapi_exceptions import BoekNotFoundException, InvalidBoekDataException
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 @pytest.fixture
 def client():
