@@ -10,8 +10,6 @@ class BoekCreateDatabaseException(BoekCreateException):
     """Raised when book creation fails due to database errors."""
     pass
 
-# REMOVE this duplicate/unused exception to prevent confusion.
-# class BoekCreateDuplicateException(BoekCreateException):
-#     pass
-# class BoekCreatePermissionException(BoekCreateException):
-#     pass
+class BoekAlreadyExistsException(BoekCreateException):
+    """Raised when a book with the given identifier already exists."""
+    pass

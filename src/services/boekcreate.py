@@ -2,12 +2,12 @@ from database import get_connection
 from src.services.boekcreate_exceptions import (
     BoekCreateValidationException,
     BoekCreateDatabaseException,
+    BoekAlreadyExistsException
 )
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException
 
 SCHEMA_FIELDS = [
-    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
-    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
+    'auteur', 'beschrijving', 'isbn', 'publicatiedatum', 'kaft_foto_url',
+    'is_uitgeleend', 'uitgeleend_datum', 'uitgeleend_max_tot', 'titel'
 ]
 
 class Boek:
@@ -42,18 +42,18 @@ class BoekRepository:
             values = [
                 boek_data.get('auteur'),
                 boek_data.get('beschrijving'),
-                boek_data.get('is_uitgeleend', 0),
                 boek_data.get('isbn'),
-                boek_data.get('kaft_foto_url'),
                 boek_data.get('publicatiedatum'),
-                boek_data.get('titel'),
+                boek_data.get('kaft_foto_url'),
+                boek_data.get('is_uitgeleend', 0),
                 boek_data.get('uitgeleend_datum'),
-                boek_data.get('uitgeleend_max_tot')
+                boek_data.get('uitgeleend_max_tot'),
+                boek_data.get('titel')
             ]
             cursor.execute(
                 """
                 INSERT INTO boeken (
-                    auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
+                    auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot, titel
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 tuple(values)
@@ -78,18 +78,18 @@ class BoekRepository:
 
 class BoekService:
     def __init__(self, repository=None):
-        self.repository = repository or BoekRepository(get_connection())
-
-    def _validate_boek(self, data):
-        required = ["titel", "auteur", "isbn"]
-        for key in required:
-            if key not in data or not isinstance(data[key], str) or not data[key].strip():
-                return False
-        return True
+        self.db_connection = get_connection() if repository is None else None
+        self.repository = repository if repository is not None else BoekRepository(self.db_connection)
 
     def create_boek(self, boek_data):
-        if not self._validate_boek(boek_data):
-            raise BoekCreateValidationException("Missing or invalid boek data.")
+        # Simple validation: titel, auteur, isbn zijn verplicht en string
+        for veld in ["titel", "auteur", "isbn"]:
+            if veld not in boek_data or not isinstance(boek_data[veld], str) or not boek_data[veld].strip():
+                raise BoekCreateValidationException(f"Veld {veld} is verplicht en moet een niet-lege tekst zijn.")
+        # Optional: jaar, mag alleen numeriek of None zijn (voor test)
+        if "jaar" in boek_data and boek_data["jaar"] is not None:
+            if not isinstance(boek_data["jaar"], int):
+                raise BoekCreateValidationException("Jaar moet integer zijn.")
         if self.repository.exists(boek_data["isbn"]):
-            raise BoekAlreadyExistsException(f"Boek met isbn {boek_data['isbn']} bestaat al.")
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
         return self.repository.create(boek_data)
