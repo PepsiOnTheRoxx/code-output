@@ -2,7 +2,7 @@ class BoekReadException(Exception):
     """Base exception for BoekRead feature in BoekService."""
     pass
 
-class BoekNotFoundException(BoekReadException):
+class BoekNietGevondenException(BoekReadException):
     """Raised when a requested boek cannot be found."""
     pass
 
@@ -14,6 +14,6 @@ class BoekReadUnauthorizedException(BoekReadException):
     """Raised when the user is not authorized to read boek data."""
     pass
 
-class BoekReadDatabaseException(BoekReadException):
+class DatabaseFoutException(BoekReadException):
     """Raised when a database error occurs during boek read."""
     pass
