@@ -75,26 +75,30 @@ class BoekCreateService:
     def create_boek(self, boek_data):
         if not self._validate_boek_data(boek_data):
             raise InvalidBoekDataException("Missing or invalid boek data.")
-        isbn = boek_data["isbn"]
-        try:
-            if self.repository.exists_by_isbn(isbn):
-                raise BoekAlreadyExistsException("Boek already exists with isbn: {}".format(isbn))
-            # Vul alle schema-velden op, met defaults als ze niet geleverd zijn
-            created_boek = self.repository.add(
-                titel=boek_data["titel"].strip(),
-                auteur=boek_data["auteur"].strip(),
-                isbn=boek_data["isbn"].strip(),
-                beschrijving=boek_data.get("beschrijving"),
-                is_uitgeleend=boek_data.get("is_uitgeleend", 0),  # False als default
-                kaft_foto_url=boek_data.get("kaft_foto_url"),
-                publicatiedatum=boek_data.get("publicatiedatum"),
-                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
-                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot")
-            )
-            return created_boek
-        except BoekAlreadyExistsException:
-            raise
-        except BoekDatabaseException:
-            raise
-        except Exception as e:
-            raise BoekServiceDependencyException(str(e))
+        if self.repository.exists_by_isbn(boek_data["isbn"]):
+            raise BoekAlreadyExistsException("Boek already exists with this ISBN.")
+        # Optional fields
+        beschrijving = boek_data.get("beschrijving", None)
+        is_uitgeleend = boek_data.get("is_uitgeleend", 0)
+        kaft_foto_url = boek_data.get("kaft_foto_url", None)
+        publicatiedatum = boek_data.get("publicatiedatum", None)
+        uitgeleend_datum = boek_data.get("uitgeleend_datum", None)
+        uitgeleend_max_tot = boek_data.get("uitgeleend_max_tot", None)
+        boek_obj = self.repository.add(
+            boek_data["titel"],
+            boek_data["auteur"],
+            boek_data["isbn"],
+            beschrijving,
+            is_uitgeleend,
+            kaft_foto_url,
+            publicatiedatum,
+            uitgeleend_datum,
+            uitgeleend_max_tot
+        )
+        # Sluit connectie indien deze lokaal geopend werd
+        if hasattr(self.db_connection, "close"):
+            try:
+                self.db_connection.close()
+            except Exception:
+                pass
+        return boek_obj
