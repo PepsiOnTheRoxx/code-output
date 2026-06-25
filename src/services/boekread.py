@@ -1,7 +1,13 @@
 from src.services.boekread_exceptions import (
     BoekNotFoundException,
-    DatabaseException,
+    BoekDatabaseConnectionException,
+    BoekAttributeReadException,
+    BoekInvalidQueryException,
 )
+
+class DatabaseException(Exception):
+    '''Generic database error exception for BoekService.''' 
+    pass
 
 class Boek:
     def __init__(self, id, titel, auteur, jaar, genre):

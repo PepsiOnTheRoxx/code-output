@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.services.boekread import BoekService
-from src.services.boekread_exceptions import BoekNotFoundException, DatabaseException
+from src.services.boekread import BoekService, DatabaseException
+from src.services.boekread_exceptions import BoekNotFoundException
 
 def test_get_boek_by_id_executes_correct_query_and_returns_boek():
     db_connection = MagicMock()
