@@ -4,70 +4,56 @@ from src.services.boekread import BoekService
 from src.services.boekread_exceptions import BoekNotFoundException
 
 @pytest.fixture
-def boek_data():
-    return {
-        "id": 1,
-        "titel": "De Donkere Kamer van Damokles",
-        "auteur": "W.F. Hermans",
-        "isbn": "9789023451235"
-    }
-
-@pytest.fixture
-def boek_lijst_data():
+def mock_boek_list():
     return [
-        {"id": 1, "titel": "De Donkere Kamer van Damokles", "auteur": "W.F. Hermans", "isbn": "9789023451235"},
-        {"id": 2, "titel": "Max Havelaar", "auteur": "Multatuli", "isbn": "9789023456789"},
+        {"id": 1, "titel": "Boek A", "auteur": "Auteur A"},
+        {"id": 2, "titel": "Boek B", "auteur": "Auteur B"},
     ]
 
-@patch("src.services.boekread.BoekRepository")
-def test_lees_boek_by_id_succes(mock_boek_repo, boek_data):
-    instance = mock_boek_repo.return_value
-    instance.get_boek_by_id.return_value = boek_data
-    service = BoekService()
-    result = service.lees_boek_by_id(1)
-    assert result == boek_data
-    instance.get_boek_by_id.assert_called_once_with(1)
+def test_get_all_boeken_returns_list_of_boeken(mock_boek_list):
+    with patch('src.services.boekread.BoekRepository') as MockRepo:
+        instance = MockRepo.return_value
+        instance.get_all_boeken.return_value = mock_boek_list
+        service = BoekService()
+        result = service.get_all_boeken()
+        assert result == mock_boek_list
+        instance.get_all_boeken.assert_called_once()
 
-@patch("src.services.boekread.BoekRepository")
-def test_lees_boek_by_id_niet_gevonden(mock_boek_repo):
-    instance = mock_boek_repo.return_value
-    instance.get_boek_by_id.return_value = None
-    service = BoekService()
-    with pytest.raises(BoekNotFoundException):
-        service.lees_boek_by_id(999)
+def test_get_boek_by_id_returns_correct_boek(mock_boek_list):
+    boek_id = 1
+    with patch('src.services.boekread.BoekRepository') as MockRepo:
+        instance = MockRepo.return_value
+        instance.get_boek_by_id.return_value = mock_boek_list[0]
+        service = BoekService()
+        result = service.get_boek_by_id(boek_id)
+        assert result == mock_boek_list[0]
+        instance.get_boek_by_id.assert_called_once_with(boek_id)
 
-@patch("src.services.boekread.BoekRepository")
-def test_lees_alle_boeken_succes(mock_boek_repo, boek_lijst_data):
-    instance = mock_boek_repo.return_value
-    instance.get_all_boeken.return_value = boek_lijst_data
-    service = BoekService()
-    result = service.lees_alle_boeken()
-    assert result == boek_lijst_data
-    instance.get_all_boeken.assert_called_once_with()
+def test_get_boek_by_id_raises_not_found_exception():
+    boek_id = 99
+    with patch('src.services.boekread.BoekRepository') as MockRepo:
+        instance = MockRepo.return_value
+        instance.get_boek_by_id.return_value = None
+        service = BoekService()
+        with pytest.raises(BoekNotFoundException):
+            service.get_boek_by_id(boek_id)
+        instance.get_boek_by_id.assert_called_once_with(boek_id)
 
-@patch("src.services.boekread.BoekRepository")
-def test_lees_alle_boeken_leeg(mock_boek_repo):
-    instance = mock_boek_repo.return_value
-    instance.get_all_boeken.return_value = []
-    service = BoekService()
-    result = service.lees_alle_boeken()
-    assert result == []
-    instance.get_all_boeken.assert_called_once_with()
+def test_get_all_boeken_empty_list():
+    with patch('src.services.boekread.BoekRepository') as MockRepo:
+        instance = MockRepo.return_value
+        instance.get_all_boeken.return_value = []
+        service = BoekService()
+        result = service.get_all_boeken()
+        assert result == []
+        instance.get_all_boeken.assert_called_once()
 
-@patch("src.services.boekread.BoekRepository")
-def test_lees_boek_by_id_raises_on_error(mock_boek_repo):
-    instance = mock_boek_repo.return_value
-    instance.get_boek_by_id.side_effect = Exception("Database error")
-    service = BoekService()
-    with pytest.raises(Exception) as exc_info:
-        service.lees_boek_by_id(1)
-    assert "Database error" in str(exc_info.value)
-
-@patch("src.services.boekread.BoekRepository")
-def test_lees_alle_boeken_raises_on_error(mock_boek_repo):
-    instance = mock_boek_repo.return_value
-    instance.get_all_boeken.side_effect = Exception("Repository error")
-    service = BoekService()
-    with pytest.raises(Exception) as exc_info:
-        service.lees_alle_boeken()
-    assert "Repository error" in str(exc_info.value)
+def test_get_boek_by_id_invalid_type():
+    boek_id = "invalid"
+    with patch('src.services.boekread.BoekRepository') as MockRepo:
+        instance = MockRepo.return_value
+        instance.get_boek_by_id.side_effect = TypeError()
+        service = BoekService()
+        with pytest.raises(TypeError):
+            service.get_boek_by_id(boek_id)
+        instance.get_boek_by_id.assert_called_once_with(boek_id)

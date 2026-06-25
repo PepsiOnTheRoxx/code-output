@@ -3,17 +3,21 @@ class BoekReadException(Exception):
     pass
 
 class BoekNotFoundException(BoekReadException):
-    """Raised when a requested Boek is not found."""
+    """Raised when a Boek cannot be found."""
     pass
 
-class BoekReadPermissionException(BoekReadException):
-    """Raised when lacking permission to read a Boek."""
+class BoekServiceUnavailableException(BoekReadException):
+    """Raised when the BoekService is unavailable."""
     pass
 
-class BoekReadInvalidInputException(BoekReadException):
-    """Raised when given invalid input for reading Boek(en)."""
+class BoekInvalidQueryException(BoekReadException):
+    """Raised when the query for Boek is invalid."""
     pass
 
-class BoekReadServiceUnavailableException(BoekReadException):
-    """Raised when the BoekService is unavailable during read."""
+class BoekPermissionDeniedException(BoekReadException):
+    """Raised when user does not have permission to read Boek."""
+    pass
+
+class BoekReadTimeoutException(BoekReadException):
+    """Raised when reading a Boek takes too long."""
     pass
