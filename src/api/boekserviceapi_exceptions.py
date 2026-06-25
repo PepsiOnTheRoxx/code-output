@@ -2,7 +2,7 @@ class BoekAPIException(Exception):
     """Base exception for BoekAPI errors."""
     pass
 
-class BoekNotFoundException(BoekAPIException):
+class BoekNietGevondenException(BoekAPIException):
     """Raised when a requested book is not found."""
     pass
 
@@ -10,7 +10,7 @@ class BoekAlreadyExistsException(BoekAPIException):
     """Raised when attempting to create a book that already exists."""
     pass
 
-class InvalidBoekDataException(BoekAPIException):
+class OngeldigeBoekDataException(BoekAPIException):
     """Raised when provided book data is invalid."""
     pass
 
