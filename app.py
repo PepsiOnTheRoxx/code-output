@@ -4,8 +4,8 @@ from src.frontend.catalogusfrontend import catalogusfrontend_bp
 from src.frontend.boekaanpassenfrontend import boekaanpassenfrontend_bp
 from src.frontend.boekdetailfrontend import boekdetailfrontend_bp
 from src.frontend.boektoevoegenfrontend import boektoevoegenfrontend_bp
-from src.db import init_db
-from src.seeder import seed_db
+from database import init_db
+from src.services.boekseeder import BoekSeeder
 
 def create_app():
     app = Flask(__name__)
@@ -13,7 +13,7 @@ def create_app():
     # Initialiseer database en seeder
     with app.app_context():
         init_db()
-        seed_db()
+        BoekSeeder().run()
 
     # Registreer API routes
     register_boek_routes(app)

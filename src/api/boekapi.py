@@ -9,8 +9,9 @@ def create_boek_blueprint(service=None):
 
     if service is None:
         import sqlite3
+        import database
+        db_conn = sqlite3.connect(database.DB_PATH, check_same_thread=False)
         from src.api.boekservice import BoekService
-        db_conn = sqlite3.connect("boeken.db", check_same_thread=False)
         service = BoekService(db_conn)
 
     @boek_blueprint.route("/boeken", methods=["GET"])
@@ -57,5 +58,4 @@ def create_boek_blueprint(service=None):
     return boek_blueprint
 
 def register_routes(app, service=None):
-    # Nu wordt elke keer een nieuwe blueprint met nieuwe routes aangemaakt!
     app.register_blueprint(create_boek_blueprint(service=service))

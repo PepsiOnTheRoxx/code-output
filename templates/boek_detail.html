@@ -8,14 +8,14 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('boekdetailfrontend.detail', boek_id=boek.rowid) }}">Boekdetail</a>
+        <a class="navbar-brand" href="{{ url_for('boekdetailfrontend.detail', boek_id=boek['rowid'] if 'rowid' in boek.keys() else boek['id']) }}">Boekdetail</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('catalogus.index') }}">Terug naar catalogus</a>
+                    <a class="nav-link" href="{{ url_for('catalogusfrontend.catalogus') }}">Terug naar catalogus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek.rowid) }}">Aanpassen</a>
+                    <a class="nav-link" href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek['rowid'] if 'rowid' in boek.keys() else boek['id']) }}">Aanpassen</a>
                 </li>
             </ul>
         </div>
@@ -53,8 +53,8 @@
                     {% endif %}
                 </dd>
             </dl>
-            <a href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek.rowid) }}" class="btn btn-warning">Bewerk boek</a>
-            <a href="{{ url_for('catalogus.index') }}" class="btn btn-secondary ms-2">Terug naar catalogus</a>
+            <a href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek['rowid'] if 'rowid' in boek.keys() else boek['id']) }}" class="btn btn-warning">Bewerk boek</a>
+            <a href="{{ url_for('catalogusfrontend.catalogus') }}" class="btn btn-secondary ms-2">Terug naar catalogus</a>
         </div>
     </div>
 </div>
