@@ -6,8 +6,8 @@ class BoekNotFoundException(BoekAPIException):
     """Raised when a requested Boek is not found."""
     pass
 
-class BoekInvalidDataException(BoekAPIException):
-    """Raised when provided Boek data is invalid."""
+class BoekValidationException(BoekAPIException):
+    """Raised when provided Boek data is invalid (consistent with test)."""
     pass
 
 class BoekCreateException(BoekAPIException):
