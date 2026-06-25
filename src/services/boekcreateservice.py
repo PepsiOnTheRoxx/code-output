@@ -1,7 +1,7 @@
 from src.services.boekcreateservice_exceptions import (
     BoekAlreadyExistsException,
     InvalidBoekDataException,
-    BoekDatabaseException as BoekDatabaseException,
+    BoekCreateServiceDatabaseException,
     BoekServiceDependencyException,
 )
 from database import get_connection
@@ -21,7 +21,7 @@ class BoekRepository:
             cursor.execute("SELECT 1 FROM boeken WHERE isbn = ?", (isbn,))
             return cursor.fetchone() is not None
         except Exception as e:
-            raise BoekDatabaseException(str(e))
+            raise BoekCreateServiceDatabaseException(str(e))
 
     def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
         try:
@@ -55,7 +55,7 @@ class BoekRepository:
                 attrs["jaar"] = jaar
             return type("Boek", (), attrs)()
         except Exception as e:
-            raise BoekDatabaseException(str(e))
+            raise BoekCreateServiceDatabaseException(str(e))
 
 class BoekCreateService:
     def __init__(self, db_connection=None):
@@ -74,23 +74,27 @@ class BoekCreateService:
                 return False
         return True
 
-    def create_boek(self, boek_data):
-        if not self._validate_boek_data(boek_data):
-            raise InvalidBoekDataException("Ongeldige boekdata")
-        if self.repository.exists_by_isbn(boek_data["isbn"]):
-            raise BoekAlreadyExistsException("Boek al aanwezig")
+    def create_boek(self, data):
+        if not self._validate_boek_data(data):
+            raise InvalidBoekDataException("Ongeldige boek data")
+        isbn = data.get("isbn")
+        if self.repository.exists_by_isbn(isbn):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al")
         try:
-            return self.repository.add(
-                auteur=boek_data.get("auteur"),
-                beschrijving=boek_data.get("beschrijving"),
-                is_uitgeleend=boek_data.get("is_uitgeleend", 0),
-                isbn=boek_data.get("isbn"),
-                kaft_foto_url=boek_data.get("kaft_foto_url"),
-                publicatiedatum=boek_data.get("publicatiedatum"),
-                titel=boek_data.get("titel"),
-                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
-                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot"),
-                jaar=boek_data.get("jaar")
+            boek = self.repository.add(
+                auteur=data.get("auteur"),
+                beschrijving=data.get("beschrijving"),
+                is_uitgeleend=data.get("is_uitgeleend", 0),
+                isbn=data.get("isbn"),
+                kaft_foto_url=data.get("kaft_foto_url"),
+                publicatiedatum=data.get("publicatiedatum"),
+                titel=data.get("titel"),
+                uitgeleend_datum=data.get("uitgeleend_datum"),
+                uitgeleend_max_tot=data.get("uitgeleend_max_tot"),
+                jaar=data.get("jaar")
             )
-        except Exception as exc:
-            raise BoekDatabaseException(f"Database error: {exc}")
+            return boek
+        except BoekCreateServiceDatabaseException as e:
+            raise e
+        except Exception as e:
+            raise BoekServiceDependencyException(str(e))
