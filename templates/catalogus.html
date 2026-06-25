@@ -10,7 +10,7 @@
   <div class="container">
     <a class="navbar-brand" href="{{ url_for('catalogusfrontend.catalogus') }}">Boekencatalogus</a>
     <div>
-      <a href="{{ url_for('catalogusfrontend.boek_toevoegen') }}" class="btn btn-success">Boek toevoegen</a>
+      <a href="{{ url_for('boektoevoegenfrontend.toevoegen') }}" class="btn btn-success">Boek toevoegen</a>
     </div>
   </div>
 </nav>
@@ -46,8 +46,8 @@
           {% endif %}
         </td>
         <td>
-          <a href="{{ url_for('catalogusfrontend.boek_detail', boek_id=boek.id) }}" class="btn btn-info btn-sm">Details</a>
-          <a href="{{ url_for('catalogusfrontend.boek_aanpassen', boek_id=boek.id) }}" class="btn btn-warning btn-sm">Aanpassen</a>
+          <a href="{{ url_for('boekdetailfrontend.detail', boek_id=boek.id) }}" class="btn btn-info btn-sm">Details</a>
+          <a href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek.id) }}" class="btn btn-warning btn-sm">Aanpassen</a>
         </td>
       </tr>
       {% endfor %}
