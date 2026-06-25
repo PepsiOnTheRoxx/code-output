@@ -1,5 +1,4 @@
 from datetime import date
-from database import get_connection
 from src.services.boekcreate_exceptions import (
     BoekCreateException,
     BoekCreateDatabaseException,
@@ -14,49 +13,55 @@ from src.services.boekcreate_exceptions import (
     BoekCreateInvalidUitgeleendMaxTotException,
 )
 
+def get_db():
+    # Dummy fallback/mock if not patched; in productie overschreven door patch
+    raise NotImplementedError("get_db() moet gepatcht worden in tests of worden geimplementeerd.")
+
 class BoekService:
     def __init__(self, db_connection=None):
         if db_connection is None:
-            self.db_connection = get_connection()
+            self.db_connection = get_db()
         else:
             self.db_connection = db_connection
 
-    def create_boek(
-        self,
-        auteur,
-        beschrijving,
-        isbn,
-        publicatiedatum,
-        kaft_foto_url,
-        is_uitgeleend,
-        uitgeleend_datum,
-        uitgeleend_max_tot
-    ):
+    def create_boek(self, **kwargs):
         required_fields = [
-            "auteur", "beschrijving", "isbn", "publicatiedatum",
-            "kaft_foto_url", "is_uitgeleend", "uitgeleend_datum", "uitgeleend_max_tot"
+            'auteur', 'beschrijving', 'isbn', 'publicatiedatum',
+            'kaft_foto_url', 'is_uitgeleend', 'uitgeleend_datum', 'uitgeleend_max_tot'
         ]
-        locals_data = locals()
+        # Check presence
         for attr in required_fields:
-            if attr not in locals_data or (attr != "uitgeleend_datum" and attr != "uitgeleend_max_tot" and locals_data[attr] is None):
+            if attr not in kwargs:
+                raise BoekCreateMissingAttributeException(f"Missing required attribute: {attr}")
+            if attr not in ['uitgeleend_datum','uitgeleend_max_tot'] and kwargs[attr] is None:
                 raise BoekCreateMissingAttributeException(f"Missing required attribute: {attr}")
 
+        auteur = kwargs['auteur']
+        beschrijving = kwargs['beschrijving']
+        isbn = kwargs['isbn']
+        publicatiedatum = kwargs['publicatiedatum']
+        kaft_foto_url = kwargs['kaft_foto_url']
+        is_uitgeleend = kwargs['is_uitgeleend']
+        uitgeleend_datum = kwargs['uitgeleend_datum']
+        uitgeleend_max_tot = kwargs['uitgeleend_max_tot']
+
+        # Validaties
         if not isinstance(auteur, str):
-            raise BoekCreateInvalidAuteurException("auteur is not a string")
+            raise BoekCreateInvalidAuteurException()
         if not isinstance(beschrijving, str):
-            raise BoekCreateInvalidBeschrijvingException("beschrijving is not a string")
+            raise BoekCreateInvalidBeschrijvingException()
         if not isinstance(isbn, str):
-            raise BoekCreateInvalidIsbnException("isbn is not a string")
-        if not (isinstance(publicatiedatum, date)):
-            raise BoekCreateInvalidPublicatiedatumException("publicatiedatum is not a date")
+            raise BoekCreateInvalidIsbnException()
+        if not isinstance(publicatiedatum, date):
+            raise BoekCreateInvalidPublicatiedatumException()
         if not isinstance(kaft_foto_url, str):
-            raise BoekCreateInvalidKaftFotoUrlException("kaft_foto_url is not a string")
+            raise BoekCreateInvalidKaftFotoUrlException()
         if not isinstance(is_uitgeleend, bool):
-            raise BoekCreateInvalidIsUitgeleendException("is_uitgeleend is not a boolean")
+            raise BoekCreateInvalidIsUitgeleendException()
         if uitgeleend_datum is not None and not isinstance(uitgeleend_datum, date):
-            raise BoekCreateInvalidUitgeleendDatumException("uitgeleend_datum is not a date or None")
+            raise BoekCreateInvalidUitgeleendDatumException()
         if uitgeleend_max_tot is not None and not isinstance(uitgeleend_max_tot, date):
-            raise BoekCreateInvalidUitgeleendMaxTotException("uitgeleend_max_tot is not a date or None")
+            raise BoekCreateInvalidUitgeleendMaxTotException()
 
         sql = (
             "INSERT INTO boeken (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) "

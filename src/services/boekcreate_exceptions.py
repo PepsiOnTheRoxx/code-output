@@ -1,35 +1,32 @@
 class BoekCreateException(Exception):
     pass
 
-class BoekCreateInvalidDataException(BoekCreateException):
-    pass
-
 class BoekCreateDatabaseException(BoekCreateException):
     pass
 
 class BoekCreateMissingAttributeException(BoekCreateException):
     pass
 
-class BoekCreateInvalidAuteurException(BoekCreateInvalidDataException):
+class BoekCreateInvalidAuteurException(BoekCreateException):
     pass
 
-class BoekCreateInvalidBeschrijvingException(BoekCreateInvalidDataException):
+class BoekCreateInvalidBeschrijvingException(BoekCreateException):
     pass
 
-class BoekCreateInvalidIsbnException(BoekCreateInvalidDataException):
+class BoekCreateInvalidIsbnException(BoekCreateException):
     pass
 
-class BoekCreateInvalidPublicatiedatumException(BoekCreateInvalidDataException):
+class BoekCreateInvalidPublicatiedatumException(BoekCreateException):
     pass
 
-class BoekCreateInvalidKaftFotoUrlException(BoekCreateInvalidDataException):
+class BoekCreateInvalidKaftFotoUrlException(BoekCreateException):
     pass
 
-class BoekCreateInvalidIsUitgeleendException(BoekCreateInvalidDataException):
+class BoekCreateInvalidIsUitgeleendException(BoekCreateException):
     pass
 
-class BoekCreateInvalidUitgeleendDatumException(BoekCreateInvalidDataException):
+class BoekCreateInvalidUitgeleendDatumException(BoekCreateException):
     pass
 
-class BoekCreateInvalidUitgeleendMaxTotException(BoekCreateInvalidDataException):
+class BoekCreateInvalidUitgeleendMaxTotException(BoekCreateException):
     pass
