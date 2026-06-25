@@ -6,8 +6,8 @@ from src.services.boekcreate_exceptions import (
 )
 
 SCHEMA_FIELDS = [
-    'auteur', 'beschrijving', 'isbn', 'publicatiedatum', 'kaft_foto_url',
-    'is_uitgeleend', 'uitgeleend_datum', 'uitgeleend_max_tot', 'titel'
+    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
+    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
 ]
 
 class Boek:
@@ -36,24 +36,27 @@ class BoekRepository:
         except Exception as e:
             raise BoekCreateDatabaseException(f"Database check error: {str(e)}")
 
+    def exists_by_isbn(self, isbn):
+        return self.exists(isbn)
+
     def create(self, boek_data):
         try:
             cursor = self.db_connection.cursor()
             values = [
                 boek_data.get('auteur'),
                 boek_data.get('beschrijving'),
-                boek_data.get('isbn'),
-                boek_data.get('publicatiedatum'),
-                boek_data.get('kaft_foto_url'),
                 boek_data.get('is_uitgeleend', 0),
+                boek_data.get('isbn'),
+                boek_data.get('kaft_foto_url'),
+                boek_data.get('publicatiedatum'),
+                boek_data.get('titel'),
                 boek_data.get('uitgeleend_datum'),
-                boek_data.get('uitgeleend_max_tot'),
-                boek_data.get('titel')
+                boek_data.get('uitgeleend_max_tot')
             ]
             cursor.execute(
                 """
                 INSERT INTO boeken (
-                    auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot, titel
+                    auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 tuple(values)
@@ -71,22 +74,30 @@ class BoekRepository:
                 publicatiedatum=boek_data.get('publicatiedatum'),
                 uitgeleend_datum=boek_data.get('uitgeleend_datum'),
                 uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-                jaar=boek_data.get('jaar') # Optioneel voor test compatibility
+                jaar=boek_data.get('jaar')
             )
         except Exception as e:
             raise BoekCreateDatabaseException(f"Database insert error: {str(e)}")
 
 class BoekService:
     def __init__(self, repository=None):
-        self.repository = repository or BoekRepository(get_connection())
+        if repository is not None:
+            self.repository = repository
+        else:
+            self.repository = BoekRepository(get_connection())
+
+    def _validate_boek_data(self, boek_data):
+        required = ['titel', 'auteur', 'isbn', 'jaar']
+        if not isinstance(boek_data, dict):
+            return False
+        for field in required:
+            if field not in boek_data or not boek_data[field] or (isinstance(boek_data[field], str) and not boek_data[field].strip()):
+                return False
+        return True
 
     def create_boek(self, boek_data):
-        # Validatie voor vereiste velden (incl. test-compatibiliteit met 'jaar')
-        required = ["titel", "auteur", "isbn", "jaar"]
-        for key in required:
-            if key not in boek_data or not boek_data[key] or (isinstance(boek_data[key], str) and not boek_data[key].strip()):
-                raise BoekCreateValidationException(f"Ongeldig of ontbrekend veld: {key}")
-        if self.repository.exists(boek_data["isbn"]):
+        if not self._validate_boek_data(boek_data):
+            raise BoekCreateValidationException("Ongeldige of ontbrekende boek data.")
+        if self.repository.exists(boek_data['isbn']):
             raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
-        boek = self.repository.create(boek_data)
-        return boek
+        return self.repository.create(boek_data)
