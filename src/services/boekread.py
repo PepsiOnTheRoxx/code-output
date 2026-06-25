@@ -1,6 +1,11 @@
 from database import get_connection
 from src.services.boekread_exceptions import BoekNotFoundException
 
+SCHEMA_FIELDS = [
+    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
+    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
+]
+
 class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
@@ -8,33 +13,31 @@ class BoekRepository:
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
         cursor.execute(
-            "SELECT id, titel, auteur, isbn FROM boek WHERE id = ?", (boek_id,)
+            f"SELECT rowid, {', '.join(SCHEMA_FIELDS)} FROM boeken WHERE rowid = ?",
+            (boek_id,)
         )
         row = cursor.fetchone()
         if row:
-            return {
-                "id": row[0],
-                "titel": row[1],
-                "auteur": row[2],
-                "isbn": row[3]
-            }
+            return dict(
+                id=row[0],
+                **{field: row[i+1] for i, field in enumerate(SCHEMA_FIELDS)}
+            )
         return None
 
     def get_all_boeken(self):
         cursor = self.db_connection.cursor()
         cursor.execute(
-            "SELECT id, titel, auteur, isbn FROM boek"
+            f"SELECT rowid, {', '.join(SCHEMA_FIELDS)} FROM boeken"
         )
         rows = cursor.fetchall()
-        return [
-            {
-                "id": row[0],
-                "titel": row[1],
-                "auteur": row[2],
-                "isbn": row[3]
-            }
-            for row in rows
-        ]
+        boeken = []
+        for row in rows:
+            boek = dict(
+                id=row[0],
+                **{field: row[i+1] for i, field in enumerate(SCHEMA_FIELDS)}
+            )
+            boeken.append(boek)
+        return boeken
 
 class BoekService:
     def __init__(self, db_connection=None):
