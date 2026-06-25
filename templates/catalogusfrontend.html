@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Boekcatalogus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('catalogusfrontend.index') }}">Catalogus</a>
+        <a class="btn btn-primary" href="{{ url_for('catalogusfrontend.boek_toevoegen') }}">Boek toevoegen</a>
+    </div>
+</nav>
+<div class="container mt-4">
+    <h2>Overzicht van alle boeken</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+        {% for boek in boeken %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ boek.kaft_url or 'https://via.placeholder.com/150x220?text=Geen+Afbeelding' }}" class="card-img-top" alt="Kaft van {{ boek.titel }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ boek.titel }}</h5>
+                    <p class="card-text"><strong>Auteur:</strong> {{ boek.auteur }}</p>
+                    <p class="card-text"><strong>Status:</strong> <span class="badge {% if boek.status == 'Uitgeleend' %}bg-danger{% else %}bg-success{% endif %}">{{ boek.status }}</span></p>
+                    <a href="{{ url_for('catalogusfrontend.boek_detail', boek_id=boek.id) }}" class="btn btn-info btn-sm">Details</a>
+                    <a href="{{ url_for('catalogusfrontend.boek_aanpassen', boek_id=boek.id) }}" class="btn btn-warning btn-sm">Aanpassen</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>
