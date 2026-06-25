@@ -21,3 +21,4 @@ class BoekUpdateConflictException(BoekUpdateException):
 class BoekUpdateDatabaseException(BoekUpdateException):
     """Exception raised when a database error occurs during boek update."""
     pass
+

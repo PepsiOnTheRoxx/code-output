@@ -4,6 +4,8 @@ from src.services.boekupdate_exceptions import (
 )
 
 class BoekService:
+    VALID_BOEK_VELDEN = {'titel', 'auteur'}  # Uitbreidbaar met meerdere boekvelden
+
     def __init__(self, boek_repository):
         self.boek_repository = boek_repository
 
@@ -11,14 +13,19 @@ class BoekService:
         bestaand_boek = self.boek_repository.get_boek_by_id(boek_id)
         if not bestaand_boek:
             raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
-        if "titel" in nieuwe_data:
-            if not nieuwe_data["titel"] or not isinstance(nieuwe_data["titel"], str):
-                raise BoekUpdateValidationException("Boektitel mag niet leeg zijn")
-            bestaand_boek.titel = nieuwe_data["titel"]
-        if "auteur" in nieuwe_data:
-            if not nieuwe_data["auteur"] or not isinstance(nieuwe_data["auteur"], str):
-                raise BoekUpdateValidationException("Auteur mag niet leeg zijn")
-            bestaand_boek.auteur = nieuwe_data["auteur"]
+
+        for veld, waarde in nieuwe_data.items():
+            if veld not in self.VALID_BOEK_VELDEN:
+                continue  # Sla niet-boekvelden in nieuwe_data over
+            if veld == 'titel':
+                if not waarde or not isinstance(waarde, str):
+                    raise BoekUpdateValidationException("Boektitel mag niet leeg zijn")
+                setattr(bestaand_boek, 'titel', waarde)
+            elif veld == 'auteur':
+                if not waarde or not isinstance(waarde, str):
+                    raise BoekUpdateValidationException("Auteur mag niet leeg zijn")
+                setattr(bestaand_boek, 'auteur', waarde)
+            # Op meer validaties/velden uitbreiden indien vereist
         try:
             self.boek_repository.save_boek(bestaand_boek)
         except Exception as exc:
