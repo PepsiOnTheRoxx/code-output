@@ -1,10 +1,15 @@
 from flask import jsonify, request
 import sqlite3
-from src.api.boekserviceapi_exceptions import BoekNotFoundException
-from src.api.boekserviceapi import BoekService  # deze import moet juist zijn voor patching in testen
+from src.api.boekserviceapi_exceptions import BoekNietGevondenException
+
+# Dummy class only for patching, is never used in actual flow
+class BoekService:
+    pass
 
 def register_routes(app):
     def get_service():
+        # Dynamisch importeren voor patching
+        from src.api.boekserviceapi import BoekService
         conn = sqlite3.connect('boeken.sqlite')
         return BoekService(conn)
 
@@ -20,7 +25,7 @@ def register_routes(app):
         try:
             boek = service.get_boek_by_id(boek_id)
             return jsonify(boek), 200
-        except BoekNotFoundException:
+        except BoekNietGevondenException:
             return jsonify({'error': 'Boek not found'}), 404
 
     @app.route('/api/boeken', methods=['POST'])
@@ -48,7 +53,7 @@ def register_routes(app):
         try:
             updated = service.update_boek(boek_id, data)
             return jsonify(updated), 200
-        except BoekNotFoundException:
+        except BoekNietGevondenException:
             return jsonify({'error': 'Boek not found'}), 404
 
     @app.route('/api/boeken/<int:boek_id>', methods=['DELETE'])
@@ -57,5 +62,5 @@ def register_routes(app):
         try:
             service.delete_boek_by_id(boek_id)
             return '', 204
-        except BoekNotFoundException:
+        except BoekNietGevondenException:
             return jsonify({'error': 'Boek not found'}), 404

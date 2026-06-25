@@ -2,7 +2,7 @@ import pytest
 from flask import Flask
 from unittest.mock import patch, MagicMock
 from src.api.boekserviceapi import register_routes
-from src.api.boekserviceapi_exceptions import BoekNotFoundException
+from src.api.boekserviceapi_exceptions import BoekNietGevondenException
 
 @pytest.fixture
 def client():
@@ -41,7 +41,7 @@ def test_get_boek_detail_success(mock_boek_service, client):
 @patch('src.api.boekserviceapi.BoekService')
 def test_get_boek_detail_not_found(mock_boek_service, client):
     mock_service = MagicMock()
-    mock_service.get_boek_by_id.side_effect = BoekNotFoundException()
+    mock_service.get_boek_by_id.side_effect = BoekNietGevondenException()
     mock_boek_service.return_value = mock_service
 
     response = client.get('/api/boeken/99')
@@ -74,7 +74,7 @@ def test_put_boek_success(mock_boek_service, client):
 @patch('src.api.boekserviceapi.BoekService')
 def test_put_boek_not_found(mock_boek_service, client):
     mock_service = MagicMock()
-    mock_service.update_boek.side_effect = BoekNotFoundException()
+    mock_service.update_boek.side_effect = BoekNietGevondenException()
     mock_boek_service.return_value = mock_service
 
     response = client.put('/api/boeken/123', json={"titel": "Onbekend", "auteur": "X"})
@@ -94,7 +94,7 @@ def test_delete_boek_success(mock_boek_service, client):
 @patch('src.api.boekserviceapi.BoekService')
 def test_delete_boek_not_found(mock_boek_service, client):
     mock_service = MagicMock()
-    mock_service.delete_boek_by_id.side_effect = BoekNotFoundException()
+    mock_service.delete_boek_by_id.side_effect = BoekNietGevondenException()
     mock_boek_service.return_value = mock_service
 
     response = client.delete('/api/boeken/404')
