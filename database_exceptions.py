@@ -1,16 +1,20 @@
+class DatabaseSetupError(Exception):
+    """Fout bij setup voor DatabaseSetup component."""
+    pass
+
 class DatabaseSetupException(Exception):
     """Algemene exception voor DatabaseSetup component."""
     pass
 
-class DatabaseConnectionError(DatabaseSetupException):
+class DatabaseConnectionError(DatabaseSetupError):
     """Fout bij verbinding maken met de database."""
     pass
 
-class DatabaseTableCreationError(DatabaseSetupException):
+class DatabaseTableCreationError(DatabaseSetupError):
     """Fout bij het aanmaken van de Boek tabel."""
     pass
 
-class BoekAttribuutFout(DatabaseSetupException):
+class BoekAttribuutFout(DatabaseSetupError):
     """Probleem met attributen van de Boek tabel."""
     pass
 

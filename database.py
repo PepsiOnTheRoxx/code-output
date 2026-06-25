@@ -2,6 +2,7 @@ import os
 import sqlite3
 from database_exceptions import (
     DatabaseSetupException,
+    DatabaseSetupError,  # <-- fix: correctly import this name!
     DatabaseConnectionError,
     DatabaseTableCreationError,
     BoekAttribuutFout,
@@ -71,12 +72,22 @@ class DatabaseSetup:
                 """
             )
             conn.commit()
-        except sqlite3.DatabaseError as e:
-            raise DatabaseTableCreationError(str(e))
         except sqlite3.OperationalError as e:
-            raise DatabaseConnectionError(str(e))
-        except Exception as e:
-            raise DatabaseSetupException(str(e))
-        finally:
             if conn:
                 conn.close()
+            raise DatabaseSetupError(str(e))
+        except sqlite3.DatabaseError as e:
+            if conn:
+                conn.close()
+            raise DatabaseSetupError(str(e))
+        except Exception as e:
+            if conn:
+                conn.close()
+            raise DatabaseSetupError(str(e))
+        finally:
+            # Only close if not close already
+            try:
+                if conn:
+                    conn.close()
+            except:
+                pass
