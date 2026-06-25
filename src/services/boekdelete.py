@@ -1,4 +1,4 @@
-from src.services.boekdelete_exceptions import BoekNietGevondenException, DatabaseFoutException
+from src.services.boekdelete_exceptions import BoekNietGevondenException, BoekDeleteDatabaseException
 
 class BoekDeleteService:
     def __init__(self, db_connection):
@@ -14,4 +14,4 @@ class BoekDeleteService:
         except BoekNietGevondenException:
             raise
         except Exception:
-            raise DatabaseFoutException()
+            raise BoekDeleteDatabaseException()

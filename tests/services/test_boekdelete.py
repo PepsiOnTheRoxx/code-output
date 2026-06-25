@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.services.boekdelete import BoekDeleteService
-from src.services.boekdelete_exceptions import BoekNietGevondenException, DatabaseFoutException
+from src.services.boekdelete_exceptions import BoekNietGevondenException, BoekDeleteDatabaseException
 
 @pytest.fixture
 def mock_db_connection():
@@ -36,7 +36,7 @@ def test_boekdelete_databasefout_exception(mock_db_connection):
     cursor.execute.side_effect = Exception("SQL error")
     service = BoekDeleteService(db_connection=mock_db_connection)
 
-    with pytest.raises(DatabaseFoutException):
+    with pytest.raises(BoekDeleteDatabaseException):
         service.delete_boek(10)
     cursor.execute.assert_called_once_with("DELETE FROM boeken WHERE id = ?", (10,))
     mock_db_connection.commit.assert_not_called()
