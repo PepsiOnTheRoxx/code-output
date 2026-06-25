@@ -18,6 +18,19 @@ class BoekRepository:
             raise BoekCreateDatabaseException(str(e))
 
     def create(self, boek_data):
+        # Zorg dat alle kolommen (fixed volgorde per schema) aanwezig zijn (ook als None)
+        kolommen = [
+            "auteur",
+            "beschrijving",
+            "is_uitgeleend",
+            "isbn",
+            "kaft_foto_url",
+            "publicatiedatum",
+            "titel",
+            "uitgeleend_datum",
+            "uitgeleend_max_tot",
+        ]
+        insert_values = [boek_data.get(k) for k in kolommen]
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
@@ -34,17 +47,7 @@ class BoekRepository:
                     uitgeleend_max_tot
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (
-                    boek_data.get("auteur"),
-                    boek_data.get("beschrijving"),
-                    boek_data.get("is_uitgeleend"),
-                    boek_data.get("isbn"),
-                    boek_data.get("kaft_foto_url"),
-                    boek_data.get("publicatiedatum"),
-                    boek_data.get("titel"),
-                    boek_data.get("uitgeleend_datum"),
-                    boek_data.get("uitgeleend_max_tot"),
-                ),
+                insert_values,
             )
             self.db_connection.commit()
             return boek_data
@@ -82,21 +85,16 @@ class BoekService:
             "is_uitgeleend": is_uitgeleend,
             "isbn": isbn,
             "kaft_foto_url": kaft_foto_url,
+            "publicatiedatum": publicatiedatum,
             "titel": titel,
+            "uitgeleend_datum": uitgeleend_datum,
+            "uitgeleend_max_tot": uitgeleend_max_tot,
         }
-        # Voeg alleen niet-None velden toe voor publicatiedatum / uitgeleend_datum / uitgeleend_max_tot
-        if publicatiedatum is not None:
-            boek_data["publicatiedatum"] = publicatiedatum
-        if uitgeleend_datum is not None:
-            boek_data["uitgeleend_datum"] = uitgeleend_datum
-        if uitgeleend_max_tot is not None:
-            boek_data["uitgeleend_max_tot"] = uitgeleend_max_tot
 
         if self.repo.exists(isbn=isbn):
             raise BoekCreateDuplicateISBNException("Boek met dit ISBN bestaat al")
         try:
-            # ONLY pass niet-None values in boek_data
-            filtered_data = {k: v for k, v in boek_data.items() if v is not None}
-            return self.repo.create(filtered_data)
+            # Zorg dat alle attributen als keys aanwezig zijn, None is toegestaan (zoals default in database)
+            return self.repo.create(boek_data)
         except BoekCreateDatabaseException as e:
             raise BoekCreateDatabaseException(str(e))
