@@ -2,7 +2,7 @@ class BoekDeleteException(Exception):
     """Base exception for BoekDelete feature in BoekService."""
     pass
 
-class BoekNotFoundException(BoekDeleteException):
+class BoekNietGevondenException(BoekDeleteException):
     """Raised when the specified Boek is not found."""
     pass
 
