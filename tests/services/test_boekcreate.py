@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, BoekCreateFailedException
+from src.services.boekcreate_exceptions import BoekCreateAlreadyExistsException, BoekCreateDatabaseException
 
 @pytest.fixture
 def valid_boek_data():
@@ -60,7 +60,7 @@ def test_create_boek_already_exists(mocked_db, valid_boek_data):
     cursor.fetchone.return_value = (1,)
 
     service = BoekService(db_connection)
-    with pytest.raises(BoekAlreadyExistsException):
+    with pytest.raises(BoekCreateAlreadyExistsException):
         service.create(valid_boek_data)
 
     cursor.execute.assert_called_with(
@@ -75,7 +75,7 @@ def test_create_boek_insert_failed(mocked_db, valid_boek_data):
     cursor.rowcount = 0
 
     service = BoekService(db_connection)
-    with pytest.raises(BoekCreateFailedException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create(valid_boek_data)
 
     cursor.execute.assert_any_call(
@@ -105,7 +105,7 @@ def test_create_boek_rolls_back_on_insert_exception(mocked_db, valid_boek_data):
     cursor.execute.side_effect = [None, Exception("insert failed")]
 
     service = BoekService(db_connection)
-    with pytest.raises(BoekCreateFailedException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create(valid_boek_data)
 
     db_connection.rollback.assert_called_once()
@@ -118,7 +118,7 @@ def test_create_boek_rolls_back_on_commit_exception(mocked_db, valid_boek_data):
     db_connection.commit.side_effect = Exception("DB commit failed")
 
     service = BoekService(db_connection)
-    with pytest.raises(BoekCreateFailedException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create(valid_boek_data)
 
     db_connection.rollback.assert_called_once()

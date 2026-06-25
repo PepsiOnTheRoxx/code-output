@@ -1,4 +1,4 @@
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, BoekCreateFailedException
+from src.services.boekcreate_exceptions import BoekCreateAlreadyExistsException, BoekCreateDatabaseException
 
 class BoekService:
     def __init__(self, db_connection):
@@ -12,7 +12,7 @@ class BoekService:
                 (boek_data['isbn'],)
             )
             if cursor.fetchone() is not None:
-                raise BoekAlreadyExistsException()
+                raise BoekCreateAlreadyExistsException()
 
             cursor.execute(
                 "INSERT INTO boek (titel, auteur, isbn, publicatiejaar, uitgeverij, pagina_count, genre, taal, samenvatting)"
@@ -30,12 +30,14 @@ class BoekService:
                 )
             )
             if cursor.rowcount == 0:
-                raise BoekCreateFailedException()
+                raise BoekCreateDatabaseException()
             self.db_connection.commit()
             return True
+        except BoekCreateAlreadyExistsException:
+            raise
         except Exception as e:
             try:
                 self.db_connection.rollback()
             except Exception:
                 pass
-            raise BoekCreateFailedException() from e
+            raise BoekCreateDatabaseException() from e
