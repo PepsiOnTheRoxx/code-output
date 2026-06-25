@@ -11,7 +11,7 @@ SCHEMA_FIELDS = [
 ]
 
 class Boek:
-    def __init__(self, id, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
+    def __init__(self, id, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         self.id = id
         self.titel = titel
         self.auteur = auteur
@@ -22,7 +22,6 @@ class Boek:
         self.publicatiedatum = publicatiedatum
         self.uitgeleend_datum = uitgeleend_datum
         self.uitgeleend_max_tot = uitgeleend_max_tot
-        self.jaar = jaar
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -36,7 +35,7 @@ class BoekRepository:
         except Exception as e:
             raise BoekCreateServiceDatabaseException(str(e))
 
-    def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
+    def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
@@ -53,7 +52,7 @@ class BoekRepository:
             boek_id = cursor.lastrowid
             return Boek(
                 id=boek_id, titel=titel, auteur=auteur, isbn=isbn, beschrijving=beschrijving, is_uitgeleend=is_uitgeleend,
-                kaft_foto_url=kaft_foto_url, publicatiedatum=publicatiedatum, uitgeleend_datum=uitgeleend_datum, uitgeleend_max_tot=uitgeleend_max_tot, jaar=jaar
+                kaft_foto_url=kaft_foto_url, publicatiedatum=publicatiedatum, uitgeleend_datum=uitgeleend_datum, uitgeleend_max_tot=uitgeleend_max_tot
             )
         except Exception as e:
             raise BoekCreateServiceDatabaseException(str(e))
@@ -70,8 +69,7 @@ class BoekRepository:
         titel = boek_data.get('titel')
         uitgeleend_datum = boek_data.get('uitgeleend_datum')
         uitgeleend_max_tot = boek_data.get('uitgeleend_max_tot')
-        jaar = boek_data.get('jaar') if 'jaar' in boek_data else None
-        return self.add(auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot, jaar)
+        return self.add(auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot)
 
 class BoekCreateService:
     def __init__(self, db_connection=None, repository=None):
@@ -99,8 +97,7 @@ class BoekCreateService:
                 boek_data.get('publicatiedatum'),
                 boek_data['titel'],
                 boek_data.get('uitgeleend_datum'),
-                boek_data.get('uitgeleend_max_tot'),
-                jaar=boek_data.get('jaar')
+                boek_data.get('uitgeleend_max_tot')
             )
         except BoekCreateServiceDatabaseException as ex:
             raise
