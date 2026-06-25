@@ -12,7 +12,7 @@ def get_db():
 @boekdetailfrontend_bp.route('/boek/<int:boek_id>')
 def detail(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     conn.close()
     if not boek:
         return render_template('404.html'), 404

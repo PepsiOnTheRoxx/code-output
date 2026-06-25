@@ -12,7 +12,7 @@ def get_db():
 @boekaanpassenfrontend_bp.route('/boek/<int:boek_id>/aanpassen', methods=['GET', 'POST'])
 def aanpassen(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE rowid = ?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid = ?', (boek_id,)).fetchone()
     if not boek:
         conn.close()
         abort(404)
