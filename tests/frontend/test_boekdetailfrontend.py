@@ -10,13 +10,15 @@ def setup_test_db():
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS boeken (
-        id INTEGER PRIMARY KEY,
-        titel TEXT,
         auteur TEXT,
+        beschrijving TEXT,
+        is_uitgeleend BOOLEAN,
         isbn TEXT,
-        jaar INTEGER,
         kaft_foto_url TEXT,
-        uitgever TEXT
+        publicatiedatum DATE,
+        titel TEXT,
+        uitgeleend_datum DATE,
+        uitgeleend_max_tot DATE
     )''')
     c.execute('''CREATE TABLE IF NOT EXISTS uitleen (
         id INTEGER PRIMARY KEY,
@@ -25,8 +27,9 @@ def setup_test_db():
     )''')
     c.execute('DELETE FROM boeken')  # Ensure clean slate
     c.execute('DELETE FROM uitleen')
-    c.execute('''INSERT INTO boeken (id, titel, auteur, isbn, jaar, kaft_foto_url, uitgever)
-                 VALUES (1, 'De Grote Reis', 'Jan Tester', 'ISBN123', 2023, 'https://img.test/kaft.jpg', 'Testuitgeverij')''')
+    c.execute('''INSERT INTO boeken (titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              ('De Grote Reis', 'Jan Tester', 'ISBN123', '', 0, 'https://img.test/kaft.jpg', '2023-01-01', None, None))
     c.execute('''INSERT INTO uitleen (id, boek_id, uitgeleend_aan)
                  VALUES (1, 1, 'Lisa')''')
     conn.commit()
@@ -43,9 +46,25 @@ def test_boekdetail_page(monkeypatch, tmp_path):
     db_path = os.path.join(tmp_path, 'db.sqlite')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute('''CREATE TABLE boeken (id INTEGER PRIMARY KEY, titel TEXT, auteur TEXT, isbn TEXT, jaar INTEGER, kaft_foto_url TEXT, uitgever TEXT)''')
-    c.execute('''CREATE TABLE uitleen (id INTEGER PRIMARY KEY, boek_id INTEGER, uitgeleend_aan TEXT)''')
-    c.execute('''INSERT INTO boeken VALUES (1, "Some Titel", "Jan Auteur", "XXYY", 2020, "https://img.link/kaft.png", "De Uitgever")''')
+    c.execute('''CREATE TABLE boeken (
+        auteur TEXT,
+        beschrijving TEXT,
+        is_uitgeleend BOOLEAN,
+        isbn TEXT,
+        kaft_foto_url TEXT,
+        publicatiedatum DATE,
+        titel TEXT,
+        uitgeleend_datum DATE,
+        uitgeleend_max_tot DATE
+    )''')
+    c.execute('''CREATE TABLE uitleen (
+        id INTEGER PRIMARY KEY,
+        boek_id INTEGER,
+        uitgeleend_aan TEXT
+    )''')
+    c.execute('''INSERT INTO boeken (titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              ("Some Titel", "Jan Auteur", "XXYY", "", 0, "https://img.link/kaft.png", "2020-01-01", None, None))
     c.execute('''INSERT INTO uitleen VALUES (1, 1, "Pietje")''')
     conn.commit()
     conn.close()
@@ -70,9 +89,8 @@ def test_boekdetail_page(monkeypatch, tmp_path):
         <h1>{{ boek.titel }}</h1>
         <p>Auteur: {{ boek.auteur }}</p>
         <p>ISBN: {{ boek.isbn }}</p>
-        <p>Jaar: {{ boek.jaar }}</p>
         <p>Kaft: <img src="{{ boek.kaft_foto_url }}"></p>
-        <p>Uitgever: {{ boek.uitgever }}</p>
+        <p>Publicatiedatum: {{ boek.publicatiedatum }}</p>
         {% if uitleen %}
             <p>Uitgeleend aan: {{ uitleen.uitgeleend_aan }}</p>
         {% else %}
@@ -91,10 +109,9 @@ def test_boekdetail_page(monkeypatch, tmp_path):
         html = r.get_data(as_text=True)
         assert 'Some Titel' in html
         assert 'Jan Auteur' in html
-        assert 'De Uitgever' in html
         assert 'https://img.link/kaft.png' in html
         assert 'XXYY' in html
-        assert '2020' in html
+        assert '2020-01-01' in html
         assert 'Pietje' in html
         assert '/boekaanpassen/1' in html or '/aanpassen/1' in html
         assert '/catalogus' in html
@@ -103,8 +120,22 @@ def test_boekdetail_not_found(monkeypatch, tmp_path):
     db_path = os.path.join(tmp_path, 'db.sqlite')
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute('''CREATE TABLE boeken (id INTEGER PRIMARY KEY, titel TEXT, auteur TEXT, isbn TEXT, jaar INTEGER, kaft_foto_url TEXT, uitgever TEXT)''')
-    c.execute('''CREATE TABLE uitleen (id INTEGER PRIMARY KEY, boek_id INTEGER, uitgeleend_aan TEXT)''')
+    c.execute('''CREATE TABLE boeken (
+        auteur TEXT,
+        beschrijving TEXT,
+        is_uitgeleend BOOLEAN,
+        isbn TEXT,
+        kaft_foto_url TEXT,
+        publicatiedatum DATE,
+        titel TEXT,
+        uitgeleend_datum DATE,
+        uitgeleend_max_tot DATE
+    )''')
+    c.execute('''CREATE TABLE uitleen (
+        id INTEGER PRIMARY KEY,
+        boek_id INTEGER,
+        uitgeleend_aan TEXT
+    )''')
     conn.commit()
     conn.close()
     from src.frontend import boekdetailfrontend
