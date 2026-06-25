@@ -12,9 +12,9 @@ def get_db():
 @boektoevoegenfrontend_bp.route('/boek/toevoegen', methods=['GET', 'POST'])
 def toevoegen():
     if request.method == 'POST':
-        titel = request.form.get('titel')
         auteur = request.form.get('auteur')
         beschrijving = request.form.get('beschrijving')
+        titel = request.form.get('titel')
         isbn = request.form.get('isbn')
         publicatiedatum = request.form.get('publicatiedatum')
         kaft_foto_url = request.form.get('kaft_foto_url')
@@ -25,11 +25,11 @@ def toevoegen():
         conn = get_db()
         cur = conn.cursor()
         cur.execute(
-            'INSERT INTO boeken (titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO boeken (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (
-                titel,
                 auteur,
                 beschrijving,
+                titel,
                 isbn,
                 publicatiedatum,
                 kaft_foto_url,
