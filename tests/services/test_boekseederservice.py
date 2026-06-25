@@ -36,6 +36,7 @@ def test_seederen_insert_5_dummy_boeken(dummy_boeken):
 
         conn_mock = MagicMock()
         cursor_mock = MagicMock()
+        cursor_mock.fetchone.return_value = (0,)  # FIX: return int 0, so count > 0 can be checked
         conn_mock.cursor.return_value = cursor_mock
         mock_connect.return_value = conn_mock
         seeder = BoekSeeder()
