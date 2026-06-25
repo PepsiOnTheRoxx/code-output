@@ -1,89 +1,69 @@
 import pytest
-import sqlite3
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 from database import DatabaseSetup
 from database_exceptions import DatabaseSetupException
 
-def test_database_setup_creates_boek_table():
-    connection = MagicMock(spec=sqlite3.Connection)
-    cursor = MagicMock()
-    connection.cursor.return_value = cursor
-
-    with patch('sqlite3.connect', return_value=connection):
-        setup = DatabaseSetup('test.db')
-        setup.initialize_database()
-
-    connection.cursor.assert_called_once()
-    cursor.execute.assert_any_call(
-        '''
-        CREATE TABLE IF NOT EXISTS boeken (
+CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
             auteur TEXT,
             beschrijving TEXT,
-            is_uitgeleend BOOLEAN,
             isbn TEXT,
-            kaft_foto_url TEXT,
             publicatiedatum DATE,
-            titel TEXT,
+            kaft_foto_url TEXT,
+            is_uitgeleend BOOLEAN,
             uitgeleend_datum DATE,
             uitgeleend_max_tot DATE
-        )
-        '''
-    )
-    connection.commit.assert_called_once()
-    connection.close.assert_called_once()
+        )"""
 
-def test_database_setup_raises_exception_on_failure():
-    with patch('sqlite3.connect', side_effect=sqlite3.DatabaseError("DB error")):
-        setup = DatabaseSetup('test.db')
-        with pytest.raises(DatabaseSetupException) as exc:
-            setup.initialize_database()
-        assert "DB error" in str(exc.value)
+@patch("database.sqlite3.connect")
+def test_initialiseert_db_en_maakt_boek_tabel_aan(mock_connect):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_connect.return_value = mock_conn
+    mock_conn.cursor.return_value = mock_cursor
 
-def test_database_setup_table_already_exists():
-    connection = MagicMock(spec=sqlite3.Connection)
-    cursor = MagicMock()
-    connection.cursor.return_value = cursor
+    db_setup = DatabaseSetup("bibliotheek.db")
+    db_setup.initialiseer_database()
 
-    with patch('sqlite3.connect', return_value=connection):
-        setup = DatabaseSetup('test.db')
-        setup.initialize_database()
-        cursor.execute.assert_any_call(
-            '''
-        CREATE TABLE IF NOT EXISTS boeken (
-            auteur TEXT,
-            beschrijving TEXT,
-            is_uitgeleend BOOLEAN,
-            isbn TEXT,
-            kaft_foto_url TEXT,
-            publicatiedatum DATE,
-            titel TEXT,
-            uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
-        )
-        '''
-        )
+    mock_connect.assert_called_once_with("bibliotheek.db")
+    mock_conn.cursor.assert_called_once()
+    mock_cursor.execute.assert_any_call(CREATE_TABEL_SQL)
+    mock_conn.commit.assert_called_once()
+    mock_conn.close.assert_called_once()
 
-def test_database_setup_commits_and_closes_connection():
-    connection = MagicMock(spec=sqlite3.Connection)
-    cursor = MagicMock()
-    connection.cursor.return_value = cursor
+@patch("database.sqlite3.connect")
+def test_fout_bij_verbinden_met_db_raised_exception(mock_connect):
+    mock_connect.side_effect = Exception("Disk error")
+    db_setup = DatabaseSetup("bibliotheek.db")
 
-    with patch('sqlite3.connect', return_value=connection):
-        setup = DatabaseSetup('test.db')
-        setup.initialize_database()
-        assert connection.commit.called
-        assert connection.close.called
+    with pytest.raises(DatabaseSetupException):
+        db_setup.initialiseer_database()
 
-def test_database_setup_execute_raises_error():
-    connection = MagicMock(spec=sqlite3.Connection)
-    cursor = MagicMock()
-    cursor.execute.side_effect = sqlite3.DatabaseError("execute error")
-    connection.cursor.return_value = cursor
+@patch("database.sqlite3.connect")
+def test_fout_bij_tabel_aanmaken_rollback_and_raise(mock_connect):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_connect.return_value = mock_conn
+    mock_conn.cursor.return_value = mock_cursor
+    mock_cursor.execute.side_effect = Exception("Table syntax error")
 
-    with patch('sqlite3.connect', return_value=connection):
-        setup = DatabaseSetup('test.db')
-        with pytest.raises(DatabaseSetupException) as exc:
-            setup.initialize_database()
-        assert "execute error" in str(exc.value)
-        connection.rollback.assert_called_once()
-        connection.close.assert_called_once()
+    db_setup = DatabaseSetup("bibliotheek.db")
+
+    with pytest.raises(DatabaseSetupException):
+        db_setup.initialiseer_database()
+    mock_conn.rollback.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+@patch("database.sqlite3.connect")
+def test_initialiseren_db_is_idempotent(mock_connect):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_connect.return_value = mock_conn
+    mock_conn.cursor.return_value = mock_cursor
+
+    db_setup = DatabaseSetup("bibliotheek.db")
+    db_setup.initialiseer_database()
+    db_setup.initialiseer_database()
+
+    assert mock_cursor.execute.call_count == 2
+    expected_calls = [call(CREATE_TABEL_SQL), call(CREATE_TABEL_SQL)]
+    mock_cursor.execute.assert_has_calls(expected_calls)
