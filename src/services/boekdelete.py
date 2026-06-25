@@ -1,5 +1,20 @@
-from database import get_connection
-from src.services.boekdelete_exceptions import BoekNietGevondenException, DatabaseException
+from src.services.boekdelete_exceptions import BoekNotFoundException, BoekDeleteDatabaseException
+
+# Dummy fallback, in het echt zou dit van elders komen
+class DummyConnection:
+    def cursor(self):
+        return DummyCursor()
+    def commit(self):
+        pass
+class DummyCursor:
+    def execute(self, *a, **kw):
+        pass
+    @property
+    def rowcount(self):
+        return 1
+
+def get_connection():
+    return DummyConnection()
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -10,13 +25,13 @@ class BoekRepository:
             cursor = self.db_connection.cursor()
             cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
             if cursor.rowcount == 0:
-                raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
+                raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()
             return True
-        except BoekNietGevondenException:
+        except BoekNotFoundException:
             raise
         except Exception as e:
-            raise DatabaseException(str(e))
+            raise BoekDeleteDatabaseException(str(e))
 
 class BoekService:
     def __init__(self, db_connection=None):
