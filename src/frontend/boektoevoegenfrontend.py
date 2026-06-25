@@ -27,9 +27,10 @@ def _inject_test_templates(app):
             <form method="post">
               <input name="titel" value="{{ formulier.get('titel', '') }}">
               <input name="auteur" value="{{ formulier.get('auteur', '') }}">
-              <input name="jaar" value="{{ formulier.get('jaar', '') }}">
-              <input name="uitgever" value="{{ formulier.get('uitgever', '') }}">
+              <input name="beschrijving" value="{{ formulier.get('beschrijving', '') }}">
+              <input name="isbn" value="{{ formulier.get('isbn', '') }}">
               <input name="kaft_foto_url" value="{{ formulier.get('kaft_foto_url', '') }}">
+              <input name="publicatiedatum" value="{{ formulier.get('publicatiedatum', '') }}">
               <button type="submit">Toevoegen</button>
             </form>
         ''',
@@ -37,8 +38,7 @@ def _inject_test_templates(app):
             <!doctype html>
             <h1>{{ boek['titel'] }}</h1>
             <div>Auteur: {{ boek['auteur'] }}</div>
-            <div>Jaar: {{ boek['jaar'] }}</div>
-            <div>Uitgever: {{ boek['uitgever'] }}</div>
+            <div>ISBN: {{ boek['isbn'] }}</div>
         ''',
         'catalogus.html': '''
             <!doctype html>
@@ -58,9 +58,10 @@ def _inject_test_templates(app):
             <form method="post">
                 <input name="titel" value="{{ formulier.get('titel', boek['titel']) }}">
                 <input name="auteur" value="{{ formulier.get('auteur', boek['auteur']) }}">
-                <input name="jaar" value="{{ formulier.get('jaar', boek['jaar']) }}">
-                <input name="uitgever" value="{{ formulier.get('uitgever', boek['uitgever']) }}">
+                <input name="beschrijving" value="{{ formulier.get('beschrijving', boek['beschrijving']) }}">
+                <input name="isbn" value="{{ formulier.get('isbn', boek['isbn']) }}">
                 <input name="kaft_foto_url" value="{{ formulier.get('kaft_foto_url', boek['kaft_foto_url']) }}">
+                <input name="publicatiedatum" value="{{ formulier.get('publicatiedatum', boek['publicatiedatum']) }}">
                 <button type="submit">Aanpassen</button>
             </form>
         '''
@@ -80,22 +81,17 @@ def boek_toevoegen():
     if request.method == 'POST':
         titel = request.form.get('titel', '').strip()
         auteur = request.form.get('auteur', '').strip()
-        jaar = request.form.get('jaar', '').strip()
-        uitgever = request.form.get('uitgever', '').strip()
+        beschrijving = request.form.get('beschrijving', '').strip()
+        isbn = request.form.get('isbn', '').strip()
         kaft_foto_url = request.form.get('kaft_foto_url', '').strip()
+        publicatiedatum = request.form.get('publicatiedatum', '').strip()
         errors = []
         if not titel:
             errors.append('Titel is verplicht')
         if not auteur:
             errors.append('Auteur is verplicht')
-        if jaar:
-            try:
-                jaar_int = int(jaar)
-            except ValueError:
-                errors.append('Jaar moet een getal zijn')
-                jaar_int = None
-        else:
-            jaar_int = None
+        if not isbn:
+            errors.append('ISBN is verplicht')
         if errors:
             for error in errors:
                 flash(error)
@@ -103,8 +99,8 @@ def boek_toevoegen():
             return render_template('boek_toevoegen.html', formulier=request.form)
         conn = get_db()
         cur = conn.cursor()
-        cur.execute('INSERT INTO boeken (titel, auteur, jaar, uitgever, kaft_foto_url) VALUES (?, ?, ?, ?, ?)',
-                    (titel, auteur, jaar_int, uitgever, kaft_foto_url))
+        cur.execute('INSERT INTO boeken (titel, auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (titel, auteur, beschrijving or None, 0, isbn, kaft_foto_url or None, publicatiedatum or None, None, None))
         conn.commit()
         boek_id = cur.lastrowid
         conn.close()
@@ -114,7 +110,7 @@ def boek_toevoegen():
 @boektoevoegenfrontend_bp.route('/boek/<int:boek_id>')
 def boek_detail(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE id=?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     conn.close()
     if not boek:
         flash('Boek niet gevonden')
@@ -124,14 +120,14 @@ def boek_detail(boek_id):
 @boektoevoegenfrontend_bp.route('/catalogus')
 def catalogus():
     conn = get_db()
-    boeken = conn.execute('SELECT * FROM boeken').fetchall()
+    boeken = conn.execute('SELECT rowid as id, * FROM boeken').fetchall()
     conn.close()
     return render_template('catalogus.html', boeken=boeken)
 
 @boektoevoegenfrontend_bp.route('/boek/<int:boek_id>/aanpassen', methods=['GET', 'POST'])
 def boek_aanpassen(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE id=?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     if not boek:
         conn.close()
         flash('Boek niet gevonden')
@@ -139,49 +135,45 @@ def boek_aanpassen(boek_id):
     if request.method == 'POST':
         titel = request.form.get('titel', '').strip()
         auteur = request.form.get('auteur', '').strip()
-        jaar = request.form.get('jaar', '').strip()
-        uitgever = request.form.get('uitgever', '').strip()
+        beschrijving = request.form.get('beschrijving', '').strip()
+        isbn = request.form.get('isbn', '').strip()
         kaft_foto_url = request.form.get('kaft_foto_url', '').strip()
+        publicatiedatum = request.form.get('publicatiedatum', '').strip()
         errors = []
         if not titel:
             errors.append('Titel is verplicht')
         if not auteur:
             errors.append('Auteur is verplicht')
-        if jaar:
-            try:
-                jaar_int = int(jaar)
-            except ValueError:
-                errors.append('Jaar moet een getal zijn')
-                jaar_int = None
-        else:
-            jaar_int = None
+        if not isbn:
+            errors.append('ISBN is verplicht')
         if errors:
             for error in errors:
                 flash(error)
             formulier = dict(boek)
-            # overschrijf met de huidige aanvraagwaarden voor wat in request zit
             formulier.update(request.form)
             return render_template('boek_aanpassen.html', boek=boek, formulier=formulier)
         cur = conn.cursor()
-        cur.execute('''UPDATE boeken SET titel=?, auteur=?, jaar=?, uitgever=?, kaft_foto_url=? WHERE id=?''',
-                    (titel, auteur, jaar_int, uitgever, kaft_foto_url, boek_id))
+        cur.execute('''UPDATE boeken SET titel=?, auteur=?, beschrijving=?, isbn=?, kaft_foto_url=?, publicatiedatum=? WHERE rowid=?''',
+                    (titel, auteur, beschrijving or None, isbn, kaft_foto_url or None, publicatiedatum or None, boek_id))
         conn.commit()
         conn.close()
         return redirect(url_for('boektoevoegenfrontend.boek_detail', boek_id=boek_id))
     conn.close()
-    # boek is een Row: om te voldoen aan het formulier/boek expectations, geef als dict
     return render_template('boek_aanpassen.html', boek=boek, formulier=dict(boek))
 
 def ensure_db_is_initialized():
     if not os.path.exists(DB_PATH):
         conn = sqlite3.connect(DB_PATH)
         conn.execute('''CREATE TABLE boeken (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            titel TEXT NOT NULL,
-            auteur TEXT NOT NULL,
-            jaar INTEGER,
-            uitgever TEXT,
-            kaft_foto_url TEXT
+            auteur TEXT,
+            beschrijving TEXT,
+            is_uitgeleend BOOLEAN,
+            isbn TEXT,
+            kaft_foto_url TEXT,
+            publicatiedatum DATE,
+            titel TEXT,
+            uitgeleend_datum DATE,
+            uitgeleend_max_tot DATE
         )''')
         conn.commit()
         conn.close()
@@ -191,12 +183,15 @@ def ensure_db_is_initialized():
             conn.execute('SELECT 1 FROM boeken LIMIT 1')
         except sqlite3.OperationalError:
             conn.execute('''CREATE TABLE boeken (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                titel TEXT NOT NULL,
-                auteur TEXT NOT NULL,
-                jaar INTEGER,
-                uitgever TEXT,
-                kaft_foto_url TEXT
+                auteur TEXT,
+                beschrijving TEXT,
+                is_uitgeleend BOOLEAN,
+                isbn TEXT,
+                kaft_foto_url TEXT,
+                publicatiedatum DATE,
+                titel TEXT,
+                uitgeleend_datum DATE,
+                uitgeleend_max_tot DATE
             )''')
             conn.commit()
         finally:
