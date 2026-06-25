@@ -39,5 +39,8 @@ class BoekService:
             return result
         except BoekNotFoundException:
             raise
+        except TypeError:
+            # explicit: bubble up type error, don't wrap in BoekReadException
+            raise
         except Exception as e:
             raise BoekReadException() from e
