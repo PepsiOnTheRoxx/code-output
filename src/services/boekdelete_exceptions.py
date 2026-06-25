@@ -1,15 +1,15 @@
 class BoekDeleteException(Exception):
-    """Base exception for BoekDelete feature."""
+    """Basisklasse voor alle BoekDelete exceptions."""
     pass
 
 class BoekNietGevondenException(BoekDeleteException):
-    """Exception raised when a book to be deleted is not found."""
+    """Opgegooid wanneer het te verwijderen boek niet gevonden wordt."""
     pass
 
 class BoekDeleteDatabaseException(BoekDeleteException):
-    """Exception raised for database errors during delete operation."""
+    """Opgegooid bij een databasefout tijdens het verwijderen van een boek."""
     pass
 
-class BoekDeleteOngeldigeInputException(BoekDeleteException):
-    """Exception raised for invalid input for book delete."""
+class BoekDeleteOngeldigeParameterException(BoekDeleteException):
+    """Opgegooid als er ongeldige parameters zijn aangeleverd aan de delete-functionaliteit."""
     pass
