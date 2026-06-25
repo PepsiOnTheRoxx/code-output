@@ -69,18 +69,23 @@ class BoekCreateService:
     def create_boek(self, boek_data):
         required = ['titel', 'auteur', 'isbn']
         if not all(k in boek_data and boek_data[k] for k in required):
-            raise InvalidBoekDataException('titel, auteur, isbn zijn verplicht en mogen niet leeg zijn')
+            raise InvalidBoekDataException('titel, auteur en isbn zijn verplicht')
         if self.repo.exists_by_isbn(boek_data['isbn']):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
-        return self.repo.add(
-            auteur=boek_data['auteur'],
-            beschrijving=boek_data.get('beschrijving'),
-            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
-            isbn=boek_data['isbn'],
-            kaft_foto_url=boek_data.get('kaft_foto_url'),
-            publicatiedatum=boek_data.get('publicatiedatum'),
-            titel=boek_data['titel'],
-            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
-            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-            jaar=boek_data.get('jaar'),
-        )
+            raise BoekAlreadyExistsException()
+        try:
+            return self.repo.add(
+                auteur=boek_data['auteur'],
+                beschrijving=boek_data.get('beschrijving'),
+                is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+                isbn=boek_data['isbn'],
+                kaft_foto_url=boek_data.get('kaft_foto_url'),
+                publicatiedatum=boek_data.get('publicatiedatum'),
+                titel=boek_data['titel'],
+                uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+                uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
+                jaar=boek_data.get('jaar'),
+            )
+        except BoekCreateServiceDatabaseException:
+            raise
+        except Exception as e:
+            raise BoekCreateServiceDatabaseException(str(e))
