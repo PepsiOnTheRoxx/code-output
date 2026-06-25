@@ -81,5 +81,5 @@ class BoekService:
     def update_boek(self, boek_id, update_data):
         bestaande_boek = self.repo.get_boek_by_id(boek_id)
         if bestaande_boek is None:
-            raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
+            raise BoekNietGevondenException("Boek niet gevonden")
         return self.repo.update_boek(bestaande_boek, update_data)
