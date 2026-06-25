@@ -6,12 +6,12 @@ class BoekSeeder:
 
     def seed(self):
         boeken = [
-            {"titel": "De Ontdekking van de Hemel", "auteur": "Harry Mulisch"},
-            {"titel": "De donkere kamer van Damokles", "auteur": "W.F. Hermans"},
-            {"titel": "Het Diner", "auteur": "Herman Koch"},
-            {"titel": "Turks Fruit", "auteur": "Jan Wolkers"},
-            {"titel": "Nooit meer slapen", "auteur": "W.F. Hermans"},
-            {"titel": "Max Havelaar", "auteur": "Multatuli"}
+            {"titel": "De Ontdekking van de Hemel", "auteur": "Harry Mulisch", "isbn": "9789023431231"},
+            {"titel": "De donkere kamer van Damokles", "auteur": "W.F. Hermans", "isbn": "9789023451235"},
+            {"titel": "Het Diner", "auteur": "Herman Koch", "isbn": "9789041415912"},
+            {"titel": "Turks Fruit", "auteur": "Jan Wolkers", "isbn": "9789023425656"},
+            {"titel": "Nooit meer slapen", "auteur": "W.F. Hermans", "isbn": "9789020413236"},
+            {"titel": "Max Havelaar", "auteur": "Multatuli", "isbn": "9789020410396"}
         ]
         try:
             for boek in boeken:
