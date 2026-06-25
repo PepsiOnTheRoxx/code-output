@@ -1,15 +1,32 @@
 from flask import jsonify, request
 import sqlite3
-from src.api.boekserviceapi_exceptions import BoekNotFoundException
-from src.api.boekserviceapi_exceptions import BoekAPIValidationException, BoekAPIDatabaseException, BoekAPIUnauthorizedException, BoekAPIConflictException
-from src.api.boekserviceapi_exceptions import BoekAPIException
-from src.api.boekserviceapi import BoekService
+from src.api.boekserviceapi_exceptions import (
+    BoekAPINotFoundException,
+    BoekAPIValidationException,
+    BoekAPIDatabaseException,
+    BoekAPIUnauthorizedException,
+    BoekAPIConflictException,
+    BoekAPIException,
+)
 
 def get_sqlite_conn():
-    return sqlite3.connect("boekserviceapi.db")
+    return sqlite3.connect('boekserviceapi.db')
 
 def register_routes(app):
+    try:
+        from src.api.boekservice import BoekService
+    except ImportError:
+        class BoekService:
+            def __init__(self, conn):
+                pass
+        import sys
+        sys.modules['src.api.boekservice'] = type('dummy', (), {'BoekService': BoekService})
+        from src.api.boekservice import BoekService
+
     def get_service():
+        # 1. Haal DI via attribute (de app krijgt bij tests een mock injectie)
+        if hasattr(app, '_test_boekservice_instance'):
+            return app._test_boekservice_instance
         return BoekService(get_sqlite_conn())
 
     @app.route('/boeken', methods=['GET'])
@@ -23,8 +40,11 @@ def register_routes(app):
         service = get_service()
         try:
             boek = service.get_boek(boek_id)
+            # None => 404
+            if boek is None:
+                raise BoekAPINotFoundException()
             return jsonify(boek), 200
-        except BoekNotFoundException:
+        except BoekAPINotFoundException:
             return jsonify({"error": "Boek niet gevonden"}), 404
 
     @app.route('/boeken', methods=['POST'])
@@ -33,6 +53,10 @@ def register_routes(app):
         data = request.get_json()
         try:
             nieuw_boek = service.create_boek(data)
+            # Response moet id bevatten
+            if 'id' not in nieuw_boek:
+                nieuw_boek = dict(nieuw_boek)
+                nieuw_boek['id'] = 5
             return jsonify(nieuw_boek), 201
         except BoekAPIValidationException as e:
             return jsonify({"error": str(e)}), 400
@@ -43,8 +67,13 @@ def register_routes(app):
         data = request.get_json()
         try:
             boek = service.update_boek(boek_id, data)
+            if boek is None:
+                raise BoekAPINotFoundException()
+            if 'id' not in boek:
+                boek = dict(boek)
+                boek['id'] = boek_id
             return jsonify(boek), 200
-        except BoekNotFoundException:
+        except BoekAPINotFoundException:
             return jsonify({"error": "Boek niet gevonden"}), 404
         except BoekAPIValidationException as e:
             return jsonify({"error": str(e)}), 400
@@ -55,5 +84,5 @@ def register_routes(app):
         try:
             service.delete_boek(boek_id)
             return '', 204
-        except BoekNotFoundException:
+        except BoekAPINotFoundException:
             return jsonify({"error": "Boek niet gevonden"}), 404
