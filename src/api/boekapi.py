@@ -11,7 +11,9 @@ def create_boek_blueprint(service=None):
         import sqlite3
         import database
         db_conn = sqlite3.connect(database.DB_PATH, check_same_thread=False)
-        from src.api.boekservice import BoekService
+        # Instead of non-existent src.api.boekservice:
+        # from src.api.boekservice import BoekService
+        from src.services.boekread import BoekService  # READ
         service = BoekService(db_conn)
 
     @boek_blueprint.route("/boeken", methods=["GET"])

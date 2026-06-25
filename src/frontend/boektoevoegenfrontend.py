@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 import sqlite3
-from database import get_connection, DB_PATH
+from database import get_connection
 
 boektoevoegenfrontend_bp = Blueprint('boektoevoegenfrontend', __name__)
 
@@ -25,15 +25,15 @@ def toevoegen():
         conn = get_db()
         cur = conn.cursor()
         cur.execute(
-            'INSERT INTO boeken (auteur, beschrijving, isbn, titel, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO boeken (auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (
                 auteur,
                 beschrijving,
-                isbn,
-                titel,
-                publicatiedatum,
-                kaft_foto_url,
                 is_uitgeleend,
+                isbn,
+                kaft_foto_url,
+                publicatiedatum,
+                titel,
                 uitgeleend_datum,
                 uitgeleend_max_tot
             )

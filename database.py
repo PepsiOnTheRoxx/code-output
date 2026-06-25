@@ -15,16 +15,17 @@ def init_db():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        # De kolomvolgorde moet zijn zoals in de tests verwacht: auteur, beschrijving, isbn, titel, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot.
+        # De kolomvolgorde wordt nu precies zoals opgegeven in de prompt:
+        # auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS boeken ("
             "auteur TEXT,"
             "beschrijving TEXT,"
-            "isbn TEXT,"
-            "titel TEXT,"
-            "publicatiedatum DATE,"
-            "kaft_foto_url TEXT,"
             "is_uitgeleend BOOLEAN,"
+            "isbn TEXT,"
+            "kaft_foto_url TEXT,"
+            "publicatiedatum DATE,"
+            "titel TEXT,"
             "uitgeleend_datum DATE,"
             "uitgeleend_max_tot DATE)"
         )

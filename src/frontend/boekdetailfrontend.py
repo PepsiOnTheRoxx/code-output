@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 import sqlite3
-from database import get_connection, DB_PATH
+from database import get_connection
 
 boekdetailfrontend_bp = Blueprint('boekdetailfrontend', __name__)
 
