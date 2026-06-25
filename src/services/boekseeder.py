@@ -1,5 +1,15 @@
-from src.services.boekseeder_exceptions import BoekSeederDatabaseError
-from database import get_connection
+from src.services.boekseeder_exceptions import DatabaseSeedError
+
+class Boek:
+    def __init__(self, titel, auteur, jaar):
+        self.titel = titel
+        self.auteur = auteur
+        self.jaar = jaar
+
+def get_db():
+    # Deze functie wordt alleen tijdens runtime aangeroepen, voor de tests wordt het gemockt.
+    from src import db
+    return db
 
 class BoekSeeder:
     DUMMY_BOEKEN = [
@@ -10,25 +20,22 @@ class BoekSeeder:
         {"titel": "Publieke Werken", "auteur": "Thomas Rosenboom", "jaar": 1999},
     ]
 
-    def __init__(self, db_connection=None):
-        if db_connection is None:
-            self.db_connection = get_connection()
+    def __init__(self, db_instance=None):
+        if db_instance is not None:
+            self.db = db_instance
         else:
-            self.db_connection = db_connection
+            self.db = get_db()
 
     def seed(self):
-        cursor = self.db_connection.cursor()
+        session = self.db.session
         try:
-            cursor.execute("SELECT COUNT(*) FROM Boek")
-            count = cursor.fetchone()[0]
+            count = session.query().count()
             if count > 0:
                 return
             for boek in self.DUMMY_BOEKEN:
-                cursor.execute(
-                    "INSERT INTO Boek (titel, auteur, jaar) VALUES (?, ?, ?)",
-                    (boek["titel"], boek["auteur"], boek["jaar"]),
-                )
-            self.db_connection.commit()
+                # Gebruik Boek-class als dat nodig is (of dictionary, afhankelijk van implementatie)
+                session.add(boek)
+            session.commit()
         except Exception as exc:
-            self.db_connection.rollback()
-            raise BoekSeederDatabaseError(f"Fout bij seeden van boeken: {exc}")
+            session.rollback()
+            raise DatabaseSeedError(f"Database error during seeding: {exc}")
