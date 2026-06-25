@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ boek.titel }} - Detail</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('catalogusfrontend.catalogus_frontend') }}">Catalogus</a>
+            <div>
+                <a href="{{ url_for('catalogusfrontend.boek_toevoegen_frontend') }}" class="btn btn-light">Boek toevoegen</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-5">
+                {% if boek.kaft_url %}
+                <img src="{{ boek.kaft_url }}" alt="Kaft" class="img-fluid rounded border">
+                {% else %}
+                <svg class="img-fluid" style="height:320px;width:100%;background:#eee;" xmlns="http://www.w3.org/2000/svg">
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#888" font-size="28">Geen Afbeelding</text>
+                </svg>
+                {% endif %}
+            </div>
+            <div class="col-md-7">
+                <h1 class="mb-3">{{ boek.titel }}</h1>
+                <h5 class="mb-4 text-muted">Auteur: {{ boek.auteur }}</h5>
+                <p>Status: <span class="badge {% if boek.status == 'uitgeleend' %}bg-danger{% elif boek.status == 'beschikbaar' %}bg-success{% else %}bg-secondary{% endif %}">{{ boek.status|capitalize }}</span></p>
+                <a href="{{ url_for('catalogusfrontend.boek_aanpassen_frontend', boek_id=boek.id) }}" class="btn btn-warning me-2">Aanpassen</a>
+                <a href="{{ url_for('catalogusfrontend.catalogus_frontend') }}" class="btn btn-outline-secondary">Terug naar overzicht</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
