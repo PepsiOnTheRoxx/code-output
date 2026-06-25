@@ -21,3 +21,8 @@ class BoekCreateMissingAttributeException(BoekCreateException):
 class BoekCreateInternalException(BoekCreateException):
     """Exception raised for any other internal errors during boek creation."""
     pass
+
+# Aliases for test compatibility
+BoekAlreadyExistsException = BoekCreateUniqueConstraintException
+InvalidBoekDataException = BoekCreateValidationException
+DatabaseException = BoekCreateDatabaseException

@@ -1,7 +1,7 @@
 from src.services.boekcreate_exceptions import (
-    BoekAlreadyExistsException,
-    InvalidBoekDataException,
-    DatabaseException
+    BoekCreateUniqueConstraintException,
+    BoekCreateValidationException,
+    BoekCreateDatabaseException
 )
 
 class BoekService:
@@ -12,7 +12,7 @@ class BoekService:
         vereiste_velden = ['titel', 'auteur', 'isbn', 'uitgever', 'jaar', 'paginas', 'taal', 'genre']
         for veld in vereiste_velden:
             if veld not in boek_data or boek_data[veld] is None or (isinstance(boek_data[veld], str) and not boek_data[veld].strip()):
-                raise InvalidBoekDataException(f"Veld '{veld}' ontbreekt of is ongeldig")
+                raise BoekCreateValidationException(f"Veld '{veld}' ontbreekt of is ongeldig")
         try:
             cursor = self.db_connection.cursor()
             sql = """INSERT INTO boek (titel, auteur, isbn, uitgever, jaar, paginas, taal, genre)
@@ -29,19 +29,19 @@ class BoekService:
             ]
             cursor.execute(sql, values)
             if cursor.rowcount != 1:
-                raise DatabaseException("Kon boek niet aanmaken, geen rijen toegevoegd.")
+                raise BoekCreateDatabaseException("Kon boek niet aanmaken, geen rijen toegevoegd.")
             try:
                 self.db_connection.commit()
             except Exception as exc:
-                raise DatabaseException(str(exc))
+                raise BoekCreateDatabaseException(str(exc))
             return True
         except Exception as exc:
             msg = str(exc)
             if "UNIQUE constraint failed" in msg or "unique constraint" in msg.lower():
-                raise BoekAlreadyExistsException("Boek met dit ISBN bestaat al.")
-            elif isinstance(exc, InvalidBoekDataException):
+                raise BoekCreateUniqueConstraintException("Boek met dit ISBN bestaat al.")
+            elif isinstance(exc, BoekCreateValidationException):
                 raise
-            elif isinstance(exc, DatabaseException):
+            elif isinstance(exc, BoekCreateDatabaseException):
                 raise
             else:
-                raise DatabaseException(msg)
+                raise BoekCreateDatabaseException(msg)

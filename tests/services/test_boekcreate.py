@@ -1,7 +1,11 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException, DatabaseException
+from src.services.boekcreate_exceptions import (
+    BoekCreateUniqueConstraintException,
+    BoekCreateValidationException,
+    BoekCreateDatabaseException
+)
 
 def test_boek_create_calls_insert_sql():
     mock_conn = MagicMock()
@@ -30,7 +34,7 @@ def test_boek_create_calls_insert_sql():
     assert result is True
     mock_conn.commit.assert_called_once()
 
-def test_boek_create_raises_BoekAlreadyExistsException_on_duplicate():
+def test_boek_create_raises_BoekCreateUniqueConstraintException_on_duplicate():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
@@ -47,11 +51,11 @@ def test_boek_create_raises_BoekAlreadyExistsException_on_duplicate():
     }
 
     service = BoekService(mock_conn)
-    with patch("src.services.boekcreate.BoekAlreadyExistsException", BoekAlreadyExistsException):
-        with pytest.raises(BoekAlreadyExistsException):
+    with patch("src.services.boekcreate.BoekCreateUniqueConstraintException", BoekCreateUniqueConstraintException):
+        with pytest.raises(BoekCreateUniqueConstraintException):
             service.create_boek(boek_data)
 
-def test_boek_create_raises_InvalidBoekDataException_on_invalid_data():
+def test_boek_create_raises_BoekCreateValidationException_on_invalid_data():
     mock_conn = MagicMock()
     boek_data = {
         'titel': '',  # Titel is verplicht
@@ -64,10 +68,10 @@ def test_boek_create_raises_InvalidBoekDataException_on_invalid_data():
         'genre': 'Roman'
     }
     service = BoekService(mock_conn)
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateValidationException):
         service.create_boek(boek_data)
 
-def test_boek_create_raises_DatabaseException_on_commit_failure():
+def test_boek_create_raises_BoekCreateDatabaseException_on_commit_failure():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
@@ -84,7 +88,7 @@ def test_boek_create_raises_DatabaseException_on_commit_failure():
         'genre': 'Thriller'
     }
     service = BoekService(mock_conn)
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(boek_data)
 
 def test_boek_create_returns_true_on_success():
@@ -123,5 +127,5 @@ def test_boek_create_fails_when_rowcount_zero():
         'genre': 'Biografie'
     }
     service = BoekService(mock_conn)
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(boek_data)
