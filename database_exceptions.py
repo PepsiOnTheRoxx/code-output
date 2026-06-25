@@ -1,3 +1,7 @@
+class DatabaseSetupError(Exception):
+    """Raised when setup or connection to the database fails."""
+    pass
+
 class DatabaseSetupException(Exception):
     """Base exception for DatabaseSetup component."""
     pass

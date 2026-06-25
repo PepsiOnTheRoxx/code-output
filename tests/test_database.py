@@ -6,12 +6,10 @@ from unittest.mock import patch, MagicMock, call
 import database
 import database_exceptions
 
-
 def test_db_path_constant_exists():
     assert hasattr(database, "DB_PATH")
     assert isinstance(database.DB_PATH, str)
     assert database.DB_PATH.endswith(".db")
-
 
 def test_get_connection_calls_sqlite3_connect(monkeypatch):
     fake_connect = MagicMock()
@@ -22,7 +20,6 @@ def test_get_connection_calls_sqlite3_connect(monkeypatch):
     fake_connect.assert_called_once_with(fake_path)
     assert conn == fake_connect.return_value
 
-
 def test_get_connection_returns_connection_object(monkeypatch):
     class DummyConn:
         pass
@@ -30,7 +27,6 @@ def test_get_connection_returns_connection_object(monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", "test.db")
     conn = database.get_connection()
     assert isinstance(conn, DummyConn)
-
 
 def test_init_db_creates_table_if_not_exists(monkeypatch):
     mock_conn = MagicMock()
@@ -53,7 +49,6 @@ def test_init_db_creates_table_if_not_exists(monkeypatch):
     mock_conn.commit.assert_called_once()
     mock_conn.close.assert_called_once()
 
-
 def test_init_db_error_handling(monkeypatch):
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
@@ -64,7 +59,6 @@ def test_init_db_error_handling(monkeypatch):
         database.init_db()
     mock_conn.close.assert_called_once()
 
-
 def test_get_connection_raises_custom_exception(monkeypatch):
     def raise_error(path):
         raise sqlite3.Error("connection failed")
@@ -72,7 +66,6 @@ def test_get_connection_raises_custom_exception(monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", "fail.db")
     with pytest.raises(database_exceptions.DatabaseSetupError):
         database.get_connection()
-
 
 def test_init_db_creates_correct_schema(monkeypatch):
     mock_conn = MagicMock()
@@ -92,7 +85,6 @@ def test_init_db_creates_correct_schema(monkeypatch):
         "uitgeleend_max_tot DATE)"
     )
     mock_cursor.execute.assert_any_call(sql)
-
 
 def test_init_db_commits_and_closes_even_on_exception(monkeypatch):
     mock_conn = MagicMock()
