@@ -1,19 +1,23 @@
 class BoekUpdateException(Exception):
-    """Basisklasse voor uitzonderingen in de BoekUpdate feature."""
+    """Base exception for BoekUpdate feature in BoekService."""
     pass
 
-class BoekNietGevondenException(BoekUpdateException):
-    """Boek kon niet gevonden worden."""
+class BoekNotFoundException(BoekUpdateException):
+    """Exception raised when a boek is not found during update."""
     pass
 
-class OngeldigeBoekDataException(BoekUpdateException):
-    """De verstrekte boekdata is ongeldig."""
+class BoekUpdateValidationException(BoekUpdateException):
+    """Exception raised when data validation fails during boek update."""
     pass
 
-class BoekUpdateMisluktException(BoekUpdateException):
-    """Bijwerken van het boek is mislukt."""
+class BoekUpdatePermissionException(BoekUpdateException):
+    """Exception raised when the user has insufficient permissions to update a boek."""
     pass
 
-class BoekUpdateNietToegestaanException(BoekUpdateException):
-    """De update actie voor het boek is niet toegestaan."""
+class BoekUpdateConflictException(BoekUpdateException):
+    """Exception raised when there is a conflict while updating a boek (e.g. concurrent update)."""
+    pass
+
+class BoekUpdateDatabaseException(BoekUpdateException):
+    """Exception raised when a database error occurs during boek update."""
     pass
