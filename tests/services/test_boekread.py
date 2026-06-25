@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekread import BoekService
-from src.services.boekread_exceptions import BoekNietGevondenException
+from src.services.boekread_exceptions import BoekNotFoundException
 
 @pytest.fixture
 def boek_data():
@@ -33,7 +33,7 @@ def test_lees_boek_by_id_niet_gevonden(mock_boek_repo):
     instance = mock_boek_repo.return_value
     instance.get_boek_by_id.return_value = None
     service = BoekService()
-    with pytest.raises(BoekNietGevondenException):
+    with pytest.raises(BoekNotFoundException):
         service.lees_boek_by_id(999)
 
 @patch("src.services.boekread.BoekRepository")
