@@ -1,4 +1,4 @@
-from src.services.boekupdate_exceptions import BoekNietGevondenException, OnjuisteBoekDataException
+from src.services.boekupdate_exceptions import BoekNotFoundException, BoekUpdateValidationException
 
 class BoekService:
     def __init__(self, db_connection):
@@ -8,7 +8,7 @@ class BoekService:
         verplichte_velden = ["titel", "auteur"]
         for veld in verplichte_velden:
             if veld not in nieuwe_data:
-                raise OnjuisteBoekDataException("Verplicht veld ontbreekt: " + veld)
+                raise BoekUpdateValidationException("Verplicht veld ontbreekt: " + veld)
         cursor = self.db_connection.cursor()
         try:
             sql = "UPDATE boeken SET titel = ?, auteur = ? WHERE id = ?"
@@ -19,11 +19,10 @@ class BoekService:
             )
             cursor.execute(sql, waarden)
             if cursor.rowcount == 0:
-                cursor.close()
-                raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
+                raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()
         except Exception as ex:
             self.db_connection.rollback()
-            cursor.close()
             raise ex
-        cursor.close()
+        finally:
+            cursor.close()

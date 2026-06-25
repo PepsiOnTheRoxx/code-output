@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekupdate import BoekService
-from src.services.boekupdate_exceptions import BoekNietGevondenException, OnjuisteBoekDataException
+from src.services.boekupdate_exceptions import BoekNotFoundException, BoekUpdateValidationException
 
 @pytest.fixture
 def mock_db():
@@ -36,7 +36,7 @@ def test_boek_update_boek_niet_gevonden(boek_service, mock_db):
     nieuwe_data = {"titel": "Titel", "auteur": "Auteur"}
     mock_cursor.rowcount = 0
 
-    with pytest.raises(BoekNietGevondenException):
+    with pytest.raises(BoekNotFoundException):
         boek_service.update_boek(boek_id, nieuwe_data)
 
     assert mock_db.commit.call_count == 0
@@ -46,7 +46,7 @@ def test_boek_update_onjuiste_data(boek_service):
     boek_id = 3
     verkeerde_data = {"titel": "Alleen Titel"}  # Verplicht veld "auteur" ontbreekt
 
-    with pytest.raises(OnjuisteBoekDataException):
+    with pytest.raises(BoekUpdateValidationException):
         boek_service.update_boek(boek_id, verkeerde_data)
 
 def test_update_boek_voert_juist_sql_uit(boek_service, mock_db):
