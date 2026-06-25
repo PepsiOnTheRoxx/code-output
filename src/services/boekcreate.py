@@ -5,7 +5,6 @@ from src.services.boekcreate_exceptions import (
 )
 from src.services.boekcreate_exceptions import BoekAlreadyExistsException
 
-# Kolommen uit het schema volgens requirements
 SCHEMA_FIELDS = [
     'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
     'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
@@ -23,7 +22,7 @@ class Boek:
         self.publicatiedatum = publicatiedatum
         self.uitgeleend_datum = uitgeleend_datum
         self.uitgeleend_max_tot = uitgeleend_max_tot
-        self.jaar = jaar  # Voor testcompatibiliteit. Niet opgeslagen in DB.
+        self.jaar = jaar
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -40,7 +39,6 @@ class BoekRepository:
     def create(self, boek_data):
         try:
             cursor = self.db_connection.cursor()
-            # vul standaardwaarden aan indien niet aanwezig (voor nullables)
             values = [
                 boek_data.get('auteur'),
                 boek_data.get('beschrijving'),
@@ -62,7 +60,6 @@ class BoekRepository:
             )
             boek_id = cursor.lastrowid
             self.db_connection.commit()
-            # 'jaar' alleen in het geretourneerde object voor testcompatibiliteit
             return Boek(
                 id=boek_id,
                 titel=boek_data.get('titel'),
@@ -81,22 +78,18 @@ class BoekRepository:
 
 class BoekService:
     def __init__(self, repository=None):
-        if repository is not None:
-            self.repository = repository
-        else:
-            self.repository = BoekRepository(get_connection())
+        self.repository = repository or BoekRepository(get_connection())
 
-    def _validate(self, boek_data):
-        # Vereiste velden: titel, auteur, isbn, en (in tests) jaar (mag niet None/empty zijn)
-        required_fields = ["titel", "auteur", "isbn", "jaar"]
-        for vel in required_fields:
-            if vel not in boek_data or boek_data[vel] in (None, ""):
+    def _validate_boek(self, data):
+        required = ["titel", "auteur", "isbn"]
+        for key in required:
+            if key not in data or not isinstance(data[key], str) or not data[key].strip():
                 return False
         return True
 
     def create_boek(self, boek_data):
-        if not self._validate(boek_data):
-            raise BoekCreateValidationException("Ongeldige of ontbrekende boek data.")
+        if not self._validate_boek(boek_data):
+            raise BoekCreateValidationException("Missing or invalid boek data.")
         if self.repository.exists(boek_data["isbn"]):
             raise BoekAlreadyExistsException(f"Boek met isbn {boek_data['isbn']} bestaat al.")
         return self.repository.create(boek_data)
