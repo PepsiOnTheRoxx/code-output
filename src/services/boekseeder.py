@@ -3,9 +3,9 @@ from src.services.boekseeder_exceptions import (
     BoekSeederDatabaseError,
     BoekSeederServiceUnavailable,
     BoekSeederInvalidDataError,
-    BoekSeederInsufficientRecordsError,
-    BoekSeedingException
+    BoekSeederInsufficientRecordsError
 )
+from src.services.boekseeder_exceptions import BoekSeedingException
 
 # Dummy data met ALLE vereiste velden uit het schema:
 dummy_boeken = [
@@ -46,8 +46,7 @@ class BoekSeeder:
             except BoekSeederException:
                 raise
             except Exception as exc:
-                if type(exc).__name__ == 'Exception':
-                    raise BoekSeedingException(str(exc))
-                raise
+                # Behandel overige onverwachte exceptions met een test-specifieke exception
+                raise BoekSeedingException(str(exc))
         if records_inserted < 5:
             raise BoekSeederInsufficientRecordsError("Minder dan 5 Boek records gecreëerd.")
