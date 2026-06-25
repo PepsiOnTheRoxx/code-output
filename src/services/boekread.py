@@ -1,5 +1,5 @@
 from src.services.boekread_exceptions import (
-    BoekNotFoundException,
+    BoekNietGevondenException,
     BoekDatabaseFoutException,
     BoekOphalenOnbekendeFoutException,
 )
@@ -16,9 +16,9 @@ class BoekService:
             )
             result = cursor.fetchone()
             if result is None:
-                raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
+                raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
             return result
-        except BoekNotFoundException:
+        except BoekNietGevondenException:
             raise
         except Exception as e:
             raise BoekDatabaseFoutException(f"Databasefout bij ophalen: {e}")
