@@ -4,7 +4,7 @@ from database_exceptions import DatabaseSetupException
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'bibliotheek.db')
 
-# Definieer de oorspronkelijke CREATE TABLE-statement exact zoals in de tests
+# Definieer de oorspronkelijke CREATE TABLE-statement exact zoals in de tests EN met correcte kolommen (titel toegevoegd)
 CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
             auteur TEXT,
             beschrijving TEXT,
@@ -13,7 +13,8 @@ CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
             kaft_foto_url TEXT,
             is_uitgeleend BOOLEAN,
             uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
+            uitgeleend_max_tot DATE,
+            titel TEXT
         )"""
 
 def get_connection():
