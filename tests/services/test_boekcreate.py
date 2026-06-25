@@ -1,60 +1,119 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.boekcreate import BoekService, BoekAlreadyExistsException
-from src.services.boekcreate_exceptions import BoekCreateValidationException
+from datetime import date
+from src.services.boekcreate import BoekService
+from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException, DatabaseException
 
-@pytest.fixture
-def boek_data():
+def valid_boek_data():
     return {
-        "titel": "De Ontdekking van de Hemel",
-        "auteur": "Harry Mulisch",
-        "isbn": "9789023431231",
-        "jaar": 1992
+        "auteur": "J.K. Rowling",
+        "beschrijving": "Een magisch avontuur",
+        "is_uitgeleend": False,
+        "isbn": "1234567890",
+        "kaft_foto_url": "https://example.com/kaft.jpg",
+        "publicatiedatum": date(1997, 6, 26),
+        "titel": "Harry Potter en de Steen der Wijzen",
+        "uitgeleend_datum": None,
+        "uitgeleend_max_tot": None
     }
 
-def test_create_boek_success(boek_data):
-    with patch("src.services.boekcreate.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.exists.return_value = False
-        mock_repo_instance.create.return_value = MagicMock(id=1, **boek_data)
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_success(mock_repo_cls):
+    boek_data = valid_boek_data()
+    mock_repo = MagicMock()
+    mock_repo.create.return_value = boek_data  # Simulatie van het aangemaakte boek
+    mock_repo.exists.return_value = False
+    mock_repo_cls.return_value = mock_repo
 
-        service = BoekService(repository=mock_repo_instance)
-        result = service.create_boek(boek_data)
+    service = BoekService()
+    result = service.create_boek(**boek_data)
 
-        assert result.id == 1
-        assert result.titel == boek_data["titel"]
-        assert result.auteur == boek_data["auteur"]
-        assert result.isbn == boek_data["isbn"]
-        assert result.jaar == boek_data["jaar"]
-        mock_repo_instance.exists.assert_called_once_with(boek_data["isbn"])
-        mock_repo_instance.create.assert_called_once_with(boek_data)
+    assert result == boek_data
+    mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
+    mock_repo.create.assert_called_once_with(boek_data)
 
-def test_create_boek_already_exists(boek_data):
-    with patch("src.services.boekcreate.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.exists.return_value = True
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_already_exists(mock_repo_cls):
+    boek_data = valid_boek_data()
+    mock_repo = MagicMock()
+    mock_repo.exists.return_value = True
+    mock_repo_cls.return_value = mock_repo
 
-        service = BoekService(repository=mock_repo_instance)
-        with pytest.raises(BoekAlreadyExistsException):
-            service.create_boek(boek_data)
+    service = BoekService()
+    with pytest.raises(BoekAlreadyExistsException):
+        service.create_boek(**boek_data)
+    mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
+    mock_repo.create.assert_not_called()
 
-        mock_repo_instance.exists.assert_called_once_with(boek_data["isbn"])
-        mock_repo_instance.create.assert_not_called()
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_invalid_data_missing_titel(mock_repo_cls):
+    boek_data = valid_boek_data()
+    boek_data.pop("titel")
+    mock_repo = MagicMock()
+    mock_repo_cls.return_value = mock_repo
 
-@pytest.mark.parametrize("invalid_data", [
-    {"titel": "", "auteur": "Auteur1", "isbn": "9789000000001", "jaar": 2001},
-    {"titel": "Titel", "auteur": "", "isbn": "9789000000002", "jaar": 2002},
-    {"titel": "Titel", "auteur": "Auteur2", "isbn": "", "jaar": 2003},
-    {"titel": "Titel", "auteur": "Auteur3", "isbn": "9789000000003", "jaar": None},
-])
-def test_create_boek_validation_exception(invalid_data):
-    with patch("src.services.boekcreate.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.exists.return_value = False
+    service = BoekService()
+    with pytest.raises(InvalidBoekDataException):
+        service.create_boek(**boek_data)
+    mock_repo.exists.assert_not_called()
+    mock_repo.create.assert_not_called()
 
-        service = BoekService(repository=mock_repo_instance)
-        with pytest.raises(BoekCreateValidationException):
-            service.create_boek(invalid_data)
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_invalid_data_empty_isbn(mock_repo_cls):
+    boek_data = valid_boek_data()
+    boek_data["isbn"] = ""
+    mock_repo = MagicMock()
+    mock_repo_cls.return_value = mock_repo
 
-        mock_repo_instance.exists.assert_not_called()
-        mock_repo_instance.create.assert_not_called()
+    service = BoekService()
+    with pytest.raises(InvalidBoekDataException):
+        service.create_boek(**boek_data)
+    mock_repo.exists.assert_not_called()
+    mock_repo.create.assert_not_called()
+
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_db_exception_on_create(mock_repo_cls):
+    boek_data = valid_boek_data()
+    mock_repo = MagicMock()
+    mock_repo.exists.return_value = False
+    mock_repo.create.side_effect = DatabaseException("Fout bij aanmaken boek")
+    mock_repo_cls.return_value = mock_repo
+
+    service = BoekService()
+    with pytest.raises(DatabaseException):
+        service.create_boek(**boek_data)
+    mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
+    mock_repo.create.assert_called_once_with(boek_data)
+
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_defaults_uitgeleend_niet_verplicht(mock_repo_cls):
+    boek_data = valid_boek_data()
+    boek_data.pop("uitgeleend_datum")
+    boek_data.pop("uitgeleend_max_tot")
+    mock_repo = MagicMock()
+    mock_repo.create.return_value = boek_data
+    mock_repo.exists.return_value = False
+    mock_repo_cls.return_value = mock_repo
+
+    service = BoekService()
+    result = service.create_boek(**boek_data)
+
+    assert result == boek_data
+    mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
+    mock_repo.create.assert_called_once_with(boek_data)
+
+@patch("src.services.boekcreate.BoekRepository")
+def test_create_boek_with_publicatiedatum_none(mock_repo_cls):
+    boek_data = valid_boek_data()
+    boek_data["publicatiedatum"] = None
+    mock_repo = MagicMock()
+    mock_repo.create.return_value = boek_data
+    mock_repo.exists.return_value = False
+    mock_repo_cls.return_value = mock_repo
+
+    service = BoekService()
+    result = service.create_boek(**boek_data)
+
+    assert result == boek_data
+    mock_repo.exists.assert_called_once_with(isbn=boek_data["isbn"])
+    mock_repo.create.assert_called_once_with(boek_data)
