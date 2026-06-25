@@ -11,7 +11,8 @@ CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
             kaft_foto_url TEXT,
             is_uitgeleend BOOLEAN,
             uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
+            uitgeleend_max_tot DATE,
+            titel TEXT
         )"""
 
 @patch("database.sqlite3.connect")
