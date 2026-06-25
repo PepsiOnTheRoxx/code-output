@@ -23,17 +23,17 @@ class BoekRepository:
         except Exception as e:
             raise BoekDatabaseException(str(e))
 
-    def add(self, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
+    def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
                 """
                 INSERT INTO boeken (
-                    titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot
+                    auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot
+                    auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
                 )
             )
             self.db_connection.commit()
@@ -53,7 +53,6 @@ class BoekRepository:
             })()
         except Exception as e:
             raise BoekDatabaseException(str(e))
-
 
 class BoekCreateService:
     def __init__(self, db_connection=None):
@@ -76,29 +75,16 @@ class BoekCreateService:
         if not self._validate_boek_data(boek_data):
             raise InvalidBoekDataException("Missing or invalid boek data.")
         if self.repository.exists_by_isbn(boek_data["isbn"]):
-            raise BoekAlreadyExistsException("Boek already exists with this ISBN.")
-        # Optional fields
-        beschrijving = boek_data.get("beschrijving", None)
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
+        # Zorg voor juiste volgorde, optionele velden mogelijk None
+        auteur = boek_data["auteur"]
+        titel = boek_data["titel"]
+        isbn = boek_data["isbn"]
+        beschrijving = boek_data.get("beschrijving")
         is_uitgeleend = boek_data.get("is_uitgeleend", 0)
-        kaft_foto_url = boek_data.get("kaft_foto_url", None)
-        publicatiedatum = boek_data.get("publicatiedatum", None)
-        uitgeleend_datum = boek_data.get("uitgeleend_datum", None)
-        uitgeleend_max_tot = boek_data.get("uitgeleend_max_tot", None)
-        boek_obj = self.repository.add(
-            boek_data["titel"],
-            boek_data["auteur"],
-            boek_data["isbn"],
-            beschrijving,
-            is_uitgeleend,
-            kaft_foto_url,
-            publicatiedatum,
-            uitgeleend_datum,
-            uitgeleend_max_tot
-        )
-        # Sluit connectie indien deze lokaal geopend werd
-        if hasattr(self.db_connection, "close"):
-            try:
-                self.db_connection.close()
-            except Exception:
-                pass
-        return boek_obj
+        kaft_foto_url = boek_data.get("kaft_foto_url")
+        publicatiedatum = boek_data.get("publicatiedatum")
+        uitgeleend_datum = boek_data.get("uitgeleend_datum")
+        uitgeleend_max_tot = boek_data.get("uitgeleend_max_tot")
+        boek = self.repository.add(auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot)
+        return boek
