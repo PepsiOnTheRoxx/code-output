@@ -8,13 +8,24 @@ from src.services.boekcreate_exceptions import (
 class BoekAlreadyExistsException(Exception):
     pass
 
+# Gebruik alleen de kolommen die in het schema staan.
+SCHEMA_FIELDS = [
+    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
+    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
+]
+
 class Boek:
-    def __init__(self, id, titel, auteur, isbn, jaar):
+    def __init__(self, id, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         self.id = id
         self.titel = titel
         self.auteur = auteur
         self.isbn = isbn
-        self.jaar = jaar
+        self.beschrijving = beschrijving
+        self.is_uitgeleend = is_uitgeleend
+        self.kaft_foto_url = kaft_foto_url
+        self.publicatiedatum = publicatiedatum
+        self.uitgeleend_datum = uitgeleend_datum
+        self.uitgeleend_max_tot = uitgeleend_max_tot
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -31,18 +42,39 @@ class BoekRepository:
     def create(self, boek_data):
         try:
             cursor = self.db_connection.cursor()
+            # vul standaardwaarden aan indien niet aanwezig (voor nullables)
+            values = [
+                boek_data.get('auteur'),
+                boek_data.get('beschrijving'),
+                boek_data.get('is_uitgeleend', 0),
+                boek_data.get('isbn'),
+                boek_data.get('kaft_foto_url'),
+                boek_data.get('publicatiedatum'),
+                boek_data.get('titel'),
+                boek_data.get('uitgeleend_datum'),
+                boek_data.get('uitgeleend_max_tot')
+            ]
             cursor.execute(
-                "INSERT INTO boeken (titel, auteur, isbn, jaar) VALUES (?, ?, ?, ?)",
-                (boek_data["titel"], boek_data["auteur"], boek_data["isbn"], boek_data["jaar"])
+                """
+                INSERT INTO boeken (
+                    auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                tuple(values)
             )
             boek_id = cursor.lastrowid
             self.db_connection.commit()
             return Boek(
                 id=boek_id,
-                titel=boek_data["titel"],
-                auteur=boek_data["auteur"],
-                isbn=boek_data["isbn"],
-                jaar=boek_data["jaar"],
+                titel=boek_data.get('titel'),
+                auteur=boek_data.get('auteur'),
+                isbn=boek_data.get('isbn'),
+                beschrijving=boek_data.get('beschrijving'),
+                is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+                kaft_foto_url=boek_data.get('kaft_foto_url'),
+                publicatiedatum=boek_data.get('publicatiedatum'),
+                uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+                uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot')
             )
         except Exception as e:
             self.db_connection.rollback()
@@ -70,5 +102,5 @@ class BoekService:
             raise BoekCreateValidationException("Auteur mag niet leeg zijn")
         if not boek_data.get("isbn") or not boek_data.get("isbn").strip():
             raise BoekCreateValidationException("ISBN mag niet leeg zijn")
-        if boek_data.get("jaar") is None:
-            raise BoekCreateValidationException("Jaar mag niet leeg zijn")
+        # 'jaar' verwijderen, want niet meer nodig
+        # andere velden zijn optioneel volgens het schema
