@@ -75,21 +75,10 @@ class BoekCreateService:
             self.repo = BoekRepository(db_connection or get_connection())
 
     def create_boek(self, boek_data):
-        # Validate mandatory fields
-        if not boek_data.get('titel') or not boek_data.get('auteur') or not boek_data.get('isbn'):
-            raise InvalidBoekDataException('Titel, auteur en isbn zijn verplicht')
-        if self.repo.exists_by_isbn(boek_data.get('isbn')):
-            raise BoekAlreadyExistsException('Boek met dit ISBN bestaat al')
-        boek = self.repo.add(
-            auteur=boek_data.get('auteur'),
-            beschrijving=boek_data.get('beschrijving'),
-            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
-            isbn=boek_data.get('isbn'),
-            kaft_foto_url=boek_data.get('kaft_foto_url'),
-            publicatiedatum=boek_data.get('publicatiedatum'),
-            titel=boek_data.get('titel'),
-            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
-            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-            jaar=boek_data.get('jaar')
-        )
-        return boek
+        if (not boek_data.get("titel")
+            or not boek_data.get("auteur")
+            or not boek_data.get("isbn")):
+            raise InvalidBoekDataException("titel, auteur en isbn verplicht")
+        if self.repo.exists_by_isbn(boek_data["isbn"]):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al")
+        return self.repo.add(**{field: boek_data.get(field) for field in SCHEMA_FIELDS}, jaar=boek_data.get("jaar"))

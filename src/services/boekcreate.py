@@ -77,19 +77,20 @@ class BoekRepository:
                 jaar=boek_data.get('jaar')
             )
         except Exception as e:
-            raise BoekCreateDatabaseException(f"Database insert error: {str(e)}")
+            self.db_connection.rollback()
+            raise BoekCreateDatabaseException(f"Create boek DB error: {e}")
 
 class BoekService:
     def __init__(self, repository=None):
         self.repo = repository or BoekRepository(get_connection())
+
     def create_boek(self, boek_data):
-        # Validation
-        if not boek_data.get('titel') or not isinstance(boek_data['titel'], str):
-            raise BoekCreateValidationException("Titel is verplicht en mag niet leeg zijn")
-        if not boek_data.get('auteur') or not isinstance(boek_data['auteur'], str):
-            raise BoekCreateValidationException("Auteur is verplicht en mag niet leeg zijn")
-        if not boek_data.get('isbn') or not isinstance(boek_data['isbn'], str):
-            raise BoekCreateValidationException("ISBN is verplicht en mag niet leeg zijn")
-        if self.repo.exists(boek_data['isbn']):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
+        # Valideren van verplicht: titel, auteur, isbn
+        if not boek_data.get('titel') or not boek_data.get('auteur') or not boek_data.get('isbn'):
+            raise BoekCreateValidationException('titel, auteur en isbn zijn verplicht')
+        # Optioneel: extra valideer jaar:
+        if 'jaar' in boek_data and not boek_data['jaar']:
+            raise BoekCreateValidationException('jaar mag niet leeg zijn als opgegeven')
+        if self.repo.exists_by_isbn(boek_data['isbn']):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al")
         return self.repo.create(boek_data)
