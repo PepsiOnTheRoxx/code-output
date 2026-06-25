@@ -9,7 +9,7 @@ class BoekService:
         if (
             not isinstance(boek_data, dict)
             or 'titel' not in boek_data or 'auteur' not in boek_data
-            or not isinstance(boek_data['titel'], str) or not boek_data['titel'].strip()
+            or not isinstance(boek_data["titel"], str) or not boek_data['titel'].strip()
             or boek_data['auteur'] is None or (isinstance(boek_data['auteur'], str) and not boek_data['auteur'].strip())
         ):
             raise OngeldigeBoekDataException()
@@ -18,7 +18,6 @@ class BoekService:
             query = "UPDATE boeken SET titel=?, auteur=? WHERE id=?"
             cursor.execute(query, (boek_data['titel'], boek_data['auteur'], boek_id))
             if cursor.rowcount == 0:
-                cursor.close()
                 raise BoekNietGevondenException()
             self.db_connection.commit()
         finally:
