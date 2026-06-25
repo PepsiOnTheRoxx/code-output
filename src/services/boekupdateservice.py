@@ -82,30 +82,29 @@ class BoekRepository:
         self.db_connection.commit()
 
 class BoekService:
-    def __init__(self, repository=None):
-        self.repository = repository or BoekRepository()
+    def __init__(self, repository):
+        self.repository = repository
 
-    def update_boek(self, boek_id, nieuwe_data):
-        oud_boek = self.repository.get_boek_by_id(boek_id)
-        if not oud_boek:
+    def update_boek(self, boek_id, data):
+        boek = self.repository.get_boek_by_id(boek_id)
+        if not boek:
             raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden.")
-        if not self._validate_boek_data(nieuwe_data):
-            raise OngeldigeBoekDataException("Ongeldige boekdata.")
-
-        # Update velden
-        for key in SCHEMA_FIELDS:
-            if key in nieuwe_data:
-                setattr(oud_boek, key, nieuwe_data[key])
+        if not data.get("titel") or not isinstance(data["titel"], str) or not data["titel"].strip():
+            raise OngeldigeBoekDataException("Titel ontbreekt of is ongeldig.")
+        if not data.get("auteur") or not isinstance(data["auteur"], str) or not data["auteur"].strip():
+            raise OngeldigeBoekDataException("Auteur ontbreekt of is ongeldig.")
+        if not data.get("isbn") or not isinstance(data["isbn"], str) or not data["isbn"].strip():
+            raise OngeldigeBoekDataException("ISBN ontbreekt of is ongeldig.")
+        boek.titel = data["titel"]
+        boek.auteur = data["auteur"]
+        boek.isbn = data["isbn"]
+        boek.beschrijving = data.get("beschrijving", boek.beschrijving)
+        boek.is_uitgeleend = data.get("is_uitgeleend", boek.is_uitgeleend)
+        boek.kaft_foto_url = data.get("kaft_foto_url", boek.kaft_foto_url)
+        boek.publicatiedatum = data.get("publicatiedatum", boek.publicatiedatum)
+        boek.uitgeleend_datum = data.get("uitgeleend_datum", boek.uitgeleend_datum)
+        boek.uitgeleend_max_tot = data.get("uitgeleend_max_tot", boek.uitgeleend_max_tot)
         try:
-            self.repository.update_boek(oud_boek)
+            self.repository.update_boek(boek)
         except Exception as e:
             raise BoekUpdateMisluktException(str(e))
-
-    def _validate_boek_data(self, data):
-        required = ["titel", "auteur", "isbn"]
-        if not isinstance(data, dict):
-            return False
-        for key in required:
-            if key not in data or not isinstance(data[key], str) or not data[key].strip():
-                return False
-        return True
