@@ -6,6 +6,10 @@ from src.services.boekcreateservice_exceptions import (
 )
 from database import get_connection
 
+SCHEMA_FIELDS = [
+    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
+    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
+]
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -14,20 +18,39 @@ class BoekRepository:
     def exists_by_isbn(self, isbn):
         try:
             cursor = self.db_connection.cursor()
-            cursor.execute("SELECT 1 FROM Boek WHERE isbn = ?", (isbn,))
+            cursor.execute("SELECT 1 FROM boeken WHERE isbn = ?", (isbn,))
             return cursor.fetchone() is not None
         except Exception as e:
             raise BoekDatabaseException(str(e))
 
-    def add(self, titel, auteur, isbn):
+    def add(self, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
-                "INSERT INTO Boek (titel, auteur, isbn) VALUES (?, ?, ?)", (titel, auteur, isbn)
+                """
+                INSERT INTO boeken (
+                    titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    titel, auteur, isbn, beschrijving, is_uitgeleend, kaft_foto_url, publicatiedatum, uitgeleend_datum, uitgeleend_max_tot
+                )
             )
             self.db_connection.commit()
             boek_id = cursor.lastrowid
-            return type("Boek", (), {"id": boek_id, "titel": titel, "auteur": auteur, "isbn": isbn})()
+            # Maak een object/dict met ALLE velden van het schema terug
+            return type("Boek", (), {
+                "id": boek_id,
+                "titel": titel,
+                "auteur": auteur,
+                "isbn": isbn,
+                "beschrijving": beschrijving,
+                "is_uitgeleend": is_uitgeleend,
+                "kaft_foto_url": kaft_foto_url,
+                "publicatiedatum": publicatiedatum,
+                "uitgeleend_datum": uitgeleend_datum,
+                "uitgeleend_max_tot": uitgeleend_max_tot
+            })()
         except Exception as e:
             raise BoekDatabaseException(str(e))
 
@@ -56,10 +79,17 @@ class BoekCreateService:
         try:
             if self.repository.exists_by_isbn(isbn):
                 raise BoekAlreadyExistsException("Boek already exists with isbn: {}".format(isbn))
+            # Vul alle schema-velden op, met defaults als ze niet geleverd zijn
             created_boek = self.repository.add(
                 titel=boek_data["titel"].strip(),
                 auteur=boek_data["auteur"].strip(),
                 isbn=boek_data["isbn"].strip(),
+                beschrijving=boek_data.get("beschrijving"),
+                is_uitgeleend=boek_data.get("is_uitgeleend", 0),  # False als default
+                kaft_foto_url=boek_data.get("kaft_foto_url"),
+                publicatiedatum=boek_data.get("publicatiedatum"),
+                uitgeleend_datum=boek_data.get("uitgeleend_datum"),
+                uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot")
             )
             return created_boek
         except BoekAlreadyExistsException:
