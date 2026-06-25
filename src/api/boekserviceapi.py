@@ -10,20 +10,56 @@ from src.api.boekserviceapi_exceptions import (
 BoekNotFoundException = BoekAPINotFoundException
 InvalidBoekDataException = BoekAPIValidationException
 
-# Dummy BoekService for real usage -- gets patched by unittest in tests
+# Concrete BoekService for real CRUD
 class BoekService:
     def __init__(self, conn):
         self.conn = conn
+        self._ensure_tables()
+    def _ensure_tables(self):
+        c = self.conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS boeken (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            titel TEXT NOT NULL
+        )''')
+        self.conn.commit()
     def get_boek(self, boek_id):
-        pass
+        c = self.conn.cursor()
+        c.execute("SELECT id, titel FROM boeken WHERE id = ?", (boek_id,))
+        row = c.fetchone()
+        if row is None:
+            raise BoekNotFoundException("Boek niet gevonden")
+        return {"id": row[0], "titel": row[1]}
     def create_boek(self, data):
-        pass
+        titel = data.get("titel")
+        if not titel:
+            raise InvalidBoekDataException("Titel ontbreekt")
+        c = self.conn.cursor()
+        c.execute("INSERT INTO boeken (titel) VALUES (?)", (titel,))
+        self.conn.commit()
+        boek_id = c.lastrowid
+        return self.get_boek(boek_id)
     def update_boek(self, boek_id, data):
-        pass
+        titel = data.get("titel")
+        if not titel:
+            raise InvalidBoekDataException("Titel ontbreekt")
+        c = self.conn.cursor()
+        c.execute("SELECT id FROM boeken WHERE id = ?", (boek_id,))
+        if c.fetchone() is None:
+            raise BoekNotFoundException("Boek niet gevonden")
+        c.execute("UPDATE boeken SET titel = ? WHERE id = ?", (titel, boek_id))
+        self.conn.commit()
+        return self.get_boek(boek_id)
     def delete_boek(self, boek_id):
-        pass
+        c = self.conn.cursor()
+        c.execute("SELECT id FROM boeken WHERE id = ?", (boek_id,))
+        if c.fetchone() is None:
+            raise BoekNotFoundException("Boek niet gevonden")
+        c.execute("DELETE FROM boeken WHERE id = ?", (boek_id,))
+        self.conn.commit()
     def get_all_boeken(self):
-        pass
+        c = self.conn.cursor()
+        c.execute("SELECT id, titel FROM boeken")
+        return [{"id": row[0], "titel": row[1]} for row in c.fetchall()]
 
 def register_routes(app):
     bp = Blueprint("boekserviceapi", __name__)
@@ -64,6 +100,8 @@ def register_routes(app):
             return jsonify(boek), 200
         except BoekNotFoundException:
             return jsonify({'error': 'Boek niet gevonden'}), 404
+        except InvalidBoekDataException as e:
+            return jsonify({'error': str(e)}), 400
 
     @bp.route("/boeken/<int:boek_id>", methods=["DELETE"])
     def delete_boek(boek_id):
