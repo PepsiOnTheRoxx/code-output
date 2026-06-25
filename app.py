@@ -1,6 +1,5 @@
 from flask import Flask, redirect, url_for
-from src.api.catalogus_api import register_routes as register_catalogus_routes
-from src.api.boek_api import register_routes as register_boek_routes
+from src.api.boekapi import register_routes as register_boek_routes
 from src.frontend.catalogusfrontend import catalogusfrontend_bp
 from src.frontend.boekaanpassenfrontend import boekaanpassenfrontend_bp
 from src.frontend.boekdetailfrontend import boekdetailfrontend_bp
@@ -17,7 +16,6 @@ def create_app():
         seed_db()
 
     # Registreer API routes
-    register_catalogus_routes(app)
     register_boek_routes(app)
 
     # Registreer frontend Blueprints

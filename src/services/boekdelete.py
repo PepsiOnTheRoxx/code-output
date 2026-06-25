@@ -23,7 +23,7 @@ class BoekRepository:
     def verwijder_boek(self, boek_id):
         try:
             cursor = self.db_connection.cursor()
-            cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
+            cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_id,))
             if cursor.rowcount == 0:
                 raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()

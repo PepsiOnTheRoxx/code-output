@@ -22,15 +22,20 @@ class BoekRepository:
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur, jaar, isbn FROM Boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
             return {
                 "id": row[0],
                 "titel": row[1],
                 "auteur": row[2],
-                "jaar": row[3],
-                "isbn": row[4]
+                "beschrijving": row[3],
+                "isbn": row[4],
+                "publicatiedatum": row[5],
+                "kaft_foto_url": row[6],
+                "is_uitgeleend": row[7],
+                "uitgeleend_datum": row[8],
+                "uitgeleend_max_tot": row[9]
             }
         return None
 
@@ -38,8 +43,8 @@ class BoekRepository:
         cursor = self.db_connection.cursor()
         try:
             cursor.execute(
-                "UPDATE Boek SET titel = ?, auteur = ?, jaar = ?, isbn = ? WHERE id = ?",
-                (data["titel"], data["auteur"], data["jaar"], data["isbn"], boek_id)
+                "UPDATE boeken SET titel = ?, auteur = ?, beschrijving = ?, isbn = ?, publicatiedatum = ?, kaft_foto_url = ?, is_uitgeleend = ?, uitgeleend_datum = ?, uitgeleend_max_tot = ? WHERE rowid = ?",
+                (data["titel"], data["auteur"], data.get("beschrijving", ""), data["isbn"], data["publicatiedatum"], data["kaft_foto_url"], data["is_uitgeleend"], data.get("uitgeleend_datum", None), data.get("uitgeleend_max_tot", None), boek_id)
             )
             updated = getattr(cursor, 'rowcount', 1) > 0  # In test: True, in prod: actual update
             self.db_connection.commit()
@@ -58,10 +63,10 @@ def _validate_boek_data(data):
         return False
     if not data.get("auteur") or not isinstance(data["auteur"], str):
         return False
-    if not isinstance(data.get("jaar"), int):
+    # In het schema is 'publicatiedatum' datumveld, maar validatie is zeer simpel gehouden
+    if not data.get("isbn") or not _is_valid_isbn(data.get("isbn", "")):
         return False
-    if not _is_valid_isbn(data.get("isbn", "")):
-        return False
+    # Geen hard check op beschrijving/kaft_foto_url/is_uitgeleend/uitgeleend_datum/uitgeleend_max_tot - want optional
     return True
 
 class BoekService:

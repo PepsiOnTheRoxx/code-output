@@ -15,7 +15,7 @@ class BoekRepository:
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
-                "SELECT id, titel, auteur, jaar FROM Boek WHERE id = ?",
+                "SELECT rowid, titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot FROM boeken WHERE rowid = ?",
                 (boek_id,)
             )
             row = cursor.fetchone()
@@ -25,7 +25,13 @@ class BoekRepository:
                 "id": row[0],
                 "titel": row[1],
                 "auteur": row[2],
-                "jaar": row[3]
+                "beschrijving": row[3],
+                "isbn": row[4],
+                "publicatiedatum": row[5],
+                "kaft_foto_url": row[6],
+                "is_uitgeleend": row[7],
+                "uitgeleend_datum": row[8],
+                "uitgeleend_max_tot": row[9]
             }
         except BoekNotFoundException:
             raise
@@ -35,14 +41,20 @@ class BoekRepository:
     def get_all(self):
         try:
             cursor = self.db_connection.cursor()
-            cursor.execute("SELECT id, titel, auteur, jaar FROM Boek")
+            cursor.execute("SELECT rowid, titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot FROM boeken")
             results = []
             for row in cursor.fetchall():
                 results.append({
                     "id": row[0],
                     "titel": row[1],
                     "auteur": row[2],
-                    "jaar": row[3]
+                    "beschrijving": row[3],
+                    "isbn": row[4],
+                    "publicatiedatum": row[5],
+                    "kaft_foto_url": row[6],
+                    "is_uitgeleend": row[7],
+                    "uitgeleend_datum": row[8],
+                    "uitgeleend_max_tot": row[9]
                 })
             return results
         except Exception as e:
