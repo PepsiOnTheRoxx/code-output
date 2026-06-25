@@ -77,15 +77,14 @@ class BoekCreateService:
             self.repo = BoekRepository(self.db_connection)
 
     def create_boek(self, boek_data):
-        # Validatie: titel, auteur, isbn zijn verplicht
-        if not boek_data.get('titel') or not isinstance(boek_data.get('titel'), str) or not boek_data.get('titel').strip():
-            raise InvalidBoekDataException('Titel is verplicht en mag niet leeg zijn')
-        if not boek_data.get('auteur') or not isinstance(boek_data.get('auteur'), str) or not boek_data.get('auteur').strip():
-            raise InvalidBoekDataException('Auteur is verplicht en mag niet leeg zijn')
-        if not boek_data.get('isbn') or not isinstance(boek_data.get('isbn'), str) or not boek_data.get('isbn').strip():
-            raise InvalidBoekDataException('ISBN is verplicht en mag niet leeg zijn')
-        if self.repo.exists_by_isbn(boek_data['isbn']):
-            raise BoekAlreadyExistsException()
+        required_fields = ["titel", "auteur", "isbn"]
+        for field in required_fields:
+            if field not in boek_data or not boek_data[field]:
+                raise InvalidBoekDataException(f"Verplicht veld ontbreekt: {field}")
+
+        if self.repo.exists_by_isbn(boek_data["isbn"]):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
+
         try:
             return self.repo.add(
                 auteur=boek_data.get('auteur'),
@@ -97,9 +96,9 @@ class BoekCreateService:
                 titel=boek_data.get('titel'),
                 uitgeleend_datum=boek_data.get('uitgeleend_datum'),
                 uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-                jaar=boek_data.get('jaar')
+                jaar=boek_data.get('jaar'),
             )
-        except BoekCreateServiceDatabaseException as ex:
-            raise ex
+        except BoekCreateServiceDatabaseException as e:
+            raise e
         except Exception as e:
-            raise BoekCreateServiceDatabaseException(str(e))
+            raise BoekServiceDependencyException(str(e))
