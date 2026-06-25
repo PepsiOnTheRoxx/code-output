@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekdelete import BoekService
-from src.services.boekdelete_exceptions import BoekNietGevondenException, DatabaseFoutException
+from src.services.boekdelete_exceptions import BoekNietGevondenException, BoekDeleteDatabaseException
 
 def test_boek_delete_succesvolle_verwijdering():
     db_connection = MagicMock()
@@ -43,7 +43,7 @@ def test_boek_delete_veroorzaakt_database_fout_raises_exception():
     service = BoekService(db_connection)
     boek_id = 1
 
-    with pytest.raises(DatabaseFoutException):
+    with pytest.raises(BoekDeleteDatabaseException):
         service.verwijder_boek(boek_id)
         
     db_connection.commit.assert_not_called()
