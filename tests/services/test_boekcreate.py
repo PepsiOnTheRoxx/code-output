@@ -12,6 +12,7 @@ def test_boek_create_calls_insert_sql():
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
+    mock_cursor.lastrowid = 42
     boek_data = {
         'titel': 'Test Boek',
         'auteur': 'Auteur Naam',
@@ -29,16 +30,17 @@ def test_boek_create_calls_insert_sql():
     mock_conn.cursor.assert_called_once()
     assert mock_cursor.execute.call_count == 1
     args, kwargs = mock_cursor.execute.call_args
-    assert "INSERT INTO boek" in args[0]
+    assert "INSERT INTO boeken" in args[0]
     assert boek_data['titel'] in args[1]
-    assert result is True
+    assert result['titel'] == boek_data['titel']
+    assert result['id'] == 42
     mock_conn.commit.assert_called_once()
 
 def test_boek_create_raises_BoekCreateUniqueConstraintException_on_duplicate():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
-    mock_cursor.execute.side_effect = Exception("UNIQUE constraint failed: boek.isbn")
+    mock_cursor.execute.side_effect = Exception("UNIQUE constraint failed: boeken.isbn")
     boek_data = {
         'titel': 'Test Boek',
         'auteur': 'Auteur Naam',
@@ -76,6 +78,7 @@ def test_boek_create_raises_BoekCreateDatabaseException_on_commit_failure():
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
+    mock_cursor.lastrowid = 101
     mock_conn.commit.side_effect = Exception("Database commit failed")
     boek_data = {
         'titel': 'Test Boek',
@@ -91,11 +94,12 @@ def test_boek_create_raises_BoekCreateDatabaseException_on_commit_failure():
     with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(boek_data)
 
-def test_boek_create_returns_true_on_success():
+def test_boek_create_returns_dict_with_id_on_success():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 1
+    mock_cursor.lastrowid = 5
     boek_data = {
         'titel': 'Boek ABC',
         'auteur': 'Auteur C',
@@ -108,7 +112,8 @@ def test_boek_create_returns_true_on_success():
     }
     service = BoekService(mock_conn)
     result = service.create_boek(boek_data)
-    assert result is True
+    assert result['id'] == 5
+    assert result['titel'] == 'Boek ABC'
     mock_conn.commit.assert_called_once()
 
 def test_boek_create_fails_when_rowcount_zero():
