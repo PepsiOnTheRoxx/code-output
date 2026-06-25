@@ -79,47 +79,45 @@ class BoekRepository:
                 boek.id
             )
         )
+        if cursor.rowcount == 0:
+            raise BoekNietGevondenException("Boek niet gevonden voor update")
         self.db_connection.commit()
 
-class BoekUpdateService:
-    def __init__(self, boek_repository=None):
-        self.repo = boek_repository or BoekRepository()
+class BoekService:
+    def __init__(self, repo):
+        self.repo = repo
 
-    def update_boek(self, boek_id, update_data):
-        boek = self.repo.get_boek_by_id(boek_id)
-        if boek is None:
-            raise BoekNietGevondenException("Boek niet gevonden")
-        # Validatie: titel, auteur, isbn zijn verplicht
-        titel = update_data.get('titel', boek.titel)
-        auteur = update_data.get('auteur', boek.auteur)
-        isbn = update_data.get('isbn', boek.isbn)
+    def update_boek(self, boek_id, data):
+        # Validatie: titel, auteur, isbn verplicht + string
+        titel = data.get('titel')
+        auteur = data.get('auteur')
+        isbn = data.get('isbn')
         if not titel or not isinstance(titel, str):
-            raise OngeldigeBoekDataException("Titel is verplicht en mag niet leeg zijn")
+            raise OngeldigeBoekDataException('Titel is verplicht en mag niet leeg zijn')
         if not auteur or not isinstance(auteur, str):
-            raise OngeldigeBoekDataException("Auteur is verplicht en mag niet leeg zijn")
+            raise OngeldigeBoekDataException('Auteur is verplicht en mag niet leeg zijn')
         if not isbn or not isinstance(isbn, str):
-            raise OngeldigeBoekDataException("ISBN is verplicht en mag niet leeg zijn")
-        boek.titel = titel
-        boek.auteur = auteur
-        boek.isbn = isbn
-        boek.beschrijving = update_data.get('beschrijving', boek.beschrijving)
-        boek.is_uitgeleend = update_data.get('is_uitgeleend', boek.is_uitgeleend)
-        boek.kaft_foto_url = update_data.get('kaft_foto_url', boek.kaft_foto_url)
-        boek.publicatiedatum = update_data.get('publicatiedatum', boek.publicatiedatum)
-        boek.uitgeleend_datum = update_data.get('uitgeleend_datum', boek.uitgeleend_datum)
-        boek.uitgeleend_max_tot = update_data.get('uitgeleend_max_tot', boek.uitgeleend_max_tot)
+            raise OngeldigeBoekDataException('ISBN is verplicht en mag niet leeg zijn')
+        oud_boek = self.repo.get_boek_by_id(boek_id)
+        if oud_boek is None:
+            raise BoekNietGevondenException(f'Boek met id {boek_id} niet gevonden')
+        # Update bestaande Boek object velden op basis van data (fallback op oud_boek als field ontbreekt)
+        boek = Boek(
+            id=boek_id,
+            titel=data.get('titel', oud_boek.titel),
+            auteur=data.get('auteur', oud_boek.auteur),
+            isbn=data.get('isbn', oud_boek.isbn),
+            beschrijving=data.get('beschrijving', oud_boek.beschrijving),
+            is_uitgeleend=data.get('is_uitgeleend', oud_boek.is_uitgeleend),
+            kaft_foto_url=data.get('kaft_foto_url', oud_boek.kaft_foto_url),
+            publicatiedatum=data.get('publicatiedatum', oud_boek.publicatiedatum),
+            uitgeleend_datum=data.get('uitgeleend_datum', oud_boek.uitgeleend_datum),
+            uitgeleend_max_tot=data.get('uitgeleend_max_tot', oud_boek.uitgeleend_max_tot)
+        )
         try:
             self.repo.update_boek(boek)
-        except Exception as exc:
-            raise BoekUpdateMisluktException(str(exc))
-
-# Implementatie van BoekService als alias voor backcompatibility met tests
-def _boekservice_init(self, boek_repository=None):
-    self.update_delegate = BoekUpdateService(boek_repository)
-def _boekservice_update_boek(self, boek_id, update_data):
-    return self.update_delegate.update_boek(boek_id, update_data)
-
-BoekService = type('BoekService', (), {
-    '__init__': _boekservice_init,
-    'update_boek': _boekservice_update_boek
-})
+            return boek
+        except BoekNietGevondenException:
+            raise
+        except Exception as e:
+            raise BoekUpdateMisluktException(str(e))
