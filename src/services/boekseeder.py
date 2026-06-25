@@ -1,21 +1,41 @@
-from src.services.boekseeder_exceptions import BoekSeederException
+from src.services.boekseeder_exceptions import DatabaseSeedError
+
+class Boek:
+    def __init__(self, titel, auteur, jaar):
+        self.titel = titel
+        self.auteur = auteur
+        self.jaar = jaar
+
+def get_db():
+    # Deze functie wordt alleen tijdens runtime aangeroepen, voor de tests wordt het gemockt.
+    from src import db
+    return db
 
 class BoekSeeder:
-    def __init__(self, service):
-        self.service = service
+    DUMMY_BOEKEN = [
+        {"titel": "Het geheim van de schrijver", "auteur": "Renate Dorrestein", "jaar": 2000},
+        {"titel": "De ontdekking van de hemel", "auteur": "Harry Mulisch", "jaar": 1992},
+        {"titel": "Max Havelaar", "auteur": "Multatuli", "jaar": 1860},
+        {"titel": "Turks Fruit", "auteur": "Jan Wolkers", "jaar": 1969},
+        {"titel": "Publieke Werken", "auteur": "Thomas Rosenboom", "jaar": 1999},
+    ]
+
+    def __init__(self, db_instance=None):
+        if db_instance is not None:
+            self.db = db_instance
+        else:
+            self.db = get_db()
 
     def seed(self):
-        boeken = [
-            {"titel": "De Ontdekking van de Hemel", "auteur": "Harry Mulisch", "isbn": "9789023431231"},
-            {"titel": "De donkere kamer van Damokles", "auteur": "W.F. Hermans", "isbn": "9789023451235"},
-            {"titel": "Het Diner", "auteur": "Herman Koch", "isbn": "9789041415912"},
-            {"titel": "Turks Fruit", "auteur": "Jan Wolkers", "isbn": "9789023425656"},
-            {"titel": "Nooit meer slapen", "auteur": "W.F. Hermans", "isbn": "9789020413236"},
-            {"titel": "Max Havelaar", "auteur": "Multatuli", "isbn": "9789020410396"}
-        ]
+        session = self.db.session
         try:
-            for boek in boeken:
-                self.service.voeg_boek_toe(boek)
-        except Exception as ex:
-            raise BoekSeederException(str(ex))
-        return None
+            count = session.query().count()
+            if count > 0:
+                return
+            for boek in self.DUMMY_BOEKEN:
+                # Gebruik Boek-class als dat nodig is (of dictionary, afhankelijk van implementatie)
+                session.add(boek)
+            session.commit()
+        except Exception as exc:
+            session.rollback()
+            raise DatabaseSeedError(f"Database error during seeding: {exc}")
