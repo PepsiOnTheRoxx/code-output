@@ -1,8 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, BoekCreateValidationException
-
+from src.services.boekcreate import BoekService, BoekAlreadyExistsException
+from src.services.boekcreate_exceptions import BoekCreateValidationException
 
 @pytest.fixture
 def boek_data():
@@ -12,7 +11,6 @@ def boek_data():
         "isbn": "9789023431231",
         "jaar": 1992
     }
-
 
 def test_create_boek_success(boek_data):
     with patch("src.services.boekcreate.BoekRepository") as MockRepo:
@@ -31,7 +29,6 @@ def test_create_boek_success(boek_data):
         mock_repo_instance.exists.assert_called_once_with(boek_data["isbn"])
         mock_repo_instance.create.assert_called_once_with(boek_data)
 
-
 def test_create_boek_already_exists(boek_data):
     with patch("src.services.boekcreate.BoekRepository") as MockRepo:
         mock_repo_instance = MockRepo.return_value
@@ -43,7 +40,6 @@ def test_create_boek_already_exists(boek_data):
 
         mock_repo_instance.exists.assert_called_once_with(boek_data["isbn"])
         mock_repo_instance.create.assert_not_called()
-
 
 @pytest.mark.parametrize("invalid_data", [
     {"titel": "", "auteur": "Auteur1", "isbn": "9789000000001", "jaar": 2001},

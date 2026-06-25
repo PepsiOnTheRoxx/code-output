@@ -1,9 +1,12 @@
 from database import get_connection
 from src.services.boekcreate_exceptions import (
-    BoekAlreadyExistsException,
     BoekCreateValidationException,
     BoekCreateDatabaseException,
 )
+
+# Define the exception expected by the tests
+class BoekAlreadyExistsException(Exception):
+    pass
 
 class Boek:
     def __init__(self, id, titel, auteur, isbn, jaar):

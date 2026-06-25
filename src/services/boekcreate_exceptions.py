@@ -10,10 +10,8 @@ class BoekCreateDatabaseException(BoekCreateException):
     """Raised when book creation fails due to database errors."""
     pass
 
-class BoekCreateDuplicateException(BoekCreateException):
-    """Raised when attempting to create a duplicate Boek record."""
-    pass
-
-class BoekCreatePermissionException(BoekCreateException):
-    """Raised when user lacks permission to create Boek records."""
-    pass
+# REMOVE this duplicate/unused exception to prevent confusion.
+# class BoekCreateDuplicateException(BoekCreateException):
+#     pass
+# class BoekCreatePermissionException(BoekCreateException):
+#     pass
