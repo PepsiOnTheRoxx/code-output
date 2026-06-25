@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from database_exceptions import DatabaseSetupError
+from database_exceptions import DatabaseSetupException
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'bibliotheek.db')
 
@@ -8,6 +8,7 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def init_db():
+    conn = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -33,9 +34,9 @@ def init_db():
                 conn.rollback()
             except Exception:
                 pass
-        raise DatabaseSetupError(str(e))
+        raise DatabaseSetupException(str(e))
     finally:
-        if 'conn' in locals():
+        if conn:
             conn.close()
 
 class DatabaseSetup:
@@ -43,6 +44,7 @@ class DatabaseSetup:
         self.db_path = db_path
 
     def initialize_database(self):
+        conn = None
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
@@ -63,20 +65,21 @@ class DatabaseSetup:
             )
             conn.commit()
         except sqlite3.DatabaseError as e:
-            if 'conn' in locals():
+            if conn:
                 try:
                     conn.rollback()
                 except Exception:
                     pass
                 conn.close()
-            raise DatabaseSetupError(str(e))
+            raise DatabaseSetupException(str(e))
         except Exception as e:
-            if 'conn' in locals():
+            if conn:
                 try:
                     conn.rollback()
                 except Exception:
                     pass
                 conn.close()
-            raise DatabaseSetupError(str(e))
+            raise DatabaseSetupException(str(e))
         else:
-            conn.close()
+            if conn:
+                conn.close()
