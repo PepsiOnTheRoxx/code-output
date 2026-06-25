@@ -4,36 +4,84 @@ from src.services.boekupdateservice_exceptions import (
     BoekUpdateMisluktException,
     BoekServiceDatabaseException,
 )
+from database import get_connection
 
+SCHEMA_FIELDS = [
+    'auteur', 'beschrijving', 'is_uitgeleend', 'isbn', 'kaft_foto_url',
+    'publicatiedatum', 'titel', 'uitgeleend_datum', 'uitgeleend_max_tot'
+]
 
 class Boek:
-    def __init__(self, id, titel, auteur, isbn):
+    def __init__(self, id, titel, auteur, isbn, beschrijving=None, is_uitgeleend=0, kaft_foto_url=None, publicatiedatum=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
         self.id = id
         self.titel = titel
         self.auteur = auteur
         self.isbn = isbn
-
+        self.beschrijving = beschrijving
+        self.is_uitgeleend = is_uitgeleend
+        self.kaft_foto_url = kaft_foto_url
+        self.publicatiedatum = publicatiedatum
+        self.uitgeleend_datum = uitgeleend_datum
+        self.uitgeleend_max_tot = uitgeleend_max_tot
 
 class BoekRepository:
-    def __init__(self, db_connection):
-        self.db_connection = db_connection
+    def __init__(self, db_connection=None):
+        self.db_connection = db_connection or get_connection()
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur, isbn FROM boek WHERE id = ?", (boek_id,))
+        cursor.execute(
+            f"SELECT rowid, {', '.join(SCHEMA_FIELDS)} FROM boeken WHERE rowid = ?",
+            (boek_id,)
+        )
         row = cursor.fetchone()
         if row:
-            return Boek(id=row[0], titel=row[1], auteur=row[2], isbn=row[3])
+            # row[0] = rowid (id)
+            # row[1:] = SCHEMA_FIELDS in volgorde
+            return Boek(
+                id=row[0],
+                titel=row[SCHEMA_FIELDS.index('titel')+1],
+                auteur=row[SCHEMA_FIELDS.index('auteur')+1],
+                isbn=row[SCHEMA_FIELDS.index('isbn')+1],
+                beschrijving=row[SCHEMA_FIELDS.index('beschrijving')+1],
+                is_uitgeleend=row[SCHEMA_FIELDS.index('is_uitgeleend')+1],
+                kaft_foto_url=row[SCHEMA_FIELDS.index('kaft_foto_url')+1],
+                publicatiedatum=row[SCHEMA_FIELDS.index('publicatiedatum')+1],
+                uitgeleend_datum=row[SCHEMA_FIELDS.index('uitgeleend_datum')+1],
+                uitgeleend_max_tot=row[SCHEMA_FIELDS.index('uitgeleend_max_tot')+1]
+            )
         return None
 
     def update_boek(self, boek):
         cursor = self.db_connection.cursor()
         cursor.execute(
-            "UPDATE boek SET titel = ?, auteur = ?, isbn = ? WHERE id = ?",
-            (boek.titel, boek.auteur, boek.isbn, boek.id),
+            f"""
+            UPDATE boeken SET
+                titel = ?,
+                auteur = ?,
+                isbn = ?,
+                beschrijving = ?,
+                is_uitgeleend = ?,
+                kaft_foto_url = ?,
+                publicatiedatum = ?,
+                uitgeleend_datum = ?,
+                uitgeleend_max_tot = ?
+            WHERE rowid = ?
+            """,
+            (
+                boek.titel,
+                boek.auteur,
+                boek.isbn,
+                boek.beschrijving,
+                boek.is_uitgeleend,
+                boek.kaft_foto_url,
+                boek.publicatiedatum,
+                boek.uitgeleend_datum,
+                boek.uitgeleend_max_tot,
+                boek.id
+            ),
         )
         self.db_connection.commit()
-
 
 class BoekService:
     def __init__(self, repository):
@@ -44,16 +92,22 @@ class BoekService:
         if oud_boek is None:
             raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden.")
 
+        # Check vereiste velden op leegte
         if not boek_data.get("titel") or not boek_data.get("auteur") or not boek_data.get("isbn"):
             raise OngeldigeBoekDataException("Titel, auteur en ISBN mogen niet leeg zijn.")
 
         nieuw_boek = Boek(
             id=boek_id,
-            titel=boek_data["titel"],
-            auteur=boek_data["auteur"],
-            isbn=boek_data["isbn"],
+            titel=boek_data.get("titel", oud_boek.titel),
+            auteur=boek_data.get("auteur", oud_boek.auteur),
+            isbn=boek_data.get("isbn", oud_boek.isbn),
+            beschrijving=boek_data.get("beschrijving", oud_boek.beschrijving),
+            is_uitgeleend=boek_data.get("is_uitgeleend", oud_boek.is_uitgeleend),
+            kaft_foto_url=boek_data.get("kaft_foto_url", oud_boek.kaft_foto_url),
+            publicatiedatum=boek_data.get("publicatiedatum", oud_boek.publicatiedatum),
+            uitgeleend_datum=boek_data.get("uitgeleend_datum", oud_boek.uitgeleend_datum),
+            uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot", oud_boek.uitgeleend_max_tot),
         )
-
         try:
             self.repository.update_boek(nieuw_boek)
         except Exception as e:
