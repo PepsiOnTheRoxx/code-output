@@ -7,14 +7,15 @@ class BoekRepository:
 
     def get_all_boeken(self):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur FROM boeken")
+        # Gebruik rowid als id
+        cursor.execute("SELECT rowid, titel, auteur FROM boeken")
         rows = cursor.fetchall()
         result = [{"id": row[0], "titel": row[1], "auteur": row[2]} for row in rows]
         return result
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur FROM boeken WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row is not None:
             return {"id": row[0], "titel": row[1], "auteur": row[2]}
