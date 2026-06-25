@@ -23,21 +23,12 @@ def boek_detail(boek_id):
     conn.close()
     return render_template('boek_detail.html', boek=boek)
 
-@catalogusfrontend_bp.route('/boek/nieuw', methods=['GET', 'POST'])
-def boek_toevoegen():
-    if request.method == 'POST':
-        auteur = request.form['auteur']
-        titel = request.form['titel']
-        kaft_foto_url = request.form['kaft_foto_url']
-        is_uitgeleend = 1 if 'is_uitgeleend' in request.form else 0
-        conn = get_db()
-        conn.execute('INSERT INTO boeken (auteur, titel, kaft_foto_url, is_uitgeleend) VALUES (?, ?, ?, ?)',
-                     (auteur, titel, kaft_foto_url, is_uitgeleend))
-        conn.commit()
-        boek_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
-        conn.close()
-        return redirect(url_for('catalogusfrontend.boek_detail', boek_id=boek_id))
-    return render_template('boek_toevoegen.html')
+# -- Verwijder deze route. De "toevoegen" логика hoort thuis in boektoevoegenfrontend --
+#@catalogusfrontend_bp.route('/boek/nieuw', methods=['GET', 'POST'])
+#def boek_toevoegen():
+#    ...  # Verwijderd om verwarring te voorkomen; gebruik blueprint boektoevoegenfrontend
+
+# -- Pas catalogus.html template aan zodat "Toevoegen" verwijst naar boektoevoegenfrontend.toevoegen --
 
 @catalogusfrontend_bp.route('/boek/<int:boek_id>/aanpassen', methods=['GET', 'POST'])
 def boek_aanpassen(boek_id):
