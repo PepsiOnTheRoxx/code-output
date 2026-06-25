@@ -1,35 +1,27 @@
 class DatabaseSetupException(Exception):
-    """Algemene fout tijdens DatabaseSetup."""
+    """Basisexceptie voor alle DatabaseSetup gerelateerde fouten."""
     pass
 
-class DatabaseConnectionException(DatabaseSetupException):
-    """Fout bij het verbinden met de SQLite database."""
+class DatabaseInitializationError(DatabaseSetupException):
+    """Fout bij initialiseren van de database (bibliotheek.db)."""
     pass
 
-class DatabaseInitializationException(DatabaseSetupException):
-    """Fout bij het initialiseren van de database."""
+class TableCreationError(DatabaseSetupException):
+    """Fout bij het aanmaken van de Boek tabel."""
     pass
 
-class TableCreationException(DatabaseSetupException):
-    """Fout bij het aanmaken van de 'Boek' tabel."""
+class MissingAttributeError(DatabaseSetupException):
+    """Fout: verplicht attribuut ontbreekt in de Boek tabel."""
     pass
 
-class MissingAttributeException(DatabaseSetupException):
-    """Een vereist attribuut ontbreekt in het metamodel."""
+class InvalidAttributeTypeError(DatabaseSetupException):
+    """Fout: onjuist datatype gevonden voor attribuut in de Boek tabel."""
     pass
 
-class AttributeTypeMismatchException(DatabaseSetupException):
-    """Een attribuut heeft een onjuiste of incompatibele datatypedefinitie."""
+class DatabaseConnectionError(DatabaseSetupException):
+    """Fout bij het maken van connectie met de database."""
     pass
 
-class InvalidDateFormatException(DatabaseSetupException):
-    """Een datumattribuut heeft een ongeldig formaat."""
-    pass
-
-class DuplicateTableException(DatabaseSetupException):
-    """De 'Boek' tabel bestaat al in de database."""
-    pass
-
-class DatabaseFileAccessException(DatabaseSetupException):
-    """Fout bij toegang tot het databasebestand."""
+class MetadataMismatchError(DatabaseSetupException):
+    """Onverwachte verschillen tussen het datamodel en de database."""
     pass
