@@ -1,8 +1,10 @@
 from flask import Flask, redirect, url_for
 from src.api.catalogus_api import register_routes as register_catalogus_routes
 from src.api.boek_api import register_routes as register_boek_routes
-from src.frontend.catalogus_frontend import catalogus_blueprint
-from src.frontend.boek_frontend import boek_blueprint
+from src.frontend.catalogusfrontend import catalogusfrontend_bp
+from src.frontend.boekaanpassenfrontend import boekaanpassenfrontend_bp
+from src.frontend.boekdetailfrontend import boekdetailfrontend_bp
+from src.frontend.boektoevoegenfrontend import boektoevoegenfrontend_bp
 from src.db import init_db
 from src.seeder import seed_db
 
@@ -19,13 +21,15 @@ def create_app():
     register_boek_routes(app)
 
     # Registreer frontend Blueprints
-    app.register_blueprint(catalogus_blueprint)
-    app.register_blueprint(boek_blueprint)
+    app.register_blueprint(catalogusfrontend_bp)
+    app.register_blueprint(boekaanpassenfrontend_bp)
+    app.register_blueprint(boekdetailfrontend_bp)
+    app.register_blueprint(boektoevoegenfrontend_bp)
 
     # Root redirect naar cataloguspagina
     @app.route("/")
     def home():
-        return redirect(url_for("catalogus.catalogus_pagina"))
+        return redirect(url_for("catalogusfrontend.catalogus"))
 
     return app
 

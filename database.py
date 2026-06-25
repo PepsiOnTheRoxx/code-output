@@ -19,6 +19,7 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS boeken ("
             "auteur TEXT,"
             "beschrijving TEXT,"
+            "titel TEXT,"
             "isbn TEXT,"
             "publicatiedatum DATE,"
             "kaft_foto_url TEXT,"
