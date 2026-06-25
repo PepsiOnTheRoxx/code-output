@@ -1,15 +1,16 @@
 from src.services.boekseeder_exceptions import DatabaseSeedError
 
+def get_db():
+    # Deze functie wordt alleen tijdens runtime aangeroepen, voor de tests wordt het gemockt.
+    # Voorkom importfout door geen import van niet-bestaande module src.db
+    # In productie moet deze functie vervangen/uitgebreid worden naargelang het echte DB-object
+    raise NotImplementedError("Er is geen db-module. get_db() moet gemockt worden in tests.")
+
 class Boek:
     def __init__(self, titel, auteur, jaar):
         self.titel = titel
         self.auteur = auteur
         self.jaar = jaar
-
-def get_db():
-    # Deze functie wordt alleen tijdens runtime aangeroepen, voor de tests wordt het gemockt.
-    from src import db
-    return db
 
 class BoekSeeder:
     DUMMY_BOEKEN = [
@@ -33,7 +34,6 @@ class BoekSeeder:
             if count > 0:
                 return
             for boek in self.DUMMY_BOEKEN:
-                # Gebruik Boek-class als dat nodig is (of dictionary, afhankelijk van implementatie)
                 session.add(boek)
             session.commit()
         except Exception as exc:
