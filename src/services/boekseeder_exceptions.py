@@ -2,6 +2,10 @@ class BoekSeederException(Exception):
     """Base exception for BoekSeeder component."""
     pass
 
+class BoekSeedingException(Exception):
+    """Exception for BoekSeeder failures for the tests."""
+    pass
+
 class BoekSeederDatabaseError(BoekSeederException):
     """Raised when a database error occurs during seeding."""
     pass
