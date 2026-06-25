@@ -1,4 +1,4 @@
-from src.services.databaseseeder_exceptions import DatabaseSeedingError
+from src.services.databaseseeder_exceptions import DatabaseSeederSeedError
 
 class DatabaseSeeder:
     def __init__(self, db_connection):
@@ -27,6 +27,6 @@ class DatabaseSeeder:
             self.db_connection.commit()
         except Exception as e:
             self.db_connection.rollback()
-            raise DatabaseSeedingError(str(e))
+            raise DatabaseSeederSeedError(str(e))
         finally:
             cursor.close()
