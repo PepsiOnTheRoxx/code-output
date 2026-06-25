@@ -1,10 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekcreateservice import BoekCreateService
-from src.services.boekcreateservice_exceptions import BoekCreateException
+from src.services.boekcreateservice_exceptions import BoekCreateServiceException
 
 def test_create_boek_success():
     mock_db = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.lastrowid = 42
+    mock_db.execute.return_value = mock_cursor
     boek_data = {
         'titel': 'De Donkere Kamer',
         'auteur': 'Willem Frederik Hermans',
@@ -21,6 +24,7 @@ def test_create_boek_success():
         assert result is not None
         assert isinstance(result, dict)
         assert result['titel'] == 'De Donkere Kamer'
+        assert result['id'] == 42
         mock_db.execute.assert_called()
 
 def test_create_boek_missing_required_attribute():
@@ -36,7 +40,7 @@ def test_create_boek_missing_required_attribute():
     }
     with patch('src.services.boekcreateservice.get_db', return_value=mock_db):
         service = BoekCreateService()
-        with pytest.raises(BoekCreateException):
+        with pytest.raises(BoekCreateServiceException):
             service.create_boek(boek_data)
 
 def test_create_boek_invalid_isbn_format():
@@ -53,7 +57,7 @@ def test_create_boek_invalid_isbn_format():
     }
     with patch('src.services.boekcreateservice.get_db', return_value=mock_db):
         service = BoekCreateService()
-        with pytest.raises(BoekCreateException):
+        with pytest.raises(BoekCreateServiceException):
             service.create_boek(boek_data)
 
 def test_create_boek_duplicate_isbn():
@@ -71,7 +75,7 @@ def test_create_boek_duplicate_isbn():
     mock_db.execute.side_effect = Exception("UNIQUE constraint failed: boeken.isbn")
     with patch('src.services.boekcreateservice.get_db', return_value=mock_db):
         service = BoekCreateService()
-        with pytest.raises(BoekCreateException):
+        with pytest.raises(BoekCreateServiceException):
             service.create_boek(boek_data)
 
 def test_create_boek_db_failure():
@@ -89,5 +93,5 @@ def test_create_boek_db_failure():
     mock_db.execute.side_effect = Exception("Database connection lost")
     with patch('src.services.boekcreateservice.get_db', return_value=mock_db):
         service = BoekCreateService()
-        with pytest.raises(BoekCreateException):
+        with pytest.raises(BoekCreateServiceException):
             service.create_boek(boek_data)

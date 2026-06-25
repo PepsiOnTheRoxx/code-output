@@ -69,7 +69,10 @@ class BoekCreateService:
                 raise BoekCreateServiceDatabaseError(error_msg)
             # Return het aangemaakte boek als dict (met id als die beschikbaar is)
             boek = dict(boek_data)
-            boek['id'] = cursor.lastrowid
+            if hasattr(cursor, 'lastrowid'):
+                boek['id'] = cursor.lastrowid
+            else:
+                boek['id'] = None
             return boek
         except (
             BoekCreateServiceMissingAttributeError,
