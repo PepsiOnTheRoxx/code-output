@@ -1,7 +1,9 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.services.boekserviceseeder import BoekServiceSeeder
-from src.services.boekserviceseeder_exceptions import TableAlreadyExistsException, DatabaseSeedException
+from src.services.boekserviceseeder import BoekServiceSeeder, TableAlreadyExistsException, DatabaseSeedException
+
+# Helper: match elk execute van create + MINIMUM_DUMMY_BOOKS inserts
+DUMMY_INSERTS = [None] * 5  # 5 = default MINIMUM_DUMMY_BOOKS
 
 def test_create_and_seed_table_executes_correct_queries():
     db_connection = MagicMock()
@@ -9,7 +11,7 @@ def test_create_and_seed_table_executes_correct_queries():
     db_connection.cursor.return_value = cursor
 
     seeder = BoekServiceSeeder(db_connection)
-    cursor.execute.side_effect = [None, None]
+    cursor.execute.side_effect = [None] + DUMMY_INSERTS
     cursor.fetchall.return_value = []
 
     seeder.create_and_seed_table()
@@ -56,7 +58,8 @@ def test_create_and_seed_table_inserts_min_5_books():
     db_connection.cursor.return_value = cursor
 
     seeder = BoekServiceSeeder(db_connection)
-    cursor.execute.side_effect = [None, None]
+    # Create + 5 dummy insert (side_effect)
+    cursor.execute.side_effect = [None] + DUMMY_INSERTS  # supports 6 calls
     cursor.fetchall.return_value = []
 
     with patch("src.services.boekserviceseeder.MINIMUM_DUMMY_BOOKS", 5):
@@ -70,7 +73,7 @@ def test_create_and_seed_table_commits_after_success():
     db_connection.cursor.return_value = cursor
 
     seeder = BoekServiceSeeder(db_connection)
-    cursor.execute.side_effect = [None, None]
+    cursor.execute.side_effect = [None] + DUMMY_INSERTS
     cursor.fetchall.return_value = []
 
     seeder.create_and_seed_table()
