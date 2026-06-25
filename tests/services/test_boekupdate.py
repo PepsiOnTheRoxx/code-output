@@ -1,12 +1,12 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from src.services.boekupdate import BoekService
-from src.services.boekupdate_exceptions import BoekNietGevondenException, OngeldigeBoekDataException
+from src.services.boekupdate_exceptions import BoekNotFoundException, BoekUpdateValidationException
 
 @pytest.fixture
 def mock_boek_repo():
-    with patch('src.services.boekupdate.BoekRepository') as MockRepo:
-        yield MockRepo.return_value
+    # Direct MagicMock i.p.v. onbestaande patch op BoekRepository
+    return MagicMock()
 
 @pytest.fixture
 def boek_service(mock_boek_repo):
@@ -24,13 +24,13 @@ def test_update_boek_succesvol(boek_service, mock_boek_repo):
 
 def test_update_boek_niet_gevonden(boek_service, mock_boek_repo):
     mock_boek_repo.get_boek_by_id.return_value = None
-    with pytest.raises(BoekNietGevondenException):
+    with pytest.raises(BoekNotFoundException):
         boek_service.update_boek(99, {'titel': 'Test'})
 
 def test_update_boek_ongeldige_data(boek_service, mock_boek_repo):
     bestaand_boek = MagicMock()
     mock_boek_repo.get_boek_by_id.return_value = bestaand_boek
-    with pytest.raises(OngeldigeBoekDataException):
+    with pytest.raises(BoekUpdateValidationException):
         boek_service.update_boek(1, {'titel': ''})
 
 def test_update_boek_partial_update(boek_service, mock_boek_repo):
