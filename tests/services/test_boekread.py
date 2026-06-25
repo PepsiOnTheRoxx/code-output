@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekread import BoekService
-from src.services.boekread_exceptions import BoekNotFoundException, DatabaseException
+from src.services.boekread_exceptions import BoekNotFoundException, BoekReadDatabaseException
 
 @pytest.fixture
 def boek_data():
@@ -35,9 +35,9 @@ def test_get_boek_by_id_not_found():
 def test_get_boek_by_id_database_error():
     with patch("src.services.boekread.BoekRepository") as MockRepo:
         instance = MockRepo.return_value
-        instance.get_by_id.side_effect = DatabaseException("Database fout")
+        instance.get_by_id.side_effect = BoekReadDatabaseException("Database fout")
         service = BoekService()
-        with pytest.raises(DatabaseException):
+        with pytest.raises(BoekReadDatabaseException):
             service.get_boek_by_id(1)
 
 def test_get_all_boeken_success(boek_data):
@@ -63,7 +63,7 @@ def test_get_all_boeken_empty():
 def test_get_all_boeken_database_error():
     with patch("src.services.boekread.BoekRepository") as MockRepo:
         instance = MockRepo.return_value
-        instance.get_all.side_effect = DatabaseException("Database fout")
+        instance.get_all.side_effect = BoekReadDatabaseException("Database fout")
         service = BoekService()
-        with pytest.raises(DatabaseException):
+        with pytest.raises(BoekReadDatabaseException):
             service.get_all_boeken()

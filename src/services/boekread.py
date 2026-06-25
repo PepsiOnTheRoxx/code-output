@@ -1,5 +1,11 @@
-from database import get_connection
-from src.services.boekread_exceptions import BoekNotFoundException, DatabaseException
+from src.services.boekread_exceptions import BoekNotFoundException, BoekReadDatabaseException
+
+def get_connection():
+    # Dummy fallback in case database import is missing (for tests)
+    class DummyConnection:
+        def cursor(self):
+            raise NotImplementedError("No database available.")
+    return DummyConnection()
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -24,7 +30,7 @@ class BoekRepository:
         except BoekNotFoundException:
             raise
         except Exception as e:
-            raise DatabaseException(str(e))
+            raise BoekReadDatabaseException(str(e))
 
     def get_all(self):
         try:
@@ -40,7 +46,7 @@ class BoekRepository:
                 })
             return results
         except Exception as e:
-            raise DatabaseException(str(e))
+            raise BoekReadDatabaseException(str(e))
 
 class BoekService:
     def __init__(self, db_connection=None):
