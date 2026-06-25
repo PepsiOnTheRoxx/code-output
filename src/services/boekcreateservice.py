@@ -73,26 +73,29 @@ class BoekCreateService:
             self.repo = repository
         else:
             self.repo = BoekRepository(db_connection or get_connection())
+
     def create_boek(self, boek_data):
-        # Validation
-        if not boek_data.get('titel') or not isinstance(boek_data['titel'], str):
+        titel = boek_data.get('titel')
+        auteur = boek_data.get('auteur')
+        isbn = boek_data.get('isbn')
+        if not (titel and isinstance(titel, str) and titel.strip()):
             raise InvalidBoekDataException("Titel is verplicht en mag niet leeg zijn")
-        if not boek_data.get('auteur') or not isinstance(boek_data['auteur'], str):
+        if not (auteur and isinstance(auteur, str) and auteur.strip()):
             raise InvalidBoekDataException("Auteur is verplicht en mag niet leeg zijn")
-        if not boek_data.get('isbn') or not isinstance(boek_data['isbn'], str):
+        if not (isbn and isinstance(isbn, str) and isbn.strip()):
             raise InvalidBoekDataException("ISBN is verplicht en mag niet leeg zijn")
-        if self.repo.exists_by_isbn(boek_data['isbn']):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
-        fill_data = {
-            'auteur': boek_data.get('auteur'),
-            'beschrijving': boek_data.get('beschrijving'),
-            'is_uitgeleend': boek_data.get('is_uitgeleend', 0),
-            'isbn': boek_data.get('isbn'),
-            'kaft_foto_url': boek_data.get('kaft_foto_url'),
-            'publicatiedatum': boek_data.get('publicatiedatum'),
-            'titel': boek_data.get('titel'),
-            'uitgeleend_datum': boek_data.get('uitgeleend_datum'),
-            'uitgeleend_max_tot': boek_data.get('uitgeleend_max_tot'),
-            'jaar': boek_data.get('jaar')
-        }
-        return self.repo.add(**fill_data)
+        if self.repo.exists_by_isbn(isbn):
+            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al")
+
+        return self.repo.add(
+            auteur=auteur,
+            beschrijving=boek_data.get('beschrijving'),
+            is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+            isbn=isbn,
+            kaft_foto_url=boek_data.get('kaft_foto_url'),
+            publicatiedatum=boek_data.get('publicatiedatum'),
+            titel=titel,
+            uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
+            jaar=boek_data.get('jaar'),
+        )
