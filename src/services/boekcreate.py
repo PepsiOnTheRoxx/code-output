@@ -1,4 +1,4 @@
-from src.services.boekcreate_exceptions import BoekAlBestaatException, DatabaseException
+from src.services.boekcreate_exceptions import BoekCreateDuplicateException, BoekCreateDatabaseException
 
 class BoekService:
     def __init__(self, db_connection):
@@ -22,7 +22,7 @@ class BoekService:
                 "SELECT 1 FROM boeken WHERE isbn = ?", (isbn,)
             )
             if cursor.fetchone():
-                raise BoekAlBestaatException("Boek met dit ISBN bestaat al.")
+                raise BoekCreateDuplicateException("Boek met dit ISBN bestaat al.")
             cursor.execute(
                 "INSERT INTO boeken (isbn, titel, auteur, uitgever, uitgiftejaar, genre, taal, pagina_aantal, beschrijving) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
@@ -38,7 +38,7 @@ class BoekService:
                 )
             )
             self.db_connection.commit()
-        except BoekAlBestaatException:
+        except BoekCreateDuplicateException:
             raise
         except Exception as e:
-            raise DatabaseException(str(e))
+            raise BoekCreateDatabaseException(str(e))

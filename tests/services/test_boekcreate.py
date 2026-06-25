@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlBestaatException, DatabaseException
+from src.services.boekcreate_exceptions import BoekCreateDuplicateException, BoekCreateDatabaseException
 
 @pytest.fixture
 def db_connection():
@@ -59,10 +59,9 @@ def test_boek_create_duplicate_raises_exception(db_connection, boek_data):
     mock_cursor.fetchone.return_value = (1,)  # Boek bestaat al
 
     service = BoekService(db_connection)
-    with pytest.raises(BoekAlBestaatException):
+    with pytest.raises(BoekCreateDuplicateException):
         service.create_boek(**boek_data)
 
-    # Check existence-query
     mock_cursor.execute.assert_called_with(
         "SELECT 1 FROM boeken WHERE isbn = ?", (boek_data["isbn"],)
     )
@@ -75,7 +74,7 @@ def test_boek_create_db_error_raises_exception(db_connection, boek_data):
     mock_cursor.execute.side_effect = [None, Exception("DB insert error")]
 
     service = BoekService(db_connection)
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekCreateDatabaseException):
         service.create_boek(**boek_data)
 
     db_connection.commit.assert_not_called()
