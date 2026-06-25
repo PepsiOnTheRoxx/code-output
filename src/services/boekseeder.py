@@ -1,4 +1,4 @@
-from src.services.boekseeder_exceptions import BoekSeederDatabaseError
+from src.services.boekseeder_exceptions import BoekSeederDatabaseException
 
 class BoekSeeder:
     def __init__(self, db_connection):
@@ -24,4 +24,4 @@ class BoekSeeder:
             self.db_connection.commit()
         except Exception as e:
             self.db_connection.rollback()
-            raise BoekSeederDatabaseError(str(e))
+            raise BoekSeederDatabaseException(str(e))

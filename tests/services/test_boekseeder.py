@@ -1,8 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekseeder import BoekSeeder
-from src.services.boekseeder_exceptions import BoekSeederDatabaseError
-
+from src.services.boekseeder_exceptions import BoekSeederDatabaseException
 
 def test_seeder_voegt_minimaal_vijf_boeken_toe():
     db_conn = MagicMock()
@@ -21,7 +20,6 @@ def test_seeder_voegt_minimaal_vijf_boeken_toe():
     assert len(execute_calls) >= 5
     assert db_conn.commit.called
 
-
 def test_seeder_commit_wordt_aangeroepen():
     db_conn = MagicMock()
     cursor = MagicMock()
@@ -33,7 +31,6 @@ def test_seeder_commit_wordt_aangeroepen():
 
     assert db_conn.commit.called
 
-
 def test_seeder_rollback_en_exception_bij_db_fout():
     db_conn = MagicMock()
     cursor = MagicMock()
@@ -41,6 +38,6 @@ def test_seeder_rollback_en_exception_bij_db_fout():
     cursor.execute.side_effect = Exception("DB fout")
 
     seeder = BoekSeeder(db_conn)
-    with pytest.raises(BoekSeederDatabaseError):
+    with pytest.raises(BoekSeederDatabaseException):
         seeder.seed()
     assert db_conn.rollback.called
