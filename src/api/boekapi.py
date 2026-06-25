@@ -1,25 +1,17 @@
 from flask import Blueprint, request, jsonify
-import sqlite3
 from src.api.boekapi_exceptions import (
     BoekNotFoundException,
     BoekValidationException,
-    BoekAPIException,
 )
-# Stel dat de BoekService deze interface heeft:
-# class BoekService:
-#     def __init__(self, db_conn): ...
-#     def get_all_boeken(self): ...
-#     def get_boek_by_id(self, boek_id): ...
-#     def create_boek(self, data): ...
-#     def update_boek(self, boek_id, data): ...
-#     def delete_boek(self, boek_id): ...
-from src.api.boekservice import BoekService
 
-boek_blueprint = Blueprint("boek", __name__)
+def create_boek_blueprint(service=None):
+    boek_blueprint = Blueprint("boek", __name__)
 
-def register_routes(app):
-    db_conn = sqlite3.connect("boeken.db", check_same_thread=False)
-    service = BoekService(db_conn)
+    if service is None:
+        import sqlite3
+        from src.api.boekservice import BoekService
+        db_conn = sqlite3.connect("boeken.db", check_same_thread=False)
+        service = BoekService(db_conn)
 
     @boek_blueprint.route("/boeken", methods=["GET"])
     def get_all_boeken():
@@ -62,4 +54,8 @@ def register_routes(app):
         except BoekNotFoundException:
             return jsonify({"message": "Boek not found"}), 404
 
-    app.register_blueprint(boek_blueprint)
+    return boek_blueprint
+
+def register_routes(app, service=None):
+    # Nu wordt elke keer een nieuwe blueprint met nieuwe routes aangemaakt!
+    app.register_blueprint(create_boek_blueprint(service=service))
