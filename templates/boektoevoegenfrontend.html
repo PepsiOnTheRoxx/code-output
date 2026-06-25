@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Boek toevoegen</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <a href="{{ url_for('catalogusfrontend.index') }}" class="btn btn-link">&laquo; Terug naar catalogus</a>
+    <h2>Boek toevoegen</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label for="titel" class="form-label">Titel</label>
+            <input type="text" class="form-control" id="titel" name="titel" required>
+        </div>
+        <div class="mb-3">
+            <label for="auteur" class="form-label">Auteur</label>
+            <input type="text" class="form-control" id="auteur" name="auteur" required>
+        </div>
+        <div class="mb-3">
+            <label for="kaft_url" class="form-label">Kaft afbeelding (URL)</label>
+            <input type="url" class="form-control" id="kaft_url" name="kaft_url" required>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Uitleenstatus</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="Beschikbaar">Beschikbaar</option>
+                <option value="Uitgeleend">Uitgeleend</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Opslaan</button>
+    </form>
+</div>
+</body>
+</html>
