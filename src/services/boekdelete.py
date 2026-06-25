@@ -26,21 +26,21 @@ class BoekService:
 
     def haal_boek_op(self, boek_id):
         try:
-            with self.db_connection.cursor() as cursor:
-                cursor.execute("SELECT id, titel FROM Boek WHERE id = ?", (boek_id,))
-                row = cursor.fetchone()
-                if row:
-                    return {"id": row[0], "titel": row[1]}
-                return None
+            cursor = self.db_connection.cursor()
+            cursor.execute("SELECT rowid, titel FROM boeken WHERE rowid = ?", (boek_id,))
+            row = cursor.fetchone()
+            if row:
+                return {"id": row[0], "titel": row[1]}
+            return None
         except Exception as ex:
             raise BoekDeleteException(f"Fout bij ophalen boek: {ex}")
 
     def verwijder_boek_db(self, boek_id):
         try:
-            with self.db_connection.cursor() as cursor:
-                cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
-                if cursor.rowcount == 0:
-                    raise BoekDeleteMisluktException(f"Boek met id {boek_id} kon niet verwijderd worden")
+            cursor = self.db_connection.cursor()
+            cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_id,))
+            if cursor.rowcount == 0:
+                raise BoekDeleteMisluktException(f"Boek met id {boek_id} kon niet verwijderd worden")
             self.db_connection.commit()
             return True
         except (BoekDeleteMisluktException, OngeldigeBoekIdException):
