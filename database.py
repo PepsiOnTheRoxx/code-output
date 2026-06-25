@@ -1,19 +1,11 @@
 import os
 import sqlite3
-from database_exceptions import DatabaseSetupError
+from database_exceptions import DatabaseSetupException
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'bibliotheek.db')
 
-def get_connection():
-    return sqlite3.connect(DB_PATH)
-
-def init_db():
-    conn = None
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS boeken (
+# Definieer de oorspronkelijke CREATE TABLE-statement exact zoals in de tests
+CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
             auteur TEXT,
             beschrijving TEXT,
             isbn TEXT,
@@ -23,12 +15,21 @@ def init_db():
             uitgeleend_datum DATE,
             uitgeleend_max_tot DATE
         )"""
-        )
+
+def get_connection():
+    return sqlite3.connect(DB_PATH)
+
+def init_db():
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(CREATE_TABEL_SQL)
         conn.commit()
     except Exception as e:
         if conn:
             conn.rollback()
-        raise DatabaseSetupError from e
+        raise DatabaseSetupException from e
     finally:
         if conn:
             conn.close()
@@ -42,23 +43,12 @@ class DatabaseSetup:
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            cursor.execute(
-                """CREATE TABLE IF NOT EXISTS boeken (
-                auteur TEXT,
-                beschrijving TEXT,
-                isbn TEXT,
-                publicatiedatum DATE,
-                kaft_foto_url TEXT,
-                is_uitgeleend BOOLEAN,
-                uitgeleend_datum DATE,
-                uitgeleend_max_tot DATE
-            )"""
-            )
+            cursor.execute(CREATE_TABEL_SQL)
             conn.commit()
         except Exception as e:
             if conn:
                 conn.rollback()
-            raise DatabaseSetupError from e
+            raise DatabaseSetupException from e
         finally:
             if conn:
                 conn.close()

@@ -1,7 +1,18 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 from database import DatabaseSetup
-from database_exceptions import DatabaseSetupError
+from database_exceptions import DatabaseSetupException
+
+CREATE_TABEL_SQL = """CREATE TABLE IF NOT EXISTS boeken (
+            auteur TEXT,
+            beschrijving TEXT,
+            isbn TEXT,
+            publicatiedatum DATE,
+            kaft_foto_url TEXT,
+            is_uitgeleend BOOLEAN,
+            uitgeleend_datum DATE,
+            uitgeleend_max_tot DATE
+        )"""
 
 @patch("database.sqlite3.connect")
 def test_initialiseert_db_en_maakt_boek_tabel_aan(mock_connect):
@@ -15,18 +26,7 @@ def test_initialiseert_db_en_maakt_boek_tabel_aan(mock_connect):
 
     mock_connect.assert_called_once_with("bibliotheek.db")
     mock_conn.cursor.assert_called_once()
-    mock_cursor.execute.assert_any_call(
-        """CREATE TABLE IF NOT EXISTS boeken (
-            auteur TEXT,
-            beschrijving TEXT,
-            isbn TEXT,
-            publicatiedatum DATE,
-            kaft_foto_url TEXT,
-            is_uitgeleend BOOLEAN,
-            uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
-        )"""
-    )
+    mock_cursor.execute.assert_any_call(CREATE_TABEL_SQL)
     mock_conn.commit.assert_called_once()
     mock_conn.close.assert_called_once()
 
@@ -35,7 +35,7 @@ def test_fout_bij_verbinden_met_db_raised_exception(mock_connect):
     mock_connect.side_effect = Exception("Disk error")
     db_setup = DatabaseSetup("bibliotheek.db")
 
-    with pytest.raises(DatabaseSetupError):
+    with pytest.raises(DatabaseSetupException):
         db_setup.initialiseer_database()
 
 @patch("database.sqlite3.connect")
@@ -48,7 +48,7 @@ def test_fout_bij_tabel_aanmaken_rollback_and_raise(mock_connect):
 
     db_setup = DatabaseSetup("bibliotheek.db")
 
-    with pytest.raises(DatabaseSetupError):
+    with pytest.raises(DatabaseSetupException):
         db_setup.initialiseer_database()
     mock_conn.rollback.assert_called_once()
     mock_conn.close.assert_called_once()
@@ -65,30 +65,5 @@ def test_initialiseren_db_is_idempotent(mock_connect):
     db_setup.initialiseer_database()
 
     assert mock_cursor.execute.call_count == 2
-    calls = [
-        (
-            """CREATE TABLE IF NOT EXISTS boeken (
-            auteur TEXT,
-            beschrijving TEXT,
-            isbn TEXT,
-            publicatiedatum DATE,
-            kaft_foto_url TEXT,
-            is_uitgeleend BOOLEAN,
-            uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
-        )""",
-        ),
-        (
-            """CREATE TABLE IF NOT EXISTS boeken (
-            auteur TEXT,
-            beschrijving TEXT,
-            isbn TEXT,
-            publicatiedatum DATE,
-            kaft_foto_url TEXT,
-            is_uitgeleend BOOLEAN,
-            uitgeleend_datum DATE,
-            uitgeleend_max_tot DATE
-        )""",
-        ),
-    ]
-    mock_cursor.execute.assert_has_calls(calls)
+    expected_calls = [call(CREATE_TABEL_SQL), call(CREATE_TABEL_SQL)]
+    mock_cursor.execute.assert_has_calls(expected_calls)
