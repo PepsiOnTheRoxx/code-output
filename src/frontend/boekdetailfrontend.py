@@ -13,18 +13,19 @@ def get_db():
 @boekdetailfrontend_bp.route('/boek/<int:boek_id>')
 def detail(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE id=?', (boek_id,)).fetchone()
+    # Gebruik rowid als id, want id-kolom bestaat niet in boeken schema
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid=?', (boek_id,)).fetchone()
     if boek is None:
         conn.close()
         # Raise custom exception for test and catch
         raise BoekNietGevonden()
-    uitleen = conn.execute('SELECT * FROM uitleen WHERE boek_id=?', (boek_id,)).fetchone()
+    # Verwijder uitleen-query, want tabel uitleen is niet in het schema beschreven
     conn.close()
     # Render ALL boek attribute fields
     return render_template(
         'boek_detail.html',
         boek=boek,
-        uitleen=uitleen,
+        uitleen=None,  # Geen uitleen info, want tabel ontbreekt in schema
         aanpassen_url=url_for('boekaanpassenfrontend.aanpassen', boek_id=boek_id),
         catalogus_url=url_for('catalogusfrontend.index')
     )
