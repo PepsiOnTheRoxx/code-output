@@ -12,18 +12,23 @@ def get_db():
 @boekaanpassenfrontend_bp.route('/boek/<int:boek_id>/aanpassen', methods=['GET', 'POST'])
 def aanpassen(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE id = ?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid = ?', (boek_id,)).fetchone()
     if not boek:
         conn.close()
         return render_template('404.html'), 404
     if request.method == 'POST':
+        # Alleen kolommen in het schema updaten
         titel = request.form['titel']
         auteur = request.form['auteur']
-        jaar = request.form['jaar']
-        uitgever = request.form['uitgever']
-        uitleen_status = request.form.get('uitleen_status', 'beschikbaar')
-        conn.execute('''UPDATE boeken SET titel=?, auteur=?, jaar=?, uitgever=?, uitleen_status=? WHERE id=?''',
-                     (titel, auteur, jaar, uitgever, uitleen_status, boek_id))
+        beschrijving = request.form.get('beschrijving', '')
+        is_uitgeleend = request.form.get('is_uitgeleend', 0)
+        isbn = request.form['isbn']
+        kaft_foto_url = request.form.get('kaft_foto_url', '')
+        publicatiedatum = request.form.get('publicatiedatum', '')
+        uitgeleend_datum = request.form.get('uitgeleend_datum', None)
+        uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', None)
+        conn.execute('''UPDATE boeken SET titel=?, auteur=?, beschrijving=?, is_uitgeleend=?, isbn=?, kaft_foto_url=?, publicatiedatum=?, uitgeleend_datum=?, uitgeleend_max_tot=? WHERE rowid=?''',
+                     (titel, auteur, beschrijving or None, is_uitgeleend, isbn, kaft_foto_url or None, publicatiedatum or None, uitgeleend_datum, uitgeleend_max_tot, boek_id))
         conn.commit()
         conn.close()
         return redirect(url_for('boekaanpassenfrontend.detail', boek_id=boek_id))
@@ -33,7 +38,7 @@ def aanpassen(boek_id):
 @boekaanpassenfrontend_bp.route('/boek/<int:boek_id>')
 def detail(boek_id):
     conn = get_db()
-    boek = conn.execute('SELECT * FROM boeken WHERE id = ?', (boek_id,)).fetchone()
+    boek = conn.execute('SELECT rowid as id, * FROM boeken WHERE rowid = ?', (boek_id,)).fetchone()
     conn.close()
     if not boek:
         return render_template('404.html'), 404
