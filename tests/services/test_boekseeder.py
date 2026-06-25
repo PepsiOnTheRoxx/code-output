@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
 from src.services.boekseeder import BoekSeeder
-from src.services.boekseeder_exceptions import DatabaseSetupException, DummyDataInsertException
+from src.services.boekseeder_exceptions import DatabaseCreationError, DummyBooksInsertionError
 
 def test_boekseeder_create_tables_and_insert_dummy_books_success():
     mock_conn = MagicMock()
@@ -10,6 +10,7 @@ def test_boekseeder_create_tables_and_insert_dummy_books_success():
     mock_cursor.execute.return_value = None
     mock_cursor.fetchall.side_effect = [
         [],  # No tables exist initially
+        [(0,)],  # boeken-table empty
     ]
     mock_cursor.rowcount = 1
 
@@ -34,11 +35,7 @@ def test_boekseeder_tables_already_exist_inserts_dummy_data():
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
     # 'boeken' table bestaat al
-    mock_cursor.execute.side_effect = [
-        None,  # table exists check
-        None,  # count dummy boeken
-        None,  # insert dummy boeken
-    ]
+    mock_cursor.execute.side_effect = None
     mock_cursor.fetchall.side_effect = [
         [('boeken',)],
         [(0,)],
@@ -69,35 +66,35 @@ def test_boekseeder_raises_on_database_error():
     mock_cursor.execute.side_effect = Exception("DB Error")
 
     seeder = BoekSeeder(mock_conn)
-    with pytest.raises(DatabaseSetupException):
+    with pytest.raises(DatabaseCreationError):
         seeder.seed()
 
 def test_boekseeder_raises_on_dummy_data_insert_error():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-    mock_cursor.execute.side_effect = [
-        None,  # table exists check
-        None,  # get count
-        Exception("Insert error"),  # insert fails
-    ]
+    # 1e call: table-exists check, 2e call: get count, 3e call (insert): fail
+    calls = iter([None, None, Exception("Insert error")])
+    def exec_side_effect(*args, **kwargs):
+        result = next(calls)
+        if isinstance(result, Exception):
+            raise result
+        return result
+    mock_cursor.execute.side_effect = exec_side_effect
     mock_cursor.fetchall.side_effect = [
         [],        # table bestaat niet
         [(0,)],   # geen rijen
     ]
 
     seeder = BoekSeeder(mock_conn)
-    with pytest.raises(DummyDataInsertException):
+    with pytest.raises(DummyBooksInsertionError):
         seeder.seed()
 
 def test_boekseeder_does_not_insert_if_books_present():
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
     mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-    mock_cursor.execute.side_effect = [
-        None,  # table exists check
-        None,  # get count
-    ]
+    mock_cursor.execute.side_effect = None
     mock_cursor.fetchall.side_effect = [
         [('boeken',)],  # tabel bestaat
         [(10,)],        # er zijn al 10 boeken
