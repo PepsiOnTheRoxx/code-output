@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from database_exceptions import DatabaseInitialisatieFout
+from database_exceptions import DatabaseInitializationError
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'bibliotheek.db')
 
@@ -28,7 +28,7 @@ def init_db():
         cursor.close()
     except Exception as e:
         cursor.close()
-        raise DatabaseInitialisatieFout(str(e))
+        raise DatabaseInitializationError(str(e))
 
 class DatabaseSetup:
     def __init__(self, db_connection):
@@ -54,4 +54,4 @@ class DatabaseSetup:
             cursor.close()
         except Exception as e:
             cursor.close()
-            raise DatabaseInitialisatieFout(str(e))
+            raise DatabaseInitializationError(str(e))

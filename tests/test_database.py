@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from database import DatabaseSetup
-from database_exceptions import DatabaseInitialisatieFout
+from database_exceptions import DatabaseInitializationError
 
 def test_init_initialiseert_cursor():
     mock_conn = MagicMock()
@@ -42,7 +42,7 @@ def test_initialiseer_database_raise_bij_sqlfout():
 
     db_setup = DatabaseSetup(mock_conn)
 
-    with pytest.raises(DatabaseInitialisatieFout):
+    with pytest.raises(DatabaseInitializationError):
         db_setup.initialiseer_database()
     mock_conn.cursor.assert_called_once()
     mock_conn.commit.assert_not_called()
@@ -56,7 +56,7 @@ def test_initialiseer_database_sluit_cursor_bij_exception():
 
     db_setup = DatabaseSetup(mock_conn)
 
-    with pytest.raises(DatabaseInitialisatieFout):
+    with pytest.raises(DatabaseInitializationError):
         db_setup.initialiseer_database()
     mock_cursor.close.assert_called_once()
 
