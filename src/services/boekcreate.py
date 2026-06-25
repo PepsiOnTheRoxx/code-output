@@ -1,7 +1,8 @@
 from src.services.boekcreate_exceptions import (
     BoekAlreadyExistsException,
-    InvalidBoekDataException,
-    DatabaseException,
+    BoekMissingAttributeException,
+    BoekInvalidAttributeException,
+    BoekDatabaseException,
 )
 
 class BoekService:
@@ -21,9 +22,10 @@ class BoekService:
             "prijs"
         ]
         for field in required_fields:
-            if field not in boek_data or boek_data[field] is None:
-                raise InvalidBoekDataException(f">{field}< ontbreekt of is ongeldig")
-
+            if field not in boek_data:
+                raise BoekMissingAttributeException(f">{field}< ontbreekt")
+            if boek_data[field] is None:
+                raise BoekInvalidAttributeException(f">{field}< is ongeldig")
         try:
             cursor = self.db_connection.cursor()
             select_sql = "SELECT 1 FROM boeken WHERE isbn = ?"
@@ -52,7 +54,7 @@ class BoekService:
             self.db_connection.commit()
         except BoekAlreadyExistsException:
             raise
-        except InvalidBoekDataException:
+        except (BoekMissingAttributeException, BoekInvalidAttributeException):
             raise
         except Exception as ex:
-            raise DatabaseException(f"Database error: {ex}") from ex
+            raise BoekDatabaseException(f"Database error: {ex}") from ex

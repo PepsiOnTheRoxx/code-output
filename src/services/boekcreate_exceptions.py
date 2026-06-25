@@ -15,7 +15,7 @@ class BoekAlreadyExistsException(BoekCreateException):
     pass
 
 class BoekInvalidAttributeException(BoekValidationException):
-    """Raised when a Boek attribute is invalid."""
+    """Raised when a Boek attribute is invalid (e.g. None)."""
     pass
 
 class BoekMissingAttributeException(BoekValidationException):
@@ -25,3 +25,4 @@ class BoekMissingAttributeException(BoekValidationException):
 class BoekPersistenceException(BoekCreateException):
     """Raised when persisting Boek to the database fails."""
     pass
+

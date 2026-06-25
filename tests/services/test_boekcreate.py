@@ -1,7 +1,12 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException, DatabaseException
+from src.services.boekcreate_exceptions import (
+    BoekAlreadyExistsException,
+    BoekMissingAttributeException,
+    BoekInvalidAttributeException,
+    BoekDatabaseException,
+)
 
 def test_create_boek_success():
     db_conn = MagicMock()
@@ -70,7 +75,7 @@ def test_create_boek_already_exists_raises():
     mock_cursor.execute.assert_any_call(select_sql, ("9876543210",))
     db_conn.commit.assert_not_called()
 
-def test_create_boek_invalid_data_raises():
+def test_create_boek_invalid_data_raises_none():
     db_conn = MagicMock()
     service = BoekService(db_conn)
     boek_data = {
@@ -85,7 +90,25 @@ def test_create_boek_invalid_data_raises():
         "prijs": 0
     }
 
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekInvalidAttributeException):
+        service.create_boek(boek_data)
+
+def test_create_boek_invalid_data_raises_missing():
+    db_conn = MagicMock()
+    service = BoekService(db_conn)
+    boek_data = {
+        # "titel" ontbreekt
+        "auteur": "J. Auteur",
+        "isbn": "0000",
+        "jaartal": 2020,
+        "categorie": "NonFictie",
+        "taal": "NL",
+        "uitgever": "EenUitgever",
+        "paginas": 10,
+        "prijs": 0
+    }
+
+    with pytest.raises(BoekMissingAttributeException):
         service.create_boek(boek_data)
 
 def test_create_boek_database_exception_raises():
@@ -93,6 +116,7 @@ def test_create_boek_database_exception_raises():
     mock_cursor = MagicMock()
     db_conn.cursor.return_value = mock_cursor
     mock_cursor.fetchone.return_value = None
+    # First call is select, second call is insert -> error
     mock_cursor.execute.side_effect = [None, Exception("SQL error")]
     db_conn.commit.side_effect = Exception("Commit failed")
 
@@ -109,5 +133,5 @@ def test_create_boek_database_exception_raises():
         "prijs": 22.0
     }
 
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekDatabaseException):
         service.create_boek(boek_data)
