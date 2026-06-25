@@ -23,7 +23,7 @@ class BoekRepository:
         except Exception as e:
             raise BoekDatabaseException(str(e))
 
-    def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None):
+    def add(self, auteur, beschrijving=None, is_uitgeleend=0, isbn=None, kaft_foto_url=None, publicatiedatum=None, titel=None, uitgeleend_datum=None, uitgeleend_max_tot=None, jaar=None):
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
@@ -38,8 +38,8 @@ class BoekRepository:
             )
             self.db_connection.commit()
             boek_id = cursor.lastrowid
-            # Maak een object/dict met ALLE velden van het schema terug
-            return type("Boek", (), {
+            # Maak een object/dict met ALLE velden van het schema terug, plus optioneel 'jaar'
+            attrs = {
                 "id": boek_id,
                 "titel": titel,
                 "auteur": auteur,
@@ -50,7 +50,10 @@ class BoekRepository:
                 "publicatiedatum": publicatiedatum,
                 "uitgeleend_datum": uitgeleend_datum,
                 "uitgeleend_max_tot": uitgeleend_max_tot
-            })()
+            }
+            if jaar is not None:
+                attrs["jaar"] = jaar
+            return type("Boek", (), attrs)()
         except Exception as e:
             raise BoekDatabaseException(str(e))
 
@@ -76,15 +79,17 @@ class BoekCreateService:
             raise InvalidBoekDataException("Missing or invalid boek data.")
         if self.repository.exists_by_isbn(boek_data["isbn"]):
             raise BoekAlreadyExistsException(f"Boek met ISBN {boek_data['isbn']} bestaat al.")
-        # Zorg voor juiste volgorde, optionele velden mogelijk None
-        auteur = boek_data["auteur"]
-        titel = boek_data["titel"]
-        isbn = boek_data["isbn"]
+        # Haal alle schema relevante velden + extra jaar
+        auteur = boek_data.get("auteur")
         beschrijving = boek_data.get("beschrijving")
         is_uitgeleend = boek_data.get("is_uitgeleend", 0)
+        isbn = boek_data.get("isbn")
         kaft_foto_url = boek_data.get("kaft_foto_url")
         publicatiedatum = boek_data.get("publicatiedatum")
+        titel = boek_data.get("titel")
         uitgeleend_datum = boek_data.get("uitgeleend_datum")
         uitgeleend_max_tot = boek_data.get("uitgeleend_max_tot")
-        boek = self.repository.add(auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot)
-        return boek
+        jaar = boek_data.get("jaar")
+        return self.repository.add(
+            auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot, jaar
+        )
