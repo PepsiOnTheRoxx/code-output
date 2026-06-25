@@ -77,24 +77,31 @@ class BoekRepository:
                 jaar=boek_data.get('jaar')
             )
         except Exception as e:
-            raise BoekCreateDatabaseException(f"Database create error: {str(e)}")
+            self.db_connection.rollback()
+            raise BoekCreateDatabaseException(f"Database insert error: {str(e)}")
 
 class BoekService:
     def __init__(self, repository=None):
         self.repository = repository or BoekRepository(get_connection())
 
     def create_boek(self, boek_data):
-        # validation
-        if not boek_data.get('titel') or not isinstance(boek_data.get('titel'), str):
-            raise BoekCreateValidationException("Titel is verplicht en mag niet leeg zijn.")
-        if not boek_data.get('auteur') or not isinstance(boek_data.get('auteur'), str):
-            raise BoekCreateValidationException("Auteur is verplicht en mag niet leeg zijn.")
-        if not boek_data.get('isbn') or not isinstance(boek_data.get('isbn'), str):
-            raise BoekCreateValidationException("ISBN is verplicht en mag niet leeg zijn.")
-        if boek_data.get('jaar') is None:
-            raise BoekCreateValidationException("Jaar is verplicht en mag niet leeg zijn.")
+        # Validatie: verplicht titel, auteur, isbn, jaar
+        titel = boek_data.get('titel')
+        auteur = boek_data.get('auteur')
+        isbn = boek_data.get('isbn')
+        jaar = boek_data.get('jaar')
+        if not titel or not isinstance(titel, str):
+            raise BoekCreateValidationException('Titel is verplicht en mag niet leeg zijn')
+        if not auteur or not isinstance(auteur, str):
+            raise BoekCreateValidationException('Auteur is verplicht en mag niet leeg zijn')
+        if not isbn or not isinstance(isbn, str):
+            raise BoekCreateValidationException('ISBN is verplicht en mag niet leeg zijn')
+        if jaar is None or (not isinstance(jaar, int)):
+            raise BoekCreateValidationException('Jaar is verplicht en moet een getal zijn')
 
-        if self.repository.exists(boek_data.get('isbn')):
-            raise BoekAlreadyExistsException("Boek met dit ISBN bestaat al.")
-
-        return self.repository.create(boek_data)
+        if self.repository.exists(isbn):
+            raise BoekAlreadyExistsException('Boek met dit ISBN bestaat al')
+        try:
+            return self.repository.create(boek_data)
+        except Exception as e:
+            raise BoekCreateDatabaseException(str(e))

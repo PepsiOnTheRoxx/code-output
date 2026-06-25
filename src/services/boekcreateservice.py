@@ -2,7 +2,6 @@ from src.services.boekcreateservice_exceptions import (
     BoekAlreadyExistsException,
     InvalidBoekDataException,
     BoekCreateServiceDatabaseException,
-    BoekServiceDependencyException,
 )
 from database import get_connection
 
@@ -73,26 +72,25 @@ class BoekCreateService:
         if repository is not None:
             self.repo = repository
         else:
-            self.db_connection = db_connection or get_connection()
-            self.repo = BoekRepository(self.db_connection)
+            self.repo = BoekRepository(db_connection or get_connection())
 
     def create_boek(self, boek_data):
-        # Validatie
-        if not boek_data or not isinstance(boek_data, dict):
-            raise InvalidBoekDataException("Gegeven boek data is ongeldig of ontbreekt.")
-        titel = boek_data.get("titel")
-        auteur = boek_data.get("auteur")
-        isbn = boek_data.get("isbn")
+        titel = boek_data.get('titel')
+        auteur = boek_data.get('auteur')
+        isbn = boek_data.get('isbn')
+        jaar = boek_data.get('jaar')
         if not titel or not isinstance(titel, str):
-            raise InvalidBoekDataException("Titel is verplicht en moet een string zijn.")
+            raise InvalidBoekDataException('Titel is verplicht en mag niet leeg zijn')
         if not auteur or not isinstance(auteur, str):
-            raise InvalidBoekDataException("Auteur is verplicht en moet een string zijn.")
+            raise InvalidBoekDataException('Auteur is verplicht en mag niet leeg zijn')
         if not isbn or not isinstance(isbn, str):
-            raise InvalidBoekDataException("ISBN is verplicht en moet een string zijn.")
+            raise InvalidBoekDataException('ISBN is verplicht en mag niet leeg zijn')
+        if jaar is None or (not isinstance(jaar, int)):
+            raise InvalidBoekDataException('Jaar is verplicht en moet een getal zijn')
         if self.repo.exists_by_isbn(isbn):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {isbn} bestaat al.")
+            raise BoekAlreadyExistsException()
         try:
-            boek = self.repo.add(
+            return self.repo.add(
                 auteur=auteur,
                 beschrijving=boek_data.get('beschrijving'),
                 is_uitgeleend=boek_data.get('is_uitgeleend', 0),
@@ -102,10 +100,7 @@ class BoekCreateService:
                 titel=titel,
                 uitgeleend_datum=boek_data.get('uitgeleend_datum'),
                 uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
-                jaar=boek_data.get('jaar')
+                jaar=jaar
             )
-            return boek
-        except BoekCreateServiceDatabaseException as ex:
-            raise ex
-        except Exception as ex:
-            raise BoekServiceDependencyException(str(ex))
+        except Exception as e:
+            raise BoekCreateServiceDatabaseException(str(e))
