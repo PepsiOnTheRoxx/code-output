@@ -36,8 +36,6 @@ class BoekRepository:
         )
         row = cursor.fetchone()
         if row:
-            # row[0] = rowid (id)
-            # row[1:] = SCHEMA_FIELDS in volgorde
             return Boek(
                 id=row[0],
                 titel=row[SCHEMA_FIELDS.index('titel')+1],
@@ -79,36 +77,35 @@ class BoekRepository:
                 boek.uitgeleend_datum,
                 boek.uitgeleend_max_tot,
                 boek.id
-            ),
+            )
         )
         self.db_connection.commit()
 
 class BoekService:
-    def __init__(self, repository):
-        self.repository = repository
+    def __init__(self, repository=None):
+        self.repository = repository or BoekRepository()
 
-    def update_boek(self, boek_id, boek_data):
+    def update_boek(self, boek_id, nieuwe_data):
         oud_boek = self.repository.get_boek_by_id(boek_id)
-        if oud_boek is None:
+        if not oud_boek:
             raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden.")
+        if not self._validate_boek_data(nieuwe_data):
+            raise OngeldigeBoekDataException("Ongeldige boekdata.")
 
-        # Check vereiste velden op leegte
-        if not boek_data.get("titel") or not boek_data.get("auteur") or not boek_data.get("isbn"):
-            raise OngeldigeBoekDataException("Titel, auteur en ISBN mogen niet leeg zijn.")
-
-        nieuw_boek = Boek(
-            id=boek_id,
-            titel=boek_data.get("titel", oud_boek.titel),
-            auteur=boek_data.get("auteur", oud_boek.auteur),
-            isbn=boek_data.get("isbn", oud_boek.isbn),
-            beschrijving=boek_data.get("beschrijving", oud_boek.beschrijving),
-            is_uitgeleend=boek_data.get("is_uitgeleend", oud_boek.is_uitgeleend),
-            kaft_foto_url=boek_data.get("kaft_foto_url", oud_boek.kaft_foto_url),
-            publicatiedatum=boek_data.get("publicatiedatum", oud_boek.publicatiedatum),
-            uitgeleend_datum=boek_data.get("uitgeleend_datum", oud_boek.uitgeleend_datum),
-            uitgeleend_max_tot=boek_data.get("uitgeleend_max_tot", oud_boek.uitgeleend_max_tot),
-        )
+        # Update velden
+        for key in SCHEMA_FIELDS:
+            if key in nieuwe_data:
+                setattr(oud_boek, key, nieuwe_data[key])
         try:
-            self.repository.update_boek(nieuw_boek)
+            self.repository.update_boek(oud_boek)
         except Exception as e:
-            raise e
+            raise BoekUpdateMisluktException(str(e))
+
+    def _validate_boek_data(self, data):
+        required = ["titel", "auteur", "isbn"]
+        if not isinstance(data, dict):
+            return False
+        for key in required:
+            if key not in data or not isinstance(data[key], str) or not data[key].strip():
+                return False
+        return True
