@@ -2,7 +2,7 @@ import os
 import sqlite3
 from database_exceptions import (
     DatabaseSetupException,
-    DatabaseSetupError,  # <-- fix: correctly import this name!
+    DatabaseSetupError,
     DatabaseConnectionError,
     DatabaseTableCreationError,
     BoekAttribuutFout,
