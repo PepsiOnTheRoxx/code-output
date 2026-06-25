@@ -1,12 +1,16 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekdeleteservice import BoekDeleteService
-from src.services.boekdeleteservice_exceptions import BoekNotFoundException, DatabaseException
+from src.services.boekdeleteservice_exceptions import BoekNietGevondenException, BoekDatabaseFoutException
 
 @pytest.fixture
 def boek_repo_mock():
-    with patch('src.services.boekdeleteservice.BoekRepository') as RepoMock:
-        yield RepoMock.return_value
+    class DummyRepo:
+        def exists(self, boek_id):
+            return True
+        def delete(self, boek_id):
+            pass
+    return MagicMock(spec=DummyRepo)
 
 @pytest.fixture
 def service(boek_repo_mock):
@@ -26,7 +30,7 @@ def test_delete_boek_bestaat_niet_werpt_exception(service, boek_repo_mock):
     boek_id = 456
     boek_repo_mock.exists.return_value = False
 
-    with pytest.raises(BoekNotFoundException):
+    with pytest.raises(BoekNietGevondenException):
         service.delete_boek(boek_id)
 
     boek_repo_mock.exists.assert_called_once_with(boek_id)
@@ -35,9 +39,9 @@ def test_delete_boek_bestaat_niet_werpt_exception(service, boek_repo_mock):
 def test_delete_boek_database_faalt(service, boek_repo_mock):
     boek_id = 789
     boek_repo_mock.exists.return_value = True
-    boek_repo_mock.delete.side_effect = DatabaseException("DB error")
+    boek_repo_mock.delete.side_effect = BoekDatabaseFoutException("DB error")
 
-    with pytest.raises(DatabaseException):
+    with pytest.raises(BoekDatabaseFoutException):
         service.delete_boek(boek_id)
 
     boek_repo_mock.exists.assert_called_once_with(boek_id)
