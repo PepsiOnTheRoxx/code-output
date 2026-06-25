@@ -74,38 +74,33 @@ class BoekCreateService:
             self.db_connection = get_connection()
         else:
             self.db_connection = db_connection
-        self.repository = BoekRepository(self.db_connection)
+        self.repo = BoekRepository(self.db_connection)
 
-    def _validate_boek_data(self, data):
-        required = ["titel", "auteur", "isbn"]
-        if not isinstance(data, dict):
-            return False
-        for key in required:
-            if key not in data or not isinstance(data[key], str) or not data[key].strip():
-                return False
-        return True
-
-    def create_boek(self, data):
-        if not self._validate_boek_data(data):
-            raise InvalidBoekDataException("Boek data is niet geldig")
-        if self.repository.exists_by_isbn(data["isbn"]):
-            raise BoekAlreadyExistsException(f"Boek met ISBN {data['isbn']} bestaat al.")
-        # Neem alle potentiële sleutelwaarden op uit SCHEMA_FIELDS, evt. defaults
-        boek_args = {}
-        for key in SCHEMA_FIELDS:
-            boek_args[key] = data.get(key)
-        # Extra veld: jaar
-        jaar = data.get("jaar")
-        boek = self.repository.add(
-            auteur=boek_args['auteur'],
-            beschrijving=boek_args['beschrijving'],
-            is_uitgeleend=boek_args.get('is_uitgeleend', 0),
-            isbn=boek_args['isbn'],
-            kaft_foto_url=boek_args['kaft_foto_url'],
-            publicatiedatum=boek_args['publicatiedatum'],
-            titel=boek_args['titel'],
-            uitgeleend_datum=boek_args['uitgeleend_datum'],
-            uitgeleend_max_tot=boek_args['uitgeleend_max_tot'],
-            jaar=jaar,
-        )
-        return boek
+    def create_boek(self, boek_data):
+        # Validate input
+        if not boek_data.get('titel') or not isinstance(boek_data.get('titel'), str):
+            raise InvalidBoekDataException('titel is verplicht en moet een string zijn')
+        if not boek_data.get('auteur') or not isinstance(boek_data.get('auteur'), str):
+            raise InvalidBoekDataException('auteur is verplicht en moet een string zijn')
+        if not boek_data.get('isbn') or not isinstance(boek_data.get('isbn'), str):
+            raise InvalidBoekDataException('isbn is verplicht en moet een string zijn')
+        if self.repo.exists_by_isbn(boek_data['isbn']):
+            raise BoekAlreadyExistsException('Boek met dit ISBN bestaat al')
+        try:
+            result = self.repo.add(
+                auteur=boek_data.get('auteur'),
+                beschrijving=boek_data.get('beschrijving'),
+                is_uitgeleend=boek_data.get('is_uitgeleend', 0),
+                isbn=boek_data.get('isbn'),
+                kaft_foto_url=boek_data.get('kaft_foto_url'),
+                publicatiedatum=boek_data.get('publicatiedatum'),
+                titel=boek_data.get('titel'),
+                uitgeleend_datum=boek_data.get('uitgeleend_datum'),
+                uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot'),
+                jaar=boek_data.get('jaar'),
+            )
+            return result
+        except BoekCreateServiceDatabaseException as exc:
+            raise exc
+        except Exception as exc:
+            raise BoekServiceDependencyException(str(exc))
