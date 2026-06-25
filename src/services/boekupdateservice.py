@@ -53,7 +53,7 @@ class BoekRepository:
     def update_boek(self, boek):
         cursor = self.db_connection.cursor()
         cursor.execute(
-            f"""
+            f'''
             UPDATE boeken SET
                 titel = ?,
                 auteur = ?,
@@ -65,7 +65,7 @@ class BoekRepository:
                 uitgeleend_datum = ?,
                 uitgeleend_max_tot = ?
             WHERE rowid = ?
-            """,
+            ''',
             (
                 boek.titel,
                 boek.auteur,
@@ -80,44 +80,44 @@ class BoekRepository:
             )
         )
         if cursor.rowcount == 0:
-            raise BoekNietGevondenException("Boek niet gevonden voor update")
+            raise BoekNietGevondenException('Boek niet gevonden voor update')
         self.db_connection.commit()
 
 class BoekService:
-    def __init__(self, repo):
-        self.repo = repo
+    def __init__(self, repository=None):
+        if repository is not None:
+            self.repo = repository
+        else:
+            self.repo = BoekRepository()
 
-    def update_boek(self, boek_id, data):
-        # Validatie: titel, auteur, isbn verplicht + string
-        titel = data.get('titel')
-        auteur = data.get('auteur')
-        isbn = data.get('isbn')
-        if not titel or not isinstance(titel, str):
-            raise OngeldigeBoekDataException('Titel is verplicht en mag niet leeg zijn')
-        if not auteur or not isinstance(auteur, str):
-            raise OngeldigeBoekDataException('Auteur is verplicht en mag niet leeg zijn')
-        if not isbn or not isinstance(isbn, str):
-            raise OngeldigeBoekDataException('ISBN is verplicht en mag niet leeg zijn')
+    def update_boek(self, boek_id, boek_data):
         oud_boek = self.repo.get_boek_by_id(boek_id)
         if oud_boek is None:
             raise BoekNietGevondenException(f'Boek met id {boek_id} niet gevonden')
-        # Update bestaande Boek object velden op basis van data (fallback op oud_boek als field ontbreekt)
+        # Validatie: titel, auteur, isbn zijn verplicht
+        titel = boek_data.get('titel')
+        auteur = boek_data.get('auteur')
+        isbn = boek_data.get('isbn')
+        if not titel or not isinstance(titel, str) or not titel.strip():
+            raise OngeldigeBoekDataException('Titel is verplicht en mag niet leeg zijn')
+        if not auteur or not isinstance(auteur, str) or not auteur.strip():
+            raise OngeldigeBoekDataException('Auteur is verplicht en mag niet leeg zijn')
+        if not isbn or not isinstance(isbn, str) or not isbn.strip():
+            raise OngeldigeBoekDataException('ISBN is verplicht en mag niet leeg zijn')
+        # Maak een nieuwe Boek instance met de gewijzigde waarden
         boek = Boek(
-            id=boek_id,
-            titel=data.get('titel', oud_boek.titel),
-            auteur=data.get('auteur', oud_boek.auteur),
-            isbn=data.get('isbn', oud_boek.isbn),
-            beschrijving=data.get('beschrijving', oud_boek.beschrijving),
-            is_uitgeleend=data.get('is_uitgeleend', oud_boek.is_uitgeleend),
-            kaft_foto_url=data.get('kaft_foto_url', oud_boek.kaft_foto_url),
-            publicatiedatum=data.get('publicatiedatum', oud_boek.publicatiedatum),
-            uitgeleend_datum=data.get('uitgeleend_datum', oud_boek.uitgeleend_datum),
-            uitgeleend_max_tot=data.get('uitgeleend_max_tot', oud_boek.uitgeleend_max_tot)
+            id=oud_boek.id,
+            titel=boek_data.get('titel', oud_boek.titel),
+            auteur=boek_data.get('auteur', oud_boek.auteur),
+            isbn=boek_data.get('isbn', oud_boek.isbn),
+            beschrijving=boek_data.get('beschrijving', oud_boek.beschrijving),
+            is_uitgeleend=boek_data.get('is_uitgeleend', oud_boek.is_uitgeleend),
+            kaft_foto_url=boek_data.get('kaft_foto_url', oud_boek.kaft_foto_url),
+            publicatiedatum=boek_data.get('publicatiedatum', oud_boek.publicatiedatum),
+            uitgeleend_datum=boek_data.get('uitgeleend_datum', oud_boek.uitgeleend_datum),
+            uitgeleend_max_tot=boek_data.get('uitgeleend_max_tot', oud_boek.uitgeleend_max_tot),
         )
         try:
             self.repo.update_boek(boek)
-            return boek
-        except BoekNietGevondenException:
-            raise
-        except Exception as e:
-            raise BoekUpdateMisluktException(str(e))
+        except Exception as ex:
+            raise BoekServiceDatabaseException(str(ex))
