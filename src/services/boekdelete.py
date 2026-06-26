@@ -1,5 +1,5 @@
 from database import get_connection
-from src.services.boekdelete_exceptions import (
+from .boekdelete_exceptions import (
     BoekNietGevondenException,
     BoekDeleteException
 )
@@ -8,15 +8,15 @@ class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
 
-    def get_by_id(self, boek_id):
+    def get_by_id(self, boek_rowid):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT * FROM boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur FROM boeken WHERE rowid = ?", (boek_rowid,))
         row = cursor.fetchone()
         return row
 
-    def delete(self, boek_id):
+    def delete(self, boek_rowid):
         cursor = self.db_connection.cursor()
-        cursor.execute("DELETE FROM boek WHERE id = ?", (boek_id,))
+        cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_rowid,))
         self.db_connection.commit()
 
 
