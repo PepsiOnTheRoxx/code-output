@@ -11,8 +11,23 @@ class BoekService:
             raise BoekValidationException('Titel ontbreekt')
         if not data.get('auteur'):
             raise BoekValidationException('Auteur ontbreekt')
+        # Voeg lege/default values toe voor verplichte kolommen bij insert.
+        beschrijving = data.get('beschrijving', '')
+        isbn = data.get('isbn', '')
+        publicatiedatum = data.get('publicatiedatum', '')
+        kaft_foto_url = data.get('kaft_foto_url', '')
+        is_uitgeleend = int(data.get('is_uitgeleend', 0))
+        uitgeleend_datum = data.get('uitgeleend_datum', None)
+        uitgeleend_max_tot = data.get('uitgeleend_max_tot', None)
         cur = self.conn.cursor()
-        cur.execute("INSERT INTO boeken (titel, auteur) VALUES (?, ?)", (data['titel'], data['auteur']))
+        cur.execute("""
+            INSERT INTO boeken (
+                auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data['auteur'], beschrijving, data['titel'], isbn, publicatiedatum, kaft_foto_url,
+            is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot
+        ))
         self.conn.commit()
         boek_id = cur.lastrowid
         return {"id": boek_id, "titel": data['titel'], "auteur": data['auteur']}
@@ -23,9 +38,6 @@ class BoekService:
         row = cur.fetchone()
         if row is None:
             raise BoekNotFoundException("Niet gevonden")
-        # Het resultaat van fetchone is nu een Row-object of tuple
-        # met rowid vooraan (dus row[0] is id), dan de rest
-        # Omdat we row_factory instellen is row["rowid"] beschikbaar
         return {"id": row["rowid"], "titel": row["titel"], "auteur": row["auteur"]}
 
     def update_boek(self, boek_id, data):
