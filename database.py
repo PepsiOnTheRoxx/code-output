@@ -8,6 +8,7 @@ CREATE_TABEL_SQL = (
     """CREATE TABLE IF NOT EXISTS boeken (
             auteur TEXT,
             beschrijving TEXT,
+            titel TEXT,
             isbn TEXT,
             publicatiedatum DATE,
             kaft_foto_url TEXT,
