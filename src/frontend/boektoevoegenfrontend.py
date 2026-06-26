@@ -24,11 +24,11 @@ def toevoegen():
 
         conn = get_db()
         cursor = conn.execute(
-            'INSERT INTO boeken (titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO boeken (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (
-                titel,
                 auteur,
                 beschrijving,
+                titel,
                 isbn,
                 publicatiedatum,
                 kaft_foto_url,
