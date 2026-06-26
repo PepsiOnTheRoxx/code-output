@@ -1,4 +1,4 @@
-from src.services.boekseeder_exceptions import (
+from .boekseeder_exceptions import (
     BoekSeederException,
     BoekSeederInvalidBookCountException,
     BoekSeederServiceException,
