@@ -5,9 +5,9 @@ class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
 
-    def get_by_id(self, boek_id):
+    def get_by_id(self, boek_rowid):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur FROM boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur FROM boeken WHERE rowid = ?", (boek_rowid,))
         row = cursor.fetchone()
         if row:
             return {"id": row[0], "titel": row[1], "auteur": row[2]}
