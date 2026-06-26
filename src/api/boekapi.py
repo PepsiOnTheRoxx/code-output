@@ -19,36 +19,39 @@ class BoekService:
 
     def get_boek(self, boek_id):
         cur = self.conn.cursor()
-        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        cur.execute("SELECT rowid, * FROM boeken WHERE rowid = ?", (boek_id,))
         row = cur.fetchone()
         if row is None:
             raise BoekNotFoundException("Niet gevonden")
-        return {"id": row["id"], "titel": row["titel"], "auteur": row["auteur"]}
+        # Het resultaat van fetchone is nu een Row-object of tuple
+        # met rowid vooraan (dus row[0] is id), dan de rest
+        # Omdat we row_factory instellen is row["rowid"] beschikbaar
+        return {"id": row["rowid"], "titel": row["titel"], "auteur": row["auteur"]}
 
     def update_boek(self, boek_id, data):
         if not data.get('titel') or not data.get('auteur'):
             raise BoekValidationException('Foutieve data')
         cur = self.conn.cursor()
-        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        cur.execute("SELECT rowid FROM boeken WHERE rowid = ?", (boek_id,))
         if cur.fetchone() is None:
             raise BoekNotFoundException("Niet gevonden")
-        cur.execute("UPDATE boeken SET titel = ?, auteur = ? WHERE id = ?", (data['titel'], data['auteur'], boek_id))
+        cur.execute("UPDATE boeken SET titel = ?, auteur = ? WHERE rowid = ?", (data['titel'], data['auteur'], boek_id))
         self.conn.commit()
         return {"id": boek_id, "titel": data['titel'], "auteur": data['auteur']}
 
     def delete_boek(self, boek_id):
         cur = self.conn.cursor()
-        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        cur.execute("SELECT rowid FROM boeken WHERE rowid = ?", (boek_id,))
         if cur.fetchone() is None:
             raise BoekNotFoundException("Niet gevonden")
-        cur.execute("DELETE FROM boeken WHERE id = ?", (boek_id,))
+        cur.execute("DELETE FROM boeken WHERE rowid = ?", (boek_id,))
         self.conn.commit()
 
     def list_boeken(self):
         cur = self.conn.cursor()
-        cur.execute("SELECT * FROM boeken")
+        cur.execute("SELECT rowid, * FROM boeken")
         rows = cur.fetchall()
-        return [{"id": row["id"], "titel": row["titel"], "auteur": row["auteur"]} for row in rows]
+        return [{"id": row["rowid"], "titel": row["titel"], "auteur": row["auteur"]} for row in rows]
 
 def register_routes(app):
     def get_service():
