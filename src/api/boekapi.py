@@ -1,25 +1,54 @@
 from flask import request, jsonify
 import sqlite3
-from src.api.boekapi_exceptions import BoekNotFoundException, BoekValidationException
+from src.api.boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
 
 class BoekService:
     def __init__(self, conn):
         self.conn = conn
 
     def create_boek(self, data):
-        raise NotImplementedError()
+        if not data.get('titel'):
+            raise BoekValidationException('Titel ontbreekt')
+        if not data.get('auteur'):
+            raise BoekValidationException('Auteur ontbreekt')
+        cur = self.conn.cursor()
+        cur.execute("INSERT INTO boeken (titel, auteur) VALUES (?, ?)", (data['titel'], data['auteur']))
+        self.conn.commit()
+        boek_id = cur.lastrowid
+        return {"id": boek_id, "titel": data['titel'], "auteur": data['auteur']}
 
     def get_boek(self, boek_id):
-        raise NotImplementedError()
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        row = cur.fetchone()
+        if row is None:
+            raise BoekNotFoundException("Niet gevonden")
+        return {"id": row["id"], "titel": row["titel"], "auteur": row["auteur"]}
 
     def update_boek(self, boek_id, data):
-        raise NotImplementedError()
+        if not data.get('titel') or not data.get('auteur'):
+            raise BoekValidationException('Foutieve data')
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        if cur.fetchone() is None:
+            raise BoekNotFoundException("Niet gevonden")
+        cur.execute("UPDATE boeken SET titel = ?, auteur = ? WHERE id = ?", (data['titel'], data['auteur'], boek_id))
+        self.conn.commit()
+        return {"id": boek_id, "titel": data['titel'], "auteur": data['auteur']}
 
     def delete_boek(self, boek_id):
-        raise NotImplementedError()
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM boeken WHERE id = ?", (boek_id,))
+        if cur.fetchone() is None:
+            raise BoekNotFoundException("Niet gevonden")
+        cur.execute("DELETE FROM boeken WHERE id = ?", (boek_id,))
+        self.conn.commit()
 
     def list_boeken(self):
-        raise NotImplementedError()
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM boeken")
+        rows = cur.fetchall()
+        return [{"id": row["id"], "titel": row["titel"], "auteur": row["auteur"]} for row in rows]
 
 def register_routes(app):
     def get_service():

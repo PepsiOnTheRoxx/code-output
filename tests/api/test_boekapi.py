@@ -1,8 +1,8 @@
 import pytest
 from flask import Flask, json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.api import boekapi
-from src.api.boekapi_exceptions import BoekNotFoundException, BoekValidationException
+from src.api.boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
 
 @pytest.fixture
 def client():
