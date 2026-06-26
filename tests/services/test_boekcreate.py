@@ -1,12 +1,14 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekcreate import BoekService
-from src.services.boekcreate_exceptions import BoekAlreadyExistsException, InvalidBoekDataException
+from src.services.boekcreate_exceptions import BoekCreateAlreadyExistsException, BoekCreateDataInvalidException
 
 @pytest.fixture
 def mock_boek_repository():
-    with patch("src.services.boekcreate.BoekRepository") as repo_cls:
-        yield repo_cls.return_value
+    class DummyRepo:
+        def exists(self, boek_data): return False
+        def save(self, boek_data): return boek_data
+    return MagicMock(spec=DummyRepo)
 
 @pytest.fixture
 def boek_service(mock_boek_repository):
@@ -28,7 +30,7 @@ def test_create_boek_already_exists_raises_exception(boek_service, mock_boek_rep
     boek_data = {"titel": "Bestaat Al", "auteur": "Jannie"}
     mock_boek_repository.exists.return_value = True
 
-    with pytest.raises(BoekAlreadyExistsException):
+    with pytest.raises(BoekCreateAlreadyExistsException):
         boek_service.create_boek(boek_data)
 
     mock_boek_repository.exists.assert_called_once_with(boek_data)
@@ -37,7 +39,7 @@ def test_create_boek_already_exists_raises_exception(boek_service, mock_boek_rep
 def test_create_boek_invalid_data_raises_exception(boek_service, mock_boek_repository):
     invalid_boek_data = {"titel": ""}  # Auteur ontbreekt bijv.
 
-    with pytest.raises(InvalidBoekDataException):
+    with pytest.raises(BoekCreateDataInvalidException):
         boek_service.create_boek(invalid_boek_data)
 
     mock_boek_repository.exists.assert_not_called()
