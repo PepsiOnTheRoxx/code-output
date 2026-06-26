@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekdelete import BoekService
-from src.services.boekdelete_exceptions import BoekNotFoundException, BoekDeleteException
+from src.services.boekdelete_exceptions import BoekNietGevondenException, BoekDeleteException
 
 def test_delete_boek_success():
     boek_id = 1
@@ -24,7 +24,7 @@ def test_delete_boek_not_found():
         boek_service = BoekService()
         boek_service._repo = mock_repo_instance
 
-        with pytest.raises(BoekNotFoundException):
+        with pytest.raises(BoekNietGevondenException):
             boek_service.delete_boek(boek_id)
 
 def test_delete_boek_delete_raises_exception():
@@ -60,5 +60,5 @@ def test_delete_boek_with_invalid_id_type():
         boek_service = BoekService()
         boek_service._repo = mock_repo_instance
 
-        with pytest.raises((TypeError, BoekNotFoundException)):
+        with pytest.raises(TypeError):
             boek_service.delete_boek(boek_id)

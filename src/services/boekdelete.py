@@ -1,6 +1,6 @@
 from database import get_connection
 from src.services.boekdelete_exceptions import (
-    BoekNotFoundException,
+    BoekNietGevondenException,
     BoekDeleteException
 )
 
@@ -30,7 +30,7 @@ class BoekService:
             raise TypeError("Boek ID must be an integer")
         boek = self._repo.get_by_id(boek_id)
         if not boek:
-            raise BoekNotFoundException(f"Boek with id {boek_id} not found")
+            raise BoekNietGevondenException(f"Boek with id {boek_id} not found")
         try:
             self._repo.delete(boek_id)
         except Exception as e:
