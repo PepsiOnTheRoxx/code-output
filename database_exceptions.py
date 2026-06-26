@@ -2,6 +2,10 @@ class DatabaseSetupException(Exception):
     """Basis exceptie voor DatabaseSetup component."""
     pass
 
+class DatabaseSetupError(DatabaseSetupException):
+    """Algemene fout bij DatabaseSetup."""
+    pass
+
 class DatabaseInitialisatieException(DatabaseSetupException):
     """Fout bij initialiseren van de database."""
     pass

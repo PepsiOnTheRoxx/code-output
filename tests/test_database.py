@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from database import DatabaseSetup
-from database_exceptions import DatabaseSetupError
+from database import DatabaseSetup, DatabaseSetupError
 
 @patch("database.sqlite3.connect")
 def test_initialize_creates_database_and_boeken_table(mock_connect):
