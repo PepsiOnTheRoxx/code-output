@@ -1,5 +1,5 @@
 from database import get_connection
-from src.services.boekupdate_exceptions import BoekNietGevondenException, OngeldigeBoekDataException
+from src.services.boekupdate_exceptions import BoekNotFoundException, InvalidBoekDataException
 
 class BoekService:
     def __init__(self, db_connection=None):
@@ -27,10 +27,10 @@ class BoekService:
     def update_boek(self, boek_id, update_data):
         boek = self.get_boek_by_id(boek_id)
         if boek is None:
-            raise BoekNietGevondenException(f'Boek met id {boek_id} niet gevonden')
+            raise BoekNotFoundException(f'Boek met id {boek_id} niet gevonden')
         if "titel" in update_data:
             if not update_data["titel"]:
-                raise OngeldigeBoekDataException("Titel mag niet leeg zijn")
+                raise InvalidBoekDataException("Titel mag niet leeg zijn")
             boek.titel = update_data["titel"]
         self.save_boek(boek)
         return boek
