@@ -1,6 +1,6 @@
 from flask import request, jsonify
 import sqlite3
-from src.api.boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
+from .boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
 
 class BoekService:
     def __init__(self, conn):
