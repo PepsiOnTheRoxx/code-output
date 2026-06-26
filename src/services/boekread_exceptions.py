@@ -17,3 +17,6 @@ class BoekReadInvalidInputException(BoekReadException):
 class BoekReadServiceUnavailableException(BoekReadException):
     """Raised when the Boek read service is unavailable."""
     pass
+
+# Add alias for test compatibility
+InvalidBoekIdException = BoekReadInvalidInputException

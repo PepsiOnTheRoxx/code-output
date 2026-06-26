@@ -1,5 +1,5 @@
 from database import get_connection
-from src.services.boekread_exceptions import BoekNotFoundException, BoekReadInvalidInputException
+from src.services.boekread_exceptions import BoekNotFoundException, InvalidBoekIdException
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -23,7 +23,7 @@ class BoekService:
 
     def read_boek(self, boek_id):
         if boek_id is None or not isinstance(boek_id, int) or boek_id <= 0:
-            raise BoekReadInvalidInputException()
+            raise InvalidBoekIdException()
         boek = self.repository.get_by_id(boek_id)
         if boek is None:
             raise BoekNotFoundException()
