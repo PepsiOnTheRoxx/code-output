@@ -1,5 +1,5 @@
 from database import get_connection
-from src.services.boekupdate_exceptions import BoekNotFoundException, InvalidBoekDataException
+from .boekupdate_exceptions import BoekNotFoundException, InvalidBoekDataException
 
 class BoekService:
     def __init__(self, db_connection=None):
@@ -10,7 +10,7 @@ class BoekService:
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel FROM boeken WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
             boek = type('Boek', (object,), {})()
@@ -21,7 +21,7 @@ class BoekService:
 
     def save_boek(self, boek):
         cursor = self.db_connection.cursor()
-        cursor.execute("UPDATE boeken SET titel = ? WHERE id = ?", (boek.titel, boek.id))
+        cursor.execute("UPDATE boeken SET titel = ? WHERE rowid = ?", (boek.titel, boek.id))
         self.db_connection.commit()
 
     def update_boek(self, boek_id, update_data):
