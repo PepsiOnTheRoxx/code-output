@@ -1,4 +1,4 @@
-from ...database import get_connection
+from database import get_connection
 from .boekread_exceptions import BoekNotFoundException, InvalidBoekIdException
 
 class BoekRepository:
