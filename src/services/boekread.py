@@ -1,5 +1,5 @@
-from database import get_connection
-from src.services.boekread_exceptions import BoekNotFoundException, InvalidBoekIdException
+from ...database import get_connection
+from .boekread_exceptions import BoekNotFoundException, InvalidBoekIdException
 
 class BoekRepository:
     def __init__(self, db_connection):
