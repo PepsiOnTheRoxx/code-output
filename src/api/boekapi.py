@@ -1,6 +1,6 @@
 from flask import request, jsonify
 import sqlite3
-from .boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
+from src.api.boekapi_exceptions import BoekAPINotFoundException as BoekNotFoundException, BoekAPIValidationException as BoekValidationException
 
 class BoekService:
     def __init__(self, conn):
@@ -38,7 +38,7 @@ class BoekService:
         row = cur.fetchone()
         if row is None:
             raise BoekNotFoundException("Niet gevonden")
-        return {"id": row["rowid"], "titel": row["titel"], "auteur": row["auteur"]}
+        return {"id": row[0], "titel": row[3], "auteur": row[1]}  # rowid = 0, auteur = 1, beschrijving = 2, titel = 3, ...
 
     def update_boek(self, boek_id, data):
         if not data.get('titel') or not data.get('auteur'):
@@ -63,11 +63,11 @@ class BoekService:
         cur = self.conn.cursor()
         cur.execute("SELECT rowid, * FROM boeken")
         rows = cur.fetchall()
-        return [{"id": row["rowid"], "titel": row["titel"], "auteur": row["auteur"]} for row in rows]
+        return [{"id": row[0], "titel": row[3], "auteur": row[1]} for row in rows]  # rowid = 0, auteur = 1, beschrijving = 2, titel = 3, ...
 
 def register_routes(app):
     def get_service():
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect('bibliotheek.db')
         conn.row_factory = sqlite3.Row
         return BoekService(conn)
 
