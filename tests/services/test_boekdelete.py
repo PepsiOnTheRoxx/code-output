@@ -1,64 +1,68 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.boekdelete import BoekService
-from src.services.boekdelete_exceptions import BoekNietGevondenException, BoekDeleteException
+from src.services.boekdelete import BoekService, BoekNotFoundException, DeleteNotAllowedException
 
-def test_delete_boek_success():
-    boek_id = 1
-    with patch("src.services.boekdelete.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.get_by_id.return_value = MagicMock()
-        boek_service = BoekService()
-        boek_service._repo = mock_repo_instance
+@patch("src.services.boekdelete.BoekRepository")
+def test_delete_boek_succeeds(mock_boek_repo):
+    mock_repo = mock_boek_repo.return_value
+    mock_repo.get_by_id.return_value = MagicMock(id=10)
+    service = BoekService()
+    service._repository = mock_repo
 
-        boek_service.delete_boek(boek_id)
+    service.delete_boek(10)
 
-        mock_repo_instance.get_by_id.assert_called_once_with(boek_id)
-        mock_repo_instance.delete.assert_called_once_with(boek_id)
+    mock_repo.get_by_id.assert_called_once_with(10)
+    mock_repo.delete.assert_called_once_with(10)
 
-def test_delete_boek_not_found():
-    boek_id = 321
-    with patch("src.services.boekdelete.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.get_by_id.return_value = None
-        boek_service = BoekService()
-        boek_service._repo = mock_repo_instance
+@patch("src.services.boekdelete.BoekRepository")
+def test_delete_boek_not_found_raises_exception(mock_boek_repo):
+    mock_repo = mock_boek_repo.return_value
+    mock_repo.get_by_id.return_value = None
+    service = BoekService()
+    service._repository = mock_repo
 
-        with pytest.raises(BoekNietGevondenException):
-            boek_service.delete_boek(boek_id)
+    with pytest.raises(BoekNotFoundException):
+        service.delete_boek(99)
 
-def test_delete_boek_delete_raises_exception():
-    boek_id = 2
-    with patch("src.services.boekdelete.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_repo_instance.get_by_id.return_value = MagicMock()
-        mock_repo_instance.delete.side_effect = Exception("db error")
-        boek_service = BoekService()
-        boek_service._repo = mock_repo_instance
+    mock_repo.get_by_id.assert_called_once_with(99)
+    mock_repo.delete.assert_not_called()
 
-        with pytest.raises(BoekDeleteException):
-            boek_service.delete_boek(boek_id)
+@patch("src.services.boekdelete.BoekRepository")
+def test_delete_boek_not_allowed_raises_exception(mock_boek_repo):
+    mock_repo = mock_boek_repo.return_value
+    mock_repo.get_by_id.return_value = MagicMock(id=5)
+    mock_repo.delete.side_effect = DeleteNotAllowedException("Delete not permitted")
+    service = BoekService()
+    service._repository = mock_repo
 
-def test_delete_boek_calls_correct_repo_methods():
-    boek_id = 42
-    with patch("src.services.boekdelete.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        mock_boek = MagicMock()
-        mock_repo_instance.get_by_id.return_value = mock_boek
-        boek_service = BoekService()
-        boek_service._repo = mock_repo_instance
+    with pytest.raises(DeleteNotAllowedException):
+        service.delete_boek(5)
 
-        boek_service.delete_boek(boek_id)
+    mock_repo.get_by_id.assert_called_once_with(5)
+    mock_repo.delete.assert_called_once_with(5)
 
-        assert mock_repo_instance.get_by_id.call_count == 1
-        assert mock_repo_instance.delete.call_count == 1
+@patch("src.services.boekdelete.BoekRepository")
+def test_delete_boek_calls_delete_with_correct_id(mock_boek_repo):
+    mock_repo = mock_boek_repo.return_value
+    mock_boek = MagicMock(id=8)
+    mock_repo.get_by_id.return_value = mock_boek
+    service = BoekService()
+    service._repository = mock_repo
 
-def test_delete_boek_with_invalid_id_type():
-    boek_id = "invalid-id"
-    with patch("src.services.boekdelete.BoekRepository") as MockRepo:
-        mock_repo_instance = MockRepo.return_value
-        boek_service = BoekService()
-        boek_service._repo = mock_repo_instance
+    service.delete_boek(8)
 
-        with pytest.raises(TypeError):
-            boek_service.delete_boek(boek_id)
+    mock_repo.delete.assert_called_once_with(8)
+
+@patch("src.services.boekdelete.BoekRepository")
+def test_delete_boek_handles_multiple_deletes(mock_boek_repo):
+    mock_repo = mock_boek_repo.return_value
+    mock_repo.get_by_id.side_effect = [MagicMock(id=1), MagicMock(id=2)]
+    service = BoekService()
+    service._repository = mock_repo
+
+    service.delete_boek(1)
+    service.delete_boek(2)
+
+    assert mock_repo.delete.call_count == 2
+    mock_repo.delete.assert_any_call(1)
+    mock_repo.delete.assert_any_call(2)

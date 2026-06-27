@@ -1,37 +1,52 @@
 from database import get_connection
-from .boekdelete_exceptions import (
+from src.services.boekdelete_exceptions import (
     BoekNietGevondenException,
-    BoekDeleteException
+    DeleteNotAllowedException,
+    BoekVerwijderDatabaseException,
+    BoekVerwijderConflictException,
+    BoekVerwijderPermissionDeniedException,
 )
+
+class BoekNotFoundException(BoekNietGevondenException):
+    pass
 
 class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
 
-    def get_by_id(self, boek_rowid):
+    def get_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT rowid, titel, auteur FROM boeken WHERE rowid = ?", (boek_rowid,))
+        cursor.execute("SELECT id FROM Boek WHERE id = ?", (boek_id,))
         row = cursor.fetchone()
-        return row
+        if row:
+            boek = type("Boek", (object,), {})()
+            boek.id = row[0]
+            return boek
+        return None
 
-    def delete(self, boek_rowid):
-        cursor = self.db_connection.cursor()
-        cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_rowid,))
-        self.db_connection.commit()
-
+    def delete(self, boek_id):
+        try:
+            cursor = self.db_connection.cursor()
+            cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
+            if cursor.rowcount == 0:
+                raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
+            self.db_connection.commit()
+        except BoekNotFoundException:
+            raise
+        except DeleteNotAllowedException:
+            raise
+        except Exception as ex:
+            raise BoekVerwijderDatabaseException(f"Error bij verwijderen boek: {ex}") from ex
 
 class BoekService:
     def __init__(self, db_connection=None):
-        self.db_connection = db_connection or get_connection()
-        self._repo = BoekRepository(self.db_connection)
+        if db_connection is None:
+            db_connection = get_connection()
+        self.db_connection = db_connection
+        self._repository = BoekRepository(self.db_connection)
 
     def delete_boek(self, boek_id):
-        if not isinstance(boek_id, int):
-            raise TypeError("Boek ID must be an integer")
-        boek = self._repo.get_by_id(boek_id)
+        boek = self._repository.get_by_id(boek_id)
         if not boek:
-            raise BoekNietGevondenException(f"Boek with id {boek_id} not found")
-        try:
-            self._repo.delete(boek_id)
-        except Exception as e:
-            raise BoekDeleteException(f"Failed to delete boek with id {boek_id}: {str(e)}")
+            raise BoekNotFoundException("Boek niet gevonden")
+        self._repository.delete(boek_id)
