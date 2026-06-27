@@ -1,36 +1,57 @@
 from database import get_connection
-from .boekupdate_exceptions import BoekNotFoundException, InvalidBoekDataException
+from src.services.boekupdate_exceptions import (
+    BoekNietGevondenException,
+    BoekUpdateValidatieException,
+)
 
 class BoekService:
     def __init__(self, db_connection=None):
-        if db_connection is None:
-            self.db_connection = get_connection()
-        else:
-            self.db_connection = db_connection
+        self.db_connection = db_connection if db_connection else get_connection()
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT rowid, titel FROM boeken WHERE rowid = ?", (boek_id,))
+        cursor.execute("SELECT id, titel, auteur FROM boek WHERE id = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
-            boek = type('Boek', (object,), {})()
-            boek.id = row[0]
-            boek.titel = row[1]
-            return boek
+            return Boek(row[0], row[1], row[2])
         return None
 
     def save_boek(self, boek):
         cursor = self.db_connection.cursor()
-        cursor.execute("UPDATE boeken SET titel = ? WHERE rowid = ?", (boek.titel, boek.id))
+        cursor.execute(
+            "UPDATE boek SET titel = ?, auteur = ? WHERE id = ?",
+            (boek.titel, boek.auteur, boek.id)
+        )
         self.db_connection.commit()
-
-    def update_boek(self, boek_id, update_data):
-        boek = self.get_boek_by_id(boek_id)
-        if boek is None:
-            raise BoekNotFoundException(f'Boek met id {boek_id} niet gevonden')
-        if "titel" in update_data:
-            if not update_data["titel"]:
-                raise InvalidBoekDataException("Titel mag niet leeg zijn")
-            boek.titel = update_data["titel"]
-        self.save_boek(boek)
         return boek
+
+    def update_boek(self, boek_id, nieuwe_data):
+        boek = self.get_boek_by_id(boek_id)
+        if not boek:
+            raise BoekNietGevondenException("Boek met id {} niet gevonden".format(boek_id))
+        try:
+            boek.update(nieuwe_data)
+        except BoekUpdateValidatieException:
+            raise
+        except Exception as e:
+            raise
+        try:
+            return self.save_boek(boek)
+        except Exception as e:
+            raise
+
+class Boek:
+    def __init__(self, id, titel, auteur):
+        self.id = id
+        self.titel = titel
+        self.auteur = auteur
+
+    def update(self, data):
+        if "titel" in data:
+            if not isinstance(data["titel"], str) or not data["titel"].strip():
+                raise BoekUpdateValidatieException("Titel mag niet leeg zijn")
+            self.titel = data["titel"]
+        if "auteur" in data:
+            if not isinstance(data["auteur"], str) or not data["auteur"].strip():
+                raise BoekUpdateValidatieException("Auteur mag niet leeg zijn")
+            self.auteur = data["auteur"]
