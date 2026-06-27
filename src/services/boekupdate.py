@@ -10,7 +10,7 @@ class BoekService:
 
     def get_boek_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur FROM boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
             return Boek(row[0], row[1], row[2])
@@ -19,7 +19,7 @@ class BoekService:
     def save_boek(self, boek):
         cursor = self.db_connection.cursor()
         cursor.execute(
-            "UPDATE boek SET titel = ?, auteur = ? WHERE id = ?",
+            "UPDATE boeken SET titel = ?, auteur = ? WHERE rowid = ?",
             (boek.titel, boek.auteur, boek.id)
         )
         self.db_connection.commit()
@@ -42,7 +42,7 @@ class BoekService:
 
 class Boek:
     def __init__(self, id, titel, auteur):
-        self.id = id
+        self.id = id  # dit is rowid uit boeken
         self.titel = titel
         self.auteur = auteur
 
