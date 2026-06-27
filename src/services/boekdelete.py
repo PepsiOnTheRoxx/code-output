@@ -16,7 +16,7 @@ class BoekRepository:
 
     def get_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id FROM Boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
             boek = type("Boek", (object,), {})()
@@ -27,7 +27,7 @@ class BoekRepository:
     def delete(self, boek_id):
         try:
             cursor = self.db_connection.cursor()
-            cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
+            cursor.execute("DELETE FROM boeken WHERE rowid = ?", (boek_id,))
             if cursor.rowcount == 0:
                 raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()
