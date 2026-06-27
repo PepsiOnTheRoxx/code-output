@@ -31,15 +31,15 @@ def boek_toevoegen():
         beschrijving = request.form.get('beschrijving', '')
         is_uitgeleend = 1 if request.form.get('is_uitgeleend') == 'on' else 0
         isbn = request.form.get('isbn', '')
-        kaft_foto_url = request.form.get('kaft_foto_url', '')
         publicatiedatum = request.form.get('publicatiedatum', '')
+        kaft_foto_url = request.form.get('kaft_foto_url', '')
         titel = request.form.get('titel', '')
         uitgeleend_datum = request.form.get('uitgeleend_datum', '')
         uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', '')
 
         conn = get_db()
-        conn.execute('''INSERT INTO boeken (auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                     (auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel,
+        conn.execute('''INSERT INTO boeken (auteur, beschrijving, is_uitgeleend, isbn, publicatiedatum, kaft_foto_url, titel, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     (auteur, beschrijving, is_uitgeleend, isbn, publicatiedatum, kaft_foto_url, titel,
                       uitgeleend_datum if uitgeleend_datum else None,
                       uitgeleend_max_tot if uitgeleend_max_tot else None))
         boek_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
@@ -56,14 +56,14 @@ def boek_aanpassen(boek_id):
         beschrijving = request.form.get('beschrijving', '')
         is_uitgeleend = 1 if request.form.get('is_uitgeleend') == 'on' else 0
         isbn = request.form.get('isbn', '')
-        kaft_foto_url = request.form.get('kaft_foto_url', '')
         publicatiedatum = request.form.get('publicatiedatum', '')
+        kaft_foto_url = request.form.get('kaft_foto_url', '')
         titel = request.form.get('titel', '')
         uitgeleend_datum = request.form.get('uitgeleend_datum', '')
         uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', '')
 
-        conn.execute('UPDATE boeken SET auteur=?, beschrijving=?, is_uitgeleend=?, isbn=?, kaft_foto_url=?, publicatiedatum=?, titel=?, uitgeleend_datum=?, uitgeleend_max_tot=? WHERE rowid=?',
-                     (auteur, beschrijving, is_uitgeleend, isbn, kaft_foto_url, publicatiedatum, titel,
+        conn.execute('UPDATE boeken SET auteur=?, beschrijving=?, is_uitgeleend=?, isbn=?, publicatiedatum=?, kaft_foto_url=?, titel=?, uitgeleend_datum=?, uitgeleend_max_tot=? WHERE rowid=?',
+                     (auteur, beschrijving, is_uitgeleend, isbn, publicatiedatum, kaft_foto_url, titel,
                       uitgeleend_datum if uitgeleend_datum else None,
                       uitgeleend_max_tot if uitgeleend_max_tot else None, boek_id))
         conn.commit()
