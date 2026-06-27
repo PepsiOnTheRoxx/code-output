@@ -1,27 +1,23 @@
 class DatabaseSetupException(Exception):
-    """Basis exceptie voor DatabaseSetup component."""
+    """Base exception for DatabaseSetup component."""
     pass
 
-class DatabaseSetupError(DatabaseSetupException):
-    """Algemene fout bij DatabaseSetup."""
+class DatabaseConnectionError(DatabaseSetupException):
+    """Raised when the database connection fails."""
     pass
 
-class DatabaseInitialisatieException(DatabaseSetupException):
-    """Fout bij initialiseren van de database."""
+class DatabaseInitializationError(DatabaseSetupException):
+    """Raised when initializing the SQLite database fails."""
     pass
 
-class DatabaseTabelAanmakenException(DatabaseSetupException):
-    """Fout bij het aanmaken van de Boek tabel."""
+class TableCreationError(DatabaseSetupException):
+    """Raised when creating the Boek table fails."""
     pass
 
-class DatabaseVerbindingException(DatabaseSetupException):
-    """Fout bij het maken van een verbinding met de database."""
+class AttributeCreationError(DatabaseSetupException):
+    """Raised when adding an attribute to the Boek table fails."""
     pass
 
-class DatabaseAttribuutDefinitieException(DatabaseSetupException):
-    """Fout met attributendefinities van de entiteit Boek."""
-    pass
-
-class DatabaseMetamodelValidatieException(DatabaseSetupException):
-    """Fout tijdens validatie van het metamodel voor de tabel Boek."""
+class BoekMetamodelMismatchError(DatabaseSetupException):
+    """Raised when the Boek table does not match the metamodel."""
     pass
