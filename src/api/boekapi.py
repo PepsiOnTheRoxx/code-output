@@ -16,6 +16,7 @@ def row_to_dict(row):
     return {
         "auteur": row["auteur"],
         "beschrijving": row["beschrijving"],
+        "titel": row["titel"],
         "isbn": row["isbn"],
         "publicatiedatum": row["publicatiedatum"],
         "kaft_foto_url": row["kaft_foto_url"],
@@ -46,6 +47,7 @@ def create_boek(boek_data):
     required_fields = [
         "auteur",
         "beschrijving",
+        "titel",
         "isbn",
         "publicatiedatum",
         "kaft_foto_url",
@@ -61,12 +63,13 @@ def create_boek(boek_data):
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO boeken (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO boeken (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 boek_data["auteur"],
                 boek_data["beschrijving"],
+                boek_data["titel"],
                 boek_data["isbn"],
                 boek_data["publicatiedatum"],
                 boek_data["kaft_foto_url"],
@@ -94,12 +97,13 @@ def update_boek(isbn, boek_data):
         cursor.execute(
             """
             UPDATE boeken
-            SET auteur = ?, beschrijving = ?, publicatiedatum = ?, kaft_foto_url = ?, is_uitgeleend = ?, uitgeleend_datum = ?, uitgeleend_max_tot = ?
+            SET auteur = ?, beschrijving = ?, titel = ?, publicatiedatum = ?, kaft_foto_url = ?, is_uitgeleend = ?, uitgeleend_datum = ?, uitgeleend_max_tot = ?
             WHERE isbn = ?
             """,
             (
                 boek_data["auteur"],
                 boek_data["beschrijving"],
+                boek_data["titel"],
                 boek_data["publicatiedatum"],
                 boek_data["kaft_foto_url"],
                 int(boek_data["is_uitgeleend"]),
