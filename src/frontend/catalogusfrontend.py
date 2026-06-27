@@ -26,13 +26,24 @@ def boek_detail(boek_id):
 @catalogusfrontend_bp.route('/boek/nieuw', methods=['GET', 'POST'])
 def boek_toevoegen():
     if request.method == 'POST':
-        auteur = request.form['auteur']
-        kaft_foto_url = request.form['kaft_foto_url']
+        # Vul alle velden uit het schema, met defaults indien niet ingevuld
+        titel = request.form.get('titel', '')
+        auteur = request.form.get('auteur', '')
+        beschrijving = request.form.get('beschrijving', '')
+        isbn = request.form.get('isbn', '')
+        publicatiedatum = request.form.get('publicatiedatum', '')
+        kaft_foto_url = request.form.get('kaft_foto_url', '')
         is_uitgeleend = 1 if request.form.get('is_uitgeleend') == 'on' else 0
+        uitgeleend_datum = request.form.get('uitgeleend_datum', '')
+        uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', '')
+
         conn = get_db()
-        conn.execute('INSERT INTO boeken (auteur, kaft_foto_url, is_uitgeleend) VALUES (?, ?, ?)', (auteur, kaft_foto_url, is_uitgeleend))
-        conn.commit()
+        conn.execute('''INSERT INTO boeken (titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     (titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend,
+                      uitgeleend_datum if uitgeleend_datum else None,
+                      uitgeleend_max_tot if uitgeleend_max_tot else None))
         boek_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
+        conn.commit()
         conn.close()
         return redirect(url_for('catalogusfrontend.boek_detail', boek_id=boek_id))
     return render_template('boek_toevoegenfrontend.html')
