@@ -1,7 +1,6 @@
-from .boekseeder_exceptions import (
+from src.services.boekseeder_exceptions import (
     BoekSeederException,
-    BoekSeederInvalidBookCountException,
-    BoekSeederServiceException,
+    BoekSeederToevoegenMisluktException
 )
 
 class BoekSeeder:
@@ -9,81 +8,60 @@ class BoekSeeder:
         self.boek_service = boek_service
 
     def seed(self):
-        dummy_boeken = self._maak_dummy_boeken()
-        if len(dummy_boeken) < 5:
-            raise BoekSeederInvalidBookCountException(
-                "Er moeten minimaal vijf boeken worden toegevoegd.")
+        boeken = [
+            {
+                'auteur': "Arthur Conan Doyle",
+                'beschrijving': "Een klassiek mysterieboek met detective Sherlock Holmes.",
+                'isbn': "9789012345678",
+                'publicatiedatum': "1892-10-14",
+                'kaft_foto_url': "http://dummy.url/holmes.jpg",
+                'is_uitgeleend': False,
+                'uitgeleend_datum': None,
+                'uitgeleend_max_tot': None
+            },
+            {
+                'auteur': "J.K. Rowling",
+                'beschrijving': "Het eerste deel in de magische Harry Potter-serie.",
+                'isbn': "9780747532743",
+                'publicatiedatum': "1997-06-26",
+                'kaft_foto_url': "http://dummy.url/hp1.jpg",
+                'is_uitgeleend': True,
+                'uitgeleend_datum': "2023-07-10",
+                'uitgeleend_max_tot': "2023-08-10"
+            },
+            {
+                'auteur': "George Orwell",
+                'beschrijving': "Dystopische roman over een totalitaire samenleving.",
+                'isbn': "9780451524935",
+                'publicatiedatum': "1949-06-08",
+                'kaft_foto_url': "http://dummy.url/1984.jpg",
+                'is_uitgeleend': False,
+                'uitgeleend_datum': None,
+                'uitgeleend_max_tot': None
+            },
+            {
+                'auteur': "Harper Lee",
+                'beschrijving': "Een diepgaand verhaal over racisme en onschuld.",
+                'isbn': "9780061120084",
+                'publicatiedatum': "1960-07-11",
+                'kaft_foto_url': "http://dummy.url/mockingbird.jpg",
+                'is_uitgeleend': True,
+                'uitgeleend_datum': "2024-01-01",
+                'uitgeleend_max_tot': "2024-01-31"
+            },
+            {
+                'auteur': "F. Scott Fitzgerald",
+                'beschrijving': "Amerikaans meesterwerk over The Jazz Age.",
+                'isbn': "9780743273565",
+                'publicatiedatum': "1925-04-10",
+                'kaft_foto_url': "http://dummy.url/gatsby.jpg",
+                'is_uitgeleend': False,
+                'uitgeleend_datum': None,
+                'uitgeleend_max_tot': None
+            }
+        ]
         try:
-            for boek in dummy_boeken:
+            for boek in boeken:
                 self.boek_service.voeg_toe(boek)
         except Exception as e:
-            raise BoekSeederServiceException(
-                f"Fout bij toevoegen van boeken: {str(e)}") from e
-
-    def _maak_dummy_boeken(self):
-        # Semua velden uit het schema:
-        return [
-            {
-                "titel": "Boek 1",
-                "auteur": "Auteur 1",
-                "beschrijving": "Beschrijving 1",
-                "isbn": "9780000000001",
-                "publicatiedatum": "2020-01-01",
-                "kaft_foto_url": "http://example.com/boek1.jpg",
-                "is_uitgeleend": 0,
-                "uitgeleend_datum": None,
-                "uitgeleend_max_tot": None,
-            },
-            {
-                "titel": "Boek 2",
-                "auteur": "Auteur 2",
-                "beschrijving": "Beschrijving 2",
-                "isbn": "9780000000002",
-                "publicatiedatum": "2021-02-02",
-                "kaft_foto_url": "http://example.com/boek2.jpg",
-                "is_uitgeleend": 0,
-                "uitgeleend_datum": None,
-                "uitgeleend_max_tot": None,
-            },
-            {
-                "titel": "Boek 3",
-                "auteur": "Auteur 3",
-                "beschrijving": "Beschrijving 3",
-                "isbn": "9780000000003",
-                "publicatiedatum": "2022-03-03",
-                "kaft_foto_url": "http://example.com/boek3.jpg",
-                "is_uitgeleend": 0,
-                "uitgeleend_datum": None,
-                "uitgeleend_max_tot": None,
-            },
-            {
-                "titel": "Boek 4",
-                "auteur": "Auteur 4",
-                "beschrijving": "Beschrijving 4",
-                "isbn": "9780000000004",
-                "publicatiedatum": "2023-04-04",
-                "kaft_foto_url": "http://example.com/boek4.jpg",
-                "is_uitgeleend": 0,
-                "uitgeleend_datum": None,
-                "uitgeleend_max_tot": None,
-            },
-            {
-                "titel": "Boek 5",
-                "auteur": "Auteur 5",
-                "beschrijving": "Beschrijving 5",
-                "isbn": "9780000000005",
-                "publicatiedatum": "2024-05-05",
-                "kaft_foto_url": "http://example.com/boek5.jpg",
-                "is_uitgeleend": 0,
-                "uitgeleend_datum": None,
-                "uitgeleend_max_tot": None,
-            },
-        ]
-
-# Mock class for test compatibility
-define_in_module = globals()
-class BoekService:
-    def voeg_toe(self, boek):
-        pass
-if 'BoekService' not in define_in_module or not isinstance(define_in_module['BoekService'], type):
-    define_in_module['BoekService'] = BoekService
+            raise BoekSeederToevoegenMisluktException(str(e))
