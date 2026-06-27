@@ -1,5 +1,5 @@
 from database import get_connection
-from src.services.boekread_exceptions import BoekReadException, BoekReadNotFoundException as BoekNietGevondenException
+from src.services.boekread_exceptions import BoekReadException, BoekReadNotFoundException
 
 class BoekRepository:
     def __init__(self, db_connection):
@@ -45,9 +45,9 @@ class BoekService:
         try:
             boek = self.repository.get_by_id(boek_id)
             if not boek:
-                raise BoekNietGevondenException(f"Boek met id {boek_id} niet gevonden")
+                raise BoekReadNotFoundException(f"Boek met id {boek_id} niet gevonden")
             return boek
-        except BoekNietGevondenException:
+        except BoekReadNotFoundException:
             raise
         except Exception as e:
             raise e

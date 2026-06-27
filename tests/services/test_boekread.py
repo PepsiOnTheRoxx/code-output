@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.services.boekread import BoekService
-from src.services.boekread_exceptions import BoekNietGevondenException
+from src.services.boekread_exceptions import BoekReadNotFoundException
 
 def test_get_boek_by_id_bestaat():
     mock_boek = MagicMock()
@@ -18,7 +18,7 @@ def test_get_boek_by_id_bestaat_niet():
         instance = MockRepo.return_value
         instance.get_by_id.return_value = None
         service = BoekService()
-        with pytest.raises(BoekNietGevondenException):
+        with pytest.raises(BoekReadNotFoundException):
             service.get_boek_by_id(99)
         instance.get_by_id.assert_called_once_with(99)
 
