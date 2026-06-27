@@ -6,6 +6,13 @@ class BoekNietGevondenException(BoekDeleteException):
     """Boek niet gevonden voor verwijderen."""
     pass
 
+class BoekNotFoundException(BoekNietGevondenException):
+    """Alias zodat import werkt."""
+    pass
+
+class DeleteNotAllowedException(BoekDeleteException):
+    pass
+
 class BoekVerwijderPermissionDeniedException(BoekDeleteException):
     """Gebruiker heeft geen permissie om boek te verwijderen."""
     pass

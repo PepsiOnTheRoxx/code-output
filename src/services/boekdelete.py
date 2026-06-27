@@ -1,12 +1,15 @@
 from database import get_connection
 from src.services.boekdelete_exceptions import (
-    BoekNotFoundException,
+    BoekNietGevondenException,
     DeleteNotAllowedException,
     BoekVerwijderDatabaseException,
     BoekVerwijderConflictException,
-    BoekNietGevondenException,
     BoekVerwijderPermissionDeniedException,
 )
+
+class BoekNotFoundException(BoekNietGevondenException):
+    pass
+
 class BoekRepository:
     def __init__(self, db_connection):
         self.db_connection = db_connection
@@ -26,14 +29,14 @@ class BoekRepository:
             cursor = self.db_connection.cursor()
             cursor.execute("DELETE FROM Boek WHERE id = ?", (boek_id,))
             if cursor.rowcount == 0:
-                raise BoekNotFoundException("Boek met id {} niet gevonden".format(boek_id))
+                raise BoekNotFoundException(f"Boek met id {boek_id} niet gevonden")
             self.db_connection.commit()
         except BoekNotFoundException:
             raise
         except DeleteNotAllowedException:
             raise
         except Exception as ex:
-            raise BoekVerwijderDatabaseException("Error bij verwijderen boek: {}".format(ex)) from ex
+            raise BoekVerwijderDatabaseException(f"Error bij verwijderen boek: {ex}") from ex
 
 class BoekService:
     def __init__(self, db_connection=None):

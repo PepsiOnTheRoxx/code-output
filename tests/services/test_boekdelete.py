@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.services.boekdelete import BoekService
-from src.services.boekdelete_exceptions import BoekNotFoundException, DeleteNotAllowedException
+from src.services.boekdelete import BoekService, BoekNotFoundException, DeleteNotAllowedException
 
 @patch("src.services.boekdelete.BoekRepository")
 def test_delete_boek_succeeds(mock_boek_repo):
