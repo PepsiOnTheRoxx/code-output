@@ -1,7 +1,7 @@
 from database import get_connection
 from src.services.boekupdate_exceptions import (
     BoekNietGevondenException,
-    OngeldigeBoekDataException,
+    BoekUpdateValidatieException,
 )
 
 class BoekService:
@@ -31,7 +31,7 @@ class BoekService:
             raise BoekNietGevondenException("Boek met id {} niet gevonden".format(boek_id))
         try:
             boek.update(nieuwe_data)
-        except OngeldigeBoekDataException:
+        except BoekUpdateValidatieException:
             raise
         except Exception as e:
             raise
@@ -49,9 +49,9 @@ class Boek:
     def update(self, data):
         if "titel" in data:
             if not isinstance(data["titel"], str) or not data["titel"].strip():
-                raise OngeldigeBoekDataException("Titel mag niet leeg zijn")
+                raise BoekUpdateValidatieException("Titel mag niet leeg zijn")
             self.titel = data["titel"]
         if "auteur" in data:
             if not isinstance(data["auteur"], str) or not data["auteur"].strip():
-                raise OngeldigeBoekDataException("Auteur mag niet leeg zijn")
+                raise BoekUpdateValidatieException("Auteur mag niet leeg zijn")
             self.auteur = data["auteur"]

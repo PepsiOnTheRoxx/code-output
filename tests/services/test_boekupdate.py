@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.services.boekupdate import BoekService
-from src.services.boekupdate_exceptions import BoekNietGevondenException, OngeldigeBoekDataException
+from src.services.boekupdate_exceptions import BoekNietGevondenException, BoekUpdateValidatieException
 
 @pytest.fixture
 def boek_service():
@@ -32,8 +32,8 @@ def test_update_boek_ongeldige_data(boek_service):
     bestaande_boek = MagicMock()
     nieuwe_data = {"titel": ""}  # Ongeldige titel
     with patch.object(boek_service, 'get_boek_by_id', return_value=bestaande_boek), \
-         patch.object(bestaande_boek, 'update', side_effect=OngeldigeBoekDataException):
-        with pytest.raises(OngeldigeBoekDataException):
+         patch.object(bestaande_boek, 'update', side_effect=BoekUpdateValidatieException):
+        with pytest.raises(BoekUpdateValidatieException):
             boek_service.update_boek(boek_id, nieuwe_data)
 
 def test_update_boek_save_faalt(boek_service):
