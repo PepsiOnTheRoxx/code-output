@@ -1,61 +1,53 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Nieuw Boek Toevoegen</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nieuw boek toevoegen</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="#">Boekbeheer</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('catalogusfrontend.catalogus_overzicht') }}">Catalogus</a>
-        </li>
-      </ul>
+<div class="container mt-4">
+  <nav class="mb-3">
+    <a href="{{ url_for('boekaanpassenfrontend.index') }}" class="btn btn-secondary">&laquo; Terug naar catalogus</a>
+  </nav>
+  <h2>Nieuw boek toevoegen</h2>
+  <form method="post">
+    <div class="mb-3">
+      <label for="auteur" class="form-label">Auteur</label>
+      <input type="text" class="form-control" id="auteur" name="auteur" required>
     </div>
-  </div>
-</nav>
-<div class="container">
-    <h1>Nieuw Boek Toevoegen</h1>
-    <form method="post">
-        <div class="mb-3">
-            <label for="auteur" class="form-label">Auteur</label>
-            <input type="text" class="form-control" id="auteur" name="auteur" required>
-        </div>
-        <div class="mb-3">
-            <label for="beschrijving" class="form-label">Beschrijving</label>
-            <textarea class="form-control" id="beschrijving" name="beschrijving" rows="4"></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="isbn" class="form-label">ISBN</label>
-            <input type="text" class="form-control" id="isbn" name="isbn">
-        </div>
-        <div class="mb-3">
-            <label for="publicatiedatum" class="form-label">Publicatiedatum</label>
-            <input type="date" class="form-control" id="publicatiedatum" name="publicatiedatum">
-        </div>
-        <div class="mb-3">
-            <label for="kaft_foto_url" class="form-label">Kaft foto URL</label>
-            <input type="url" class="form-control" id="kaft_foto_url" name="kaft_foto_url">
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="is_uitgeleend" name="is_uitgeleend">
-            <label class="form-check-label" for="is_uitgeleend">Is uitgeleend</label>
-        </div>
-        <div class="mb-3">
-            <label for="uitgeleend_datum" class="form-label">Uitgeleend datum</label>
-            <input type="date" class="form-control" id="uitgeleend_datum" name="uitgeleend_datum">
-        </div>
-        <div class="mb-3">
-            <label for="uitgeleend_max_tot" class="form-label">Uitgeleend max tot</label>
-            <input type="date" class="form-control" id="uitgeleend_max_tot" name="uitgeleend_max_tot">
-        </div>
-        <button type="submit" class="btn btn-success">Toevoegen</button>
-        <a href="{{ url_for('catalogusfrontend.catalogus_overzicht') }}" class="btn btn-secondary ms-2">Terug naar catalogus</a>
-    </form>
+    <div class="mb-3">
+      <label for="beschrijving" class="form-label">Beschrijving</label>
+      <textarea class="form-control" id="beschrijving" name="beschrijving" rows="4" required></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="isbn" class="form-label">ISBN</label>
+      <input type="text" class="form-control" id="isbn" name="isbn">
+    </div>
+    <div class="mb-3">
+      <label for="publicatiedatum" class="form-label">Publicatiedatum</label>
+      <input type="date" class="form-control" id="publicatiedatum" name="publicatiedatum">
+    </div>
+    <div class="mb-3">
+      <label for="kaft_foto_url" class="form-label">Kaft foto URL</label>
+      <input type="text" class="form-control" id="kaft_foto_url" name="kaft_foto_url">
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="is_uitgeleend" name="is_uitgeleend">
+      <label class="form-check-label" for="is_uitgeleend">Is uitgeleend</label>
+    </div>
+    <div class="mb-3">
+      <label for="uitgeleend_datum" class="form-label">Uitgeleend op</label>
+      <input type="date" class="form-control" id="uitgeleend_datum" name="uitgeleend_datum">
+    </div>
+    <div class="mb-3">
+      <label for="uitgeleend_max_tot" class="form-label">Uitgeleend maximaal tot</label>
+      <input type="date" class="form-control" id="uitgeleend_max_tot" name="uitgeleend_max_tot">
+    </div>
+    <button class="btn btn-primary">Toevoegen</button>
+    <a href="{{ url_for('boekaanpassenfrontend.index') }}" class="btn btn-outline-secondary ms-2">Annuleren</a>
+  </form>
 </div>
 </body>
 </html>

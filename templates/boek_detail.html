@@ -1,38 +1,49 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Boek Detail</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boek detail</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
 <div class="container mt-4">
-    <nav class="mb-4">
-        <a href="{{ url_for('catalogusfrontend.catalogus_overzicht') }}" class="btn btn-link">&#8592; Terug naar overzicht</a>
-        <a href="{{ url_for('catalogusfrontend.boek_aanpassen', boek_id=boek.rowid) }}" class="btn btn-warning">Bewerken</a>
-    </nav>
-    <h1>Boek detail</h1>
-    <div class="row">
-        <div class="col-md-3">
-            <img src="{{ boek.kaft_foto_url }}" alt="Kaft boek" class="img-fluid rounded shadow-sm">
-        </div>
-        <div class="col-md-9">
-            <dl class="row">
-                <dt class="col-sm-3">Auteur</dt>
-                <dd class="col-sm-9">{{ boek.auteur }}</dd>
-                <dt class="col-sm-3">Uitgeleend?</dt>
-                <dd class="col-sm-9">
-                  {% if boek.is_uitgeleend %}
-                    <span class="badge bg-danger">Ja</span>
-                  {% else %}
-                    <span class="badge bg-success">Nee</span>
-                  {% endif %}
-                </dd>
-                <dt class="col-sm-3">ID</dt>
-                <dd class="col-sm-9">{{ boek.rowid }}</dd>
-            </dl>
-        </div>
+  <nav class="mb-3">
+    <a href="{{ url_for('boekaanpassenfrontend.index') }}" class="btn btn-secondary">&laquo; Terug naar catalogus</a>
+    <a href="{{ url_for('boekaanpassenfrontend.aanpassen', boek_id=boek.id) }}" class="btn btn-warning ms-2">Bewerk</a>
+  </nav>
+  <h1>{{ boek.auteur }} - {{ boek.isbn }}</h1>
+  <div class="row">
+    <div class="col-md-4">
+      {% if boek.kaft_foto_url %}
+        <img src="{{ boek.kaft_foto_url }}" alt="Kaft" class="img-fluid rounded mb-3"/>
+      {% endif %}
     </div>
+    <div class="col-md-8">
+      <dl class="row">
+        <dt class="col-sm-4">Auteur</dt>
+        <dd class="col-sm-8">{{ boek.auteur }}</dd>
+        <dt class="col-sm-4">ISBN</dt>
+        <dd class="col-sm-8">{{ boek.isbn }}</dd>
+        <dt class="col-sm-4">Publicatiedatum</dt>
+        <dd class="col-sm-8">{{ boek.publicatiedatum }}</dd>
+        <dt class="col-sm-4">Beschrijving</dt>
+        <dd class="col-sm-8">{{ boek.beschrijving }}</dd>
+        <dt class="col-sm-4">Uitgeleend?</dt>
+        <dd class="col-sm-8">
+          {% if boek.is_uitgeleend %}
+              <span class="badge bg-danger">Ja</span>
+          {% else %}
+              <span class="badge bg-success">Nee</span>
+          {% endif %}
+        </dd>
+        <dt class="col-sm-4">Uitgeleend op</dt>
+        <dd class="col-sm-8">{{ boek.uitgeleend_datum }}</dd>
+        <dt class="col-sm-4">Uitgeleend max. tot</dt>
+        <dd class="col-sm-8">{{ boek.uitgeleend_max_tot }}</dd>
+      </dl>
+    </div>
+  </div>
 </div>
 </body>
 </html>
