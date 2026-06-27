@@ -15,6 +15,7 @@ def init_db():
         cursor = conn.cursor()
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS boeken ("
+            "titel TEXT,"
             "auteur TEXT,"
             "beschrijving TEXT,"
             "isbn TEXT,"
@@ -43,6 +44,7 @@ class DatabaseSetup:
             cursor = conn.cursor()
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS boeken ("
+                "titel TEXT,"
                 "auteur TEXT,"
                 "beschrijving TEXT,"
                 "isbn TEXT,"

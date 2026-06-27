@@ -17,6 +17,7 @@ def test_initialize_database_creates_connection_and_table():
         mock_conn.cursor.assert_called_once()
         mock_cursor.execute.assert_called_once_with(
             "CREATE TABLE IF NOT EXISTS boeken ("
+            "titel TEXT,"
             "auteur TEXT,"
             "beschrijving TEXT,"
             "isbn TEXT,"
