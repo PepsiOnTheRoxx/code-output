@@ -15,15 +15,15 @@ def aanpassen(boek_id):
     if request.method == 'POST':
         auteur = request.form.get('auteur', '')
         beschrijving = request.form.get('beschrijving', '')
+        titel = request.form.get('titel', '')  # TOEGEVOEGD 
         isbn = request.form.get('isbn', '')
         publicatiedatum = request.form.get('publicatiedatum', '')
         kaft_foto_url = request.form.get('kaft_foto_url', '')
-        # Checkbox: aanwezig = 'on' of None, slaan we op als 1/0
         is_uitgeleend = 1 if request.form.get('is_uitgeleend') == 'on' else 0
         uitgeleend_datum = request.form.get('uitgeleend_datum', '')
         uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', '')
-        conn.execute('''UPDATE boeken SET auteur=?, beschrijving=?, isbn=?, publicatiedatum=?, kaft_foto_url=?, is_uitgeleend=?, uitgeleend_datum=?, uitgeleend_max_tot=? WHERE rowid=?''',
-            (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot, boek_id)
+        conn.execute('''UPDATE boeken SET auteur=?, beschrijving=?, titel=?, isbn=?, publicatiedatum=?, kaft_foto_url=?, is_uitgeleend=?, uitgeleend_datum=?, uitgeleend_max_tot=? WHERE rowid=?''',
+            (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot, boek_id)
         )
         conn.commit()
         conn.close()
@@ -52,14 +52,15 @@ def toevoegen():
     if request.method == 'POST':
         auteur = request.form.get('auteur', '')
         beschrijving = request.form.get('beschrijving', '')
+        titel = request.form.get('titel', '')  # TOEGEVOEGD
         isbn = request.form.get('isbn', '')
         publicatiedatum = request.form.get('publicatiedatum', '')
         kaft_foto_url = request.form.get('kaft_foto_url', '')
         is_uitgeleend = 1 if request.form.get('is_uitgeleend') == 'on' else 0
         uitgeleend_datum = request.form.get('uitgeleend_datum', '')
         uitgeleend_max_tot = request.form.get('uitgeleend_max_tot', '')
-        conn.execute('INSERT INTO boeken (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?,?,?,?,?,?,?,?)',
-                     (auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot))
+        conn.execute('INSERT INTO boeken (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot) VALUES (?,?,?,?,?,?,?,?,?)',
+                     (auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot))
         boek_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
         conn.commit()
         conn.close()
