@@ -2,18 +2,22 @@ class BoekSeederException(Exception):
     """Base exception for BoekSeeder component."""
     pass
 
-class BoekSeederInvalidBookCountException(BoekSeederException):
-    """Raised when trying to seed less than the minimum required books."""
+class BoekSeederMinimumBoekenException(BoekSeederException):
+    """Raised when minder dan het minimum aantal dummy boeken wordt toegevoegd."""
     pass
 
-class BoekSeederServiceException(BoekSeederException):
-    """Raised when there is a problem communicating with the BoekService."""
+class BoekSeederBoekServiceNietBeschikbaarException(BoekSeederException):
+    """Raised when de BoekService niet beschikbaar is."""
     pass
 
-class BoekSeederDuplicateBookException(BoekSeederException):
-    """Raised when attempting to seed duplicate books."""
+class BoekSeederDuplicaatIsbnException(BoekSeederException):
+    """Raised when een dummy boek een bestaande ISBN bevat."""
     pass
 
-class BoekSeederInvalidBoekDataException(BoekSeederException):
-    """Raised when one or more Boek objects have invalid data."""
+class BoekSeederOngeldigeBoekDataException(BoekSeederException):
+    """Raised when de dummy boek data ongeldig is."""
+    pass
+
+class BoekSeederToevoegenMisluktException(BoekSeederException):
+    """Raised when het toevoegen van een dummy boek faalt."""
     pass

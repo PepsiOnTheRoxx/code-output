@@ -1,83 +1,60 @@
 import pytest
-from unittest.mock import patch, MagicMock, call
-from src.services.boekseeder import BoekSeeder, BoekService
+from unittest.mock import MagicMock, patch
+from src.services.boekseeder import BoekSeeder
 from src.services.boekseeder_exceptions import BoekSeederException
 
-def test_boekseeder_voegt_minimaal_vijf_boeken_toe():
-    dummy_boeken = [
-        {"titel": "Boek 1", "auteur": "Auteur 1"},
-        {"titel": "Boek 2", "auteur": "Auteur 2"},
-        {"titel": "Boek 3", "auteur": "Auteur 3"},
-        {"titel": "Boek 4", "auteur": "Auteur 4"},
-        {"titel": "Boek 5", "auteur": "Auteur 5"},
-    ]
-    with patch.object(BoekService, 'voeg_toe', autospec=True) as mock_voeg_toe:
-        mock_service = BoekService()
-        seed = BoekSeeder(mock_service)
-        with patch.object(seed, '_maak_dummy_boeken', return_value=dummy_boeken):
-            seed.seed()
-            assert mock_voeg_toe.call_count == 5
-            for boek in dummy_boeken:
-                mock_voeg_toe.assert_any_call(mock_service, boek)
+@pytest.fixture
+def boekservice_mock():
+    return MagicMock()
 
-def test_boekseeder_throwt_exception_als_service_faalt():
-    dummy_boeken = [
-        {"titel": "Boek 1", "auteur": "Auteur 1"},
-        {"titel": "Boek 2", "auteur": "Auteur 2"},
-        {"titel": "Boek 3", "auteur": "Auteur 3"},
-        {"titel": "Boek 4", "auteur": "Auteur 4"},
-        {"titel": "Boek 5", "auteur": "Auteur 5"},
-    ]
-    with patch.object(BoekService, 'voeg_toe', side_effect=Exception("Service failure"), autospec=True) as mock_voeg_toe:
-        mock_service = BoekService()
-        seed = BoekSeeder(mock_service)
-        with patch.object(seed, '_maak_dummy_boeken', return_value=dummy_boeken):
-            with pytest.raises(BoekSeederException):
-                seed.seed()
+def test_boekseeder_voegt_minimaal_5_boeken_toe(boekservice_mock):
+    seeder = BoekSeeder(boekservice_mock)
+    seeder.seed()
+    assert boekservice_mock.voeg_toe.call_count >= 5
+    for call in boekservice_mock.voeg_toe.call_args_list:
+        boek_data = call.args[0]
+        assert isinstance(boek_data, dict)
+        assert 'auteur' in boek_data
+        assert 'beschrijving' in boek_data
+        assert 'isbn' in boek_data
+        assert 'publicatiedatum' in boek_data
+        assert 'kaft_foto_url' in boek_data
+        assert 'is_uitgeleend' in boek_data
+        assert 'uitgeleend_datum' in boek_data
+        assert 'uitgeleend_max_tot' in boek_data
 
-def test_boekseeder_geen_seed_als_minder_dan_vijf_boeken():
-    dummy_boeken = [
-        {"titel": "Boek 1", "auteur": "Auteur 1"},
-        {"titel": "Boek 2", "auteur": "Auteur 2"},
-        {"titel": "Boek 3", "auteur": "Auteur 3"},
-        {"titel": "Boek 4", "auteur": "Auteur 4"},
-    ]
-    with patch.object(BoekService, 'voeg_toe', autospec=True) as mock_voeg_toe:
-        mock_service = BoekService()
-        seed = BoekSeeder(mock_service)
-        with patch.object(seed, '_maak_dummy_boeken', return_value=dummy_boeken):
-            with pytest.raises(BoekSeederException):
-                seed.seed()
+def test_boekseeder_roept_boekservice_met_juiste_argumenten(boekservice_mock):
+    seeder = BoekSeeder(boekservice_mock)
+    seeder.seed()
+    for call in boekservice_mock.voeg_toe.call_args_list:
+        boek = call.args[0]
+        assert type(boek['auteur']) == str
+        assert type(boek['beschrijving']) == str
+        assert type(boek['isbn']) == str
+        assert boek['publicatiedatum'] is None or type(boek['publicatiedatum']).__name__ in ('date', 'str')
+        assert type(boek['kaft_foto_url']) == str
+        assert type(boek['is_uitgeleend']) == bool
+        assert boek['uitgeleend_datum'] is None or type(boek['uitgeleend_datum']).__name__ in ('date', 'str')
+        assert boek['uitgeleend_max_tot'] is None or type(boek['uitgeleend_max_tot']).__name__ in ('date', 'str')
 
-def test_boekseeder_successvolle_seed_geeft_geen_exception():
-    dummy_boeken = [
-        {"titel": "Boek 1", "auteur": "Auteur 1"},
-        {"titel": "Boek 2", "auteur": "Auteur 2"},
-        {"titel": "Boek 3", "auteur": "Auteur 3"},
-        {"titel": "Boek 4", "auteur": "Auteur 4"},
-        {"titel": "Boek 5", "auteur": "Auteur 5"},
-    ]
-    with patch.object(BoekService, 'voeg_toe', autospec=True) as mock_voeg_toe:
-        mock_service = BoekService()
-        seed = BoekSeeder(mock_service)
-        with patch.object(seed, '_maak_dummy_boeken', return_value=dummy_boeken):
-            try:
-                seed.seed()
-            except Exception as e:
-                pytest.fail(f"Er mag geen exception gegooid worden bij succesvolle seed: {e}")
+def test_boekseeder_exception_handling_bij_boekservice_fout(boekservice_mock):
+    boekservice_mock.voeg_toe.side_effect = Exception("Database fout")
+    seeder = BoekSeeder(boekservice_mock)
+    with pytest.raises(BoekSeederException):
+        seeder.seed()
 
-def test_boekseeder_geeft_juiste_calls_door_aan_boekservice():
-    dummy_boeken = [
-        {"titel": "Boek 1", "auteur": "Auteur 1"},
-        {"titel": "Boek 2", "auteur": "Auteur 2"},
-        {"titel": "Boek 3", "auteur": "Auteur 3"},
-        {"titel": "Boek 4", "auteur": "Auteur 4"},
-        {"titel": "Boek 5", "auteur": "Auteur 5"},
-    ]
-    with patch.object(BoekService, 'voeg_toe', autospec=True) as mock_voeg_toe:
-        mock_service = BoekService()
-        seed = BoekSeeder(mock_service)
-        with patch.object(seed, '_maak_dummy_boeken', return_value=dummy_boeken):
-            seed.seed()
-            expected_calls = [call(mock_service, boek) for boek in dummy_boeken]
-            mock_voeg_toe.assert_has_calls(expected_calls, any_order=False)
+def test_boekseeder_multiple_seeds_voegt_opnieuw_boeken_toe(boekservice_mock):
+    seeder = BoekSeeder(boekservice_mock)
+    seeder.seed()
+    call_count_1 = boekservice_mock.voeg_toe.call_count
+    seeder.seed()
+    call_count_2 = boekservice_mock.voeg_toe.call_count
+    assert call_count_2 >= call_count_1 * 2
+
+def test_boekseeder_seed_mislukt_niets_toegevoegd(boekservice_mock):
+    boekservice_mock.voeg_toe.side_effect = Exception("Fout tijdens toevoegen")
+    seeder = BoekSeeder(boekservice_mock)
+    with pytest.raises(BoekSeederException):
+        seeder.seed()
+    # Controle: alle calls zijn gefaald door exception; boekservice is nog steeds aangeroepen
+    assert boekservice_mock.voeg_toe.call_count >= 1
