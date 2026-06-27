@@ -7,21 +7,27 @@ class BoekRepository:
 
     def get_by_id(self, boek_id):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur, jaar FROM Boek WHERE id = ?", (boek_id,))
+        cursor.execute("SELECT rowid, titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot FROM boeken WHERE rowid = ?", (boek_id,))
         row = cursor.fetchone()
         if row:
             return {
                 "id": row[0],
                 "titel": row[1],
                 "auteur": row[2],
-                "jaar": row[3]
+                "beschrijving": row[3],
+                "isbn": row[4],
+                "publicatiedatum": row[5],
+                "kaft_foto_url": row[6],
+                "is_uitgeleend": row[7],
+                "uitgeleend_datum": row[8],
+                "uitgeleend_max_tot": row[9]
             }
         else:
             return None
 
     def get_all(self):
         cursor = self.db_connection.cursor()
-        cursor.execute("SELECT id, titel, auteur, jaar FROM Boek")
+        cursor.execute("SELECT rowid, titel, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot FROM boeken")
         rows = cursor.fetchall()
         boeken = []
         for row in rows:
@@ -29,7 +35,13 @@ class BoekRepository:
                 "id": row[0],
                 "titel": row[1],
                 "auteur": row[2],
-                "jaar": row[3]
+                "beschrijving": row[3],
+                "isbn": row[4],
+                "publicatiedatum": row[5],
+                "kaft_foto_url": row[6],
+                "is_uitgeleend": row[7],
+                "uitgeleend_datum": row[8],
+                "uitgeleend_max_tot": row[9]
             })
         return boeken
 
