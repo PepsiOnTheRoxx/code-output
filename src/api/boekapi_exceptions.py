@@ -2,22 +2,34 @@ class BoekAPIException(Exception):
     """Base exception for BoekAPI component."""
     pass
 
-class BoekAPINotFoundException(BoekAPIException):
-    """Exception raised when a requested Boek is not found."""
+class BoekNotFoundException(BoekAPIException):
+    """Raised when a Boek is not found."""
     pass
 
-class BoekAPIValidationException(BoekAPIException):
-    """Exception raised when input validation fails for Boek."""
+class BoekAlreadyExistsException(BoekAPIException):
+    """Raised when trying to create a Boek that already exists (e.g. via ISBN)."""
     pass
 
-class BoekAPIDatabaseException(BoekAPIException):
-    """Exception raised for database errors in BoekAPI."""
+class InvalidBoekDataException(BoekAPIException):
+    """Raised when provided Boek data is invalid."""
     pass
 
-class BoekAPIUnauthorizedException(BoekAPIException):
-    """Exception raised when user is not authorized to perform an action on Boek."""
+class BoekCreateException(BoekAPIException):
+    """Raised when there is an error creating a Boek."""
     pass
 
-class BoekAPIConflictException(BoekAPIException):
-    """Exception raised when a Boek already exists or conflict occurs."""
+class BoekUpdateException(BoekAPIException):
+    """Raised when there is an error updating a Boek."""
+    pass
+
+class BoekDeleteException(BoekAPIException):
+    """Raised when there is an error deleting a Boek."""
+    pass
+
+class BoekLendingException(BoekAPIException):
+    """Raised when there is an error processing lending logic."""
+    pass
+
+class BoekReturnException(BoekAPIException):
+    """Raised when there is an error processing return logic."""
     pass
