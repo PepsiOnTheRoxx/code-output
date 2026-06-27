@@ -11,8 +11,8 @@ from src.services.boekcreate_exceptions import (
     BoekCreateDuplicateIsbnException,
     BoekCreatePersistenceException,
     BoekCreateValidationException,
-    BoekAlreadyExistsException,
     InvalidBoekDataException,
+    BoekAlreadyExistsException,
 )
 
 import re
@@ -56,12 +56,15 @@ class BoekRepository:
             raise BoekCreatePersistenceException(f'Error bij het aanmaken van boek: {exc}')
 
 class BoekService:
-    def __init__(self, db_connection=None):
-        if db_connection is None:
-            self.db_connection = get_connection()
+    def __init__(self, db_connection=None, repo=None):
+        if repo:
+            self.repo = repo
         else:
-            self.db_connection = db_connection
-        self.repo = BoekRepository(self.db_connection)
+            if db_connection is None:
+                self.db_connection = get_connection()
+            else:
+                self.db_connection = db_connection
+            self.repo = BoekRepository(self.db_connection)
 
     def _validate_isbn(self, isbn):
         if not isinstance(isbn, str) or len(isbn.strip()) == 0:

@@ -45,3 +45,11 @@ class BoekCreateDuplicateIsbnException(BoekCreateException):
 class BoekCreatePersistenceException(BoekCreateException):
     """Raised when there is an error saving the Boek in the DB."""
     pass
+
+class BoekAlreadyExistsException(BoekCreateException):
+    """Raised when a Boek with the same ISBN already exists (public API)."""
+    pass
+
+class InvalidBoekDataException(BoekCreateException):
+    """Raised when the boek data is invalid according to business rules (public API)."""
+    pass
