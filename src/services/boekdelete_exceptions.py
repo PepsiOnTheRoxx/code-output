@@ -1,15 +1,19 @@
 class BoekDeleteException(Exception):
-    """Base exception for Boek delete functionality."""
+    """Base exception for BoekDelete feature."""
     pass
 
 class BoekNietGevondenException(BoekDeleteException):
-    """Exception raised when the Boek to delete is not found."""
+    """Boek niet gevonden voor verwijderen."""
     pass
 
-class BoekDeleteNietToegestaanException(BoekDeleteException):
-    """Exception raised when deletion of Boek is not allowed."""
+class BoekVerwijderPermissionDeniedException(BoekDeleteException):
+    """Gebruiker heeft geen permissie om boek te verwijderen."""
     pass
 
-class BoekDeleteOnbekendeFoutException(BoekDeleteException):
-    """Exception raised for unknown errors during Boek deletion."""
+class BoekVerwijderConflictException(BoekDeleteException):
+    """Verwijderen van boek veroorzaakt een conflict (bijv. boek in gebruik)."""
+    pass
+
+class BoekVerwijderDatabaseException(BoekDeleteException):
+    """Database error bij verwijderen boek."""
     pass
