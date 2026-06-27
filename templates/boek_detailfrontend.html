@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Boekdetail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('catalogusfrontend.catalogus_overzicht') }}">Catalogus</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('catalogusfrontend.boek_toevoegen') }}">Boek toevoegen</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            {% if boek.kaft_foto_url %}
+            <img src="{{ boek.kaft_foto_url }}" alt="Kaft foto" class="img-fluid rounded border">
+            {% else %}
+            <svg class="bd-placeholder-img img-fluid rounded border" width="100%" height="250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Geen afbeelding" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Geen afbeelding</title><rect width="100%" height="100%" fill="#e9ecef"/><text x="35%" y="50%" fill="#6c757d" font-size="18">Geen afbeelding</text></svg>
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <h1>Boek ID {{ boek.rowid }}</h1>
+            <p><strong>Auteur:</strong> {{ boek.auteur }}</p>
+            <p><span class="badge {% if boek.is_uitgeleend %}bg-danger{% else %}bg-success{% endif %}">{% if boek.is_uitgeleend %}Uitgeleend{% else %}Beschikbaar{% endif %}</span></p>
+            <a href="{{ url_for('catalogusfrontend.boek_aanpassen', boek_id=boek.rowid) }}" class="btn btn-warning">Aanpassen</a>
+            <a href="{{ url_for('catalogusfrontend.catalogus_overzicht') }}" class="btn btn-secondary">Terug naar overzicht</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
