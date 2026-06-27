@@ -28,20 +28,21 @@ class BoekRepository:
         result = cursor.fetchone()
         return result[0] > 0
 
-    def create(self, auteur, beschrijving, isbn, publicatiedatum, kaft_foto_url,
+    def create(self, auteur, beschrijving, titel, isbn, publicatiedatum, kaft_foto_url,
                is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot):
         try:
             cursor = self.db_connection.cursor()
             cursor.execute(
                 '''
                 INSERT INTO boeken (
-                    auteur, beschrijving, isbn, publicatiedatum,
+                    auteur, beschrijving, titel, isbn, publicatiedatum,
                     kaft_foto_url, is_uitgeleend, uitgeleend_datum, uitgeleend_max_tot
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''',
                 (
                     auteur,
                     beschrijving,
+                    titel,
                     isbn,
                     publicatiedatum if publicatiedatum is None or isinstance(publicatiedatum, str) else publicatiedatum.isoformat(),
                     kaft_foto_url,
@@ -81,6 +82,10 @@ class BoekService:
         if not isinstance(beschrijving, str) or not beschrijving.strip():
             raise BoekCreateBeschrijvingMissingException("Beschrijving moet ingevuld zijn")
 
+    def _validate_titel(self, titel):
+        if not isinstance(titel, str) or not titel.strip():
+            raise BoekCreateValidationException("Titel moet ingevuld zijn")
+
     def _validate_publicatiedatum(self, publicatiedatum):
         if publicatiedatum is None:
             raise BoekCreatePublicatiedatumInvalidException("Publicatiedatum moet ingevuld zijn")
@@ -112,6 +117,7 @@ class BoekService:
         self,
         auteur,
         beschrijving,
+        titel,
         isbn,
         publicatiedatum,
         kaft_foto_url=None,
@@ -122,6 +128,7 @@ class BoekService:
         try:
             self._validate_auteur(auteur)
             self._validate_beschrijving(beschrijving)
+            self._validate_titel(titel)
             self._validate_isbn(isbn)
             self._validate_publicatiedatum(publicatiedatum)
             self._validate_kaft_foto_url(kaft_foto_url)
@@ -137,6 +144,7 @@ class BoekService:
         return self.repo.create(
             auteur=auteur,
             beschrijving=beschrijving,
+            titel=titel,
             isbn=isbn,
             publicatiedatum=publicatiedatum,
             kaft_foto_url=kaft_foto_url,
